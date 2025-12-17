@@ -1,0 +1,58 @@
+/**
+ * Validates challenge completion
+ * Pure logic, no React
+ */
+
+import type { Challenge } from '../challenges/types';
+import type { ExecutionState } from '../../interpreter/executionModel';
+
+export interface ValidationResult {
+  success: boolean;
+  message: string;
+  stepCount: number;
+  optimized: boolean;
+}
+
+/**
+ * Check if challenge is completed
+ */
+export function validateChallenge(
+  challenge: Challenge,
+  state: ExecutionState
+): ValidationResult {
+  // Check if arrays match
+  if (state.array.length !== challenge.targetArray.length) {
+    return {
+      success: false,
+      message: 'Array length mismatch',
+      stepCount: state.stepCount,
+      optimized: false,
+    };
+  }
+  
+  for (let i = 0; i < state.array.length; i++) {
+    if (state.array[i] !== challenge.targetArray[i]) {
+      return {
+        success: false,
+        message: `Mismatch at index ${i}: expected ${challenge.targetArray[i]}, got ${state.array[i]}`,
+        stepCount: state.stepCount,
+        optimized: false,
+      };
+    }
+  }
+  
+  // Check optimization goal
+  const optimized = challenge.maxSteps
+    ? state.stepCount <= challenge.maxSteps
+    : true;
+  
+  return {
+    success: true,
+    message: optimized
+      ? 'Challenge completed optimally!'
+      : 'Challenge completed! Try to optimize your solution.',
+    stepCount: state.stepCount,
+    optimized,
+  };
+}
+
