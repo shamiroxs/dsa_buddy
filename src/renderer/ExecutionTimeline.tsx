@@ -5,6 +5,7 @@
 
 import { motion } from 'framer-motion';
 import type { Instruction } from '../engine/instructions/types';
+import { InstructionType } from '../engine/instructions/types';
 
 interface ExecutionTimelineProps {
   currentLine: number;
@@ -49,26 +50,35 @@ export function ExecutionTimeline({
 
 function formatInstruction(instruction: Instruction): string {
   switch (instruction.type) {
-    case 'LOAD':
-      return `LOAD [${instruction.index}]`;
-    case 'STORE':
-      return `STORE [${instruction.index}]`;
-    case 'MOVE_POINTER':
-      return `MOVE ${instruction.pointerId} ${instruction.offset > 0 ? '+' : ''}${instruction.offset}`;
-    case 'COMPARE':
-      return `COMPARE [${instruction.leftIndex}] vs [${instruction.rightIndex}]`;
-    case 'JUMP_IF':
-      return `JUMP_IF ${instruction.condition} → line ${instruction.targetLine + 1}`;
-    case 'JUMP':
-      return `JUMP → line ${instruction.targetLine + 1}`;
-    case 'INCREMENT':
-      return `INCREMENT [${instruction.index}]`;
-    case 'DECREMENT':
-      return `DECREMENT [${instruction.index}]`;
-    case 'NOOP':
-      return 'NOOP';
+    case InstructionType.MOVE_LEFT:
+      return 'MOVE_LEFT';
+    case InstructionType.MOVE_RIGHT:
+      return 'MOVE_RIGHT';
+    case InstructionType.SET_POINTER:
+      return `SET_POINTER ${instruction.index}`;
+    case InstructionType.PICK:
+      return 'PICK';
+    case InstructionType.PUT:
+      return 'PUT';
+    case InstructionType.IF_GREATER:
+      return `IF_GREATER ${instruction.label}`;
+    case InstructionType.IF_LESS:
+      return `IF_LESS ${instruction.label}`;
+    case InstructionType.IF_EQUAL:
+      return `IF_EQUAL ${instruction.label}`;
+    case InstructionType.JUMP:
+      return `JUMP ${instruction.label}`;
+    case InstructionType.LABEL:
+      return `${instruction.labelName}:`;
+    case InstructionType.SWAP_WITH_NEXT:
+      return 'SWAP_WITH_NEXT';
+    case InstructionType.INCREMENT_VALUE:
+      return 'INCREMENT_VALUE';
+    case InstructionType.DECREMENT_VALUE:
+      return 'DECREMENT_VALUE';
+    case InstructionType.WAIT:
+      return 'WAIT';
     default:
       return 'UNKNOWN';
   }
 }
-

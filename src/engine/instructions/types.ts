@@ -1,18 +1,23 @@
 /**
  * Core instruction types for the DSA game
- * Inspired by Human Resource Machine - instruction-based programming
+ * Intuitive, game-like instruction set for array manipulation
  */
 
 export const InstructionType = {
-  LOAD: 'LOAD',
-  STORE: 'STORE',
-  MOVE_POINTER: 'MOVE_POINTER',
-  COMPARE: 'COMPARE',
-  JUMP_IF: 'JUMP_IF',
+  MOVE_LEFT: 'MOVE_LEFT',
+  MOVE_RIGHT: 'MOVE_RIGHT',
+  SET_POINTER: 'SET_POINTER',
+  PICK: 'PICK',
+  PUT: 'PUT',
+  IF_GREATER: 'IF_GREATER',
+  IF_LESS: 'IF_LESS',
+  IF_EQUAL: 'IF_EQUAL',
   JUMP: 'JUMP',
-  INCREMENT: 'INCREMENT',
-  DECREMENT: 'DECREMENT',
-  NOOP: 'NOOP',
+  LABEL: 'LABEL',
+  SWAP_WITH_NEXT: 'SWAP_WITH_NEXT',
+  INCREMENT_VALUE: 'INCREMENT_VALUE',
+  DECREMENT_VALUE: 'DECREMENT_VALUE',
+  WAIT: 'WAIT',
 } as const;
 
 export type InstructionType = typeof InstructionType[keyof typeof InstructionType];
@@ -23,61 +28,81 @@ export interface BaseInstruction {
   lineNumber: number;
 }
 
-export interface LoadInstruction extends BaseInstruction {
-  type: 'LOAD';
-  index: number; // Array index to load from
+export interface MoveLeftInstruction extends BaseInstruction {
+  type: 'MOVE_LEFT';
 }
 
-export interface StoreInstruction extends BaseInstruction {
-  type: 'STORE';
-  index: number; // Array index to store to
+export interface MoveRightInstruction extends BaseInstruction {
+  type: 'MOVE_RIGHT';
 }
 
-export interface MovePointerInstruction extends BaseInstruction {
-  type: 'MOVE_POINTER';
-  pointerId: string; // Which pointer to move
-  offset: number; // How many positions to move
+export interface SetPointerInstruction extends BaseInstruction {
+  type: 'SET_POINTER';
+  index: number; // pointer = index
 }
 
-export interface CompareInstruction extends BaseInstruction {
-  type: 'COMPARE';
-  leftIndex: number;
-  rightIndex: number;
+export interface PickInstruction extends BaseInstruction {
+  type: 'PICK'; // hand = array[pointer]
 }
 
-export interface JumpIfInstruction extends BaseInstruction {
-  type: 'JUMP_IF';
-  condition: 'EQUAL' | 'NOT_EQUAL' | 'GREATER' | 'LESS' | 'GREATER_EQUAL' | 'LESS_EQUAL';
-  targetLine: number;
+export interface PutInstruction extends BaseInstruction {
+  type: 'PUT'; // array[pointer] = hand
+}
+
+export interface IfGreaterInstruction extends BaseInstruction {
+  type: 'IF_GREATER';
+  label: string; // jump if hand > array[pointer]
+}
+
+export interface IfLessInstruction extends BaseInstruction {
+  type: 'IF_LESS';
+  label: string; // jump if hand < array[pointer]
+}
+
+export interface IfEqualInstruction extends BaseInstruction {
+  type: 'IF_EQUAL';
+  label: string; // jump if hand === array[pointer]
 }
 
 export interface JumpInstruction extends BaseInstruction {
   type: 'JUMP';
-  targetLine: number;
+  label: string;
 }
 
-export interface IncrementInstruction extends BaseInstruction {
-  type: 'INCREMENT';
-  index: number;
+export interface LabelInstruction extends BaseInstruction {
+  type: 'LABEL';
+  labelName: string;
 }
 
-export interface DecrementInstruction extends BaseInstruction {
-  type: 'DECREMENT';
-  index: number;
+export interface SwapWithNextInstruction extends BaseInstruction {
+  type: 'SWAP_WITH_NEXT'; // swap array[pointer] with array[pointer+1]
 }
 
-export interface NoopInstruction extends BaseInstruction {
-  type: 'NOOP';
+export interface IncrementValueInstruction extends BaseInstruction {
+  type: 'INCREMENT_VALUE'; // array[pointer]++
+}
+
+export interface DecrementValueInstruction extends BaseInstruction {
+  type: 'DECREMENT_VALUE'; // array[pointer]--
+}
+
+export interface WaitInstruction extends BaseInstruction {
+  type: 'WAIT'; // consumes a step but does nothing
 }
 
 export type Instruction =
-  | LoadInstruction
-  | StoreInstruction
-  | MovePointerInstruction
-  | CompareInstruction
-  | JumpIfInstruction
+  | MoveLeftInstruction
+  | MoveRightInstruction
+  | SetPointerInstruction
+  | PickInstruction
+  | PutInstruction
+  | IfGreaterInstruction
+  | IfLessInstruction
+  | IfEqualInstruction
   | JumpInstruction
-  | IncrementInstruction
-  | DecrementInstruction
-  | NoopInstruction;
+  | LabelInstruction
+  | SwapWithNextInstruction
+  | IncrementValueInstruction
+  | DecrementValueInstruction
+  | WaitInstruction;
 

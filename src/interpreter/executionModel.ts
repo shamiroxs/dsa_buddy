@@ -7,14 +7,11 @@ export interface ExecutionState {
   // Array state
   array: number[];
   
-  // Pointers (index positions in array)
-  pointers: Record<string, number>;
+  // Single pointer (index position in array)
+  pointer: number;
   
-  // Registers (temporary storage)
-  registers: {
-    accumulator: number | null;
-    comparisonResult: 'EQUAL' | 'NOT_EQUAL' | 'GREATER' | 'LESS' | 'GREATER_EQUAL' | 'LESS_EQUAL' | null;
-  };
+  // Hand register (temporary storage - like holding a value)
+  hand: number | null;
   
   // Execution state
   currentLine: number;
@@ -22,6 +19,9 @@ export interface ExecutionState {
   
   // Program
   instructions: any[]; // Will be typed with Instruction from engine
+  
+  // Label map for jumps (label name -> line number)
+  labelMap: Record<string, number>;
   
   // History for rewind
   history: ExecutionState[];
@@ -31,16 +31,22 @@ export function createInitialState(
   initialArray: number[],
   instructions: any[]
 ): ExecutionState {
+  // Build label map from LABEL instructions
+  const labelMap: Record<string, number> = {};
+  instructions.forEach((inst: any, index: number) => {
+    if (inst.type === 'LABEL' && inst.labelName) {
+      labelMap[inst.labelName] = index;
+    }
+  });
+  
   return {
     array: [...initialArray],
-    pointers: {},
-    registers: {
-      accumulator: null,
-      comparisonResult: null,
-    },
+    pointer: 0,
+    hand: null,
     currentLine: 0,
     stepCount: 0,
     instructions,
+    labelMap,
     history: [],
   };
 }
@@ -48,15 +54,14 @@ export function createInitialState(
 export function cloneState(state: ExecutionState): ExecutionState {
   return {
     array: [...state.array],
-    pointers: { ...state.pointers },
-    registers: {
-      accumulator: state.registers.accumulator,
-      comparisonResult: state.registers.comparisonResult,
-    },
+    pointer: state.pointer,
+    hand: state.hand,
     currentLine: state.currentLine,
     stepCount: state.stepCount,
     instructions: state.instructions,
+    labelMap: { ...state.labelMap },
     history: [...state.history],
   };
 }
+
 

@@ -5,98 +5,120 @@
 import type { Instruction } from './types';
 import { InstructionType } from './types';
 
-export function createLoad(index: number, lineNumber: number): Instruction {
+export function createMoveLeft(lineNumber: number): Instruction {
   return {
-    id: `load-${Date.now()}-${Math.random()}`,
-    type: InstructionType.LOAD,
+    id: `moveleft-${Date.now()}-${Math.random()}`,
+    type: InstructionType.MOVE_LEFT,
+    lineNumber,
+  };
+}
+
+export function createMoveRight(lineNumber: number): Instruction {
+  return {
+    id: `moveright-${Date.now()}-${Math.random()}`,
+    type: InstructionType.MOVE_RIGHT,
+    lineNumber,
+  };
+}
+
+export function createSetPointer(index: number, lineNumber: number): Instruction {
+  return {
+    id: `setptr-${Date.now()}-${Math.random()}`,
+    type: InstructionType.SET_POINTER,
     lineNumber,
     index,
   };
 }
 
-export function createStore(index: number, lineNumber: number): Instruction {
+export function createPick(lineNumber: number): Instruction {
   return {
-    id: `store-${Date.now()}-${Math.random()}`,
-    type: InstructionType.STORE,
+    id: `pick-${Date.now()}-${Math.random()}`,
+    type: InstructionType.PICK,
     lineNumber,
-    index,
   };
 }
 
-export function createMovePointer(
-  pointerId: string,
-  offset: number,
-  lineNumber: number
-): Instruction {
+export function createPut(lineNumber: number): Instruction {
   return {
-    id: `move-${Date.now()}-${Math.random()}`,
-    type: InstructionType.MOVE_POINTER,
+    id: `put-${Date.now()}-${Math.random()}`,
+    type: InstructionType.PUT,
     lineNumber,
-    pointerId,
-    offset,
   };
 }
 
-export function createCompare(
-  leftIndex: number,
-  rightIndex: number,
-  lineNumber: number
-): Instruction {
+export function createIfGreater(label: string, lineNumber: number): Instruction {
   return {
-    id: `compare-${Date.now()}-${Math.random()}`,
-    type: InstructionType.COMPARE,
+    id: `ifgreater-${Date.now()}-${Math.random()}`,
+    type: InstructionType.IF_GREATER,
     lineNumber,
-    leftIndex,
-    rightIndex,
+    label,
   };
 }
 
-export function createJumpIf(
-  condition: 'EQUAL' | 'NOT_EQUAL' | 'GREATER' | 'LESS' | 'GREATER_EQUAL' | 'LESS_EQUAL',
-  targetLine: number,
-  lineNumber: number
-): Instruction {
+export function createIfLess(label: string, lineNumber: number): Instruction {
   return {
-    id: `jumpif-${Date.now()}-${Math.random()}`,
-    type: InstructionType.JUMP_IF,
+    id: `ifless-${Date.now()}-${Math.random()}`,
+    type: InstructionType.IF_LESS,
     lineNumber,
-    condition,
-    targetLine,
+    label,
   };
 }
 
-export function createJump(targetLine: number, lineNumber: number): Instruction {
+export function createIfEqual(label: string, lineNumber: number): Instruction {
+  return {
+    id: `ifequal-${Date.now()}-${Math.random()}`,
+    type: InstructionType.IF_EQUAL,
+    lineNumber,
+    label,
+  };
+}
+
+export function createJump(label: string, lineNumber: number): Instruction {
   return {
     id: `jump-${Date.now()}-${Math.random()}`,
     type: InstructionType.JUMP,
     lineNumber,
-    targetLine,
+    label,
   };
 }
 
-export function createIncrement(index: number, lineNumber: number): Instruction {
+export function createLabel(labelName: string, lineNumber: number): Instruction {
   return {
-    id: `inc-${Date.now()}-${Math.random()}`,
-    type: InstructionType.INCREMENT,
+    id: `label-${Date.now()}-${Math.random()}`,
+    type: InstructionType.LABEL,
     lineNumber,
-    index,
+    labelName,
   };
 }
 
-export function createDecrement(index: number, lineNumber: number): Instruction {
+export function createSwapWithNext(lineNumber: number): Instruction {
   return {
-    id: `dec-${Date.now()}-${Math.random()}`,
-    type: InstructionType.DECREMENT,
-    lineNumber,
-    index,
-  };
-}
-
-export function createNoop(lineNumber: number): Instruction {
-  return {
-    id: `noop-${Date.now()}-${Math.random()}`,
-    type: InstructionType.NOOP,
+    id: `swap-${Date.now()}-${Math.random()}`,
+    type: InstructionType.SWAP_WITH_NEXT,
     lineNumber,
   };
 }
 
+export function createIncrementValue(lineNumber: number): Instruction {
+  return {
+    id: `incval-${Date.now()}-${Math.random()}`,
+    type: InstructionType.INCREMENT_VALUE,
+    lineNumber,
+  };
+}
+
+export function createDecrementValue(lineNumber: number): Instruction {
+  return {
+    id: `decval-${Date.now()}-${Math.random()}`,
+    type: InstructionType.DECREMENT_VALUE,
+    lineNumber,
+  };
+}
+
+export function createWait(lineNumber: number): Instruction {
+  return {
+    id: `wait-${Date.now()}-${Math.random()}`,
+    type: InstructionType.WAIT,
+    lineNumber,
+  };
+}

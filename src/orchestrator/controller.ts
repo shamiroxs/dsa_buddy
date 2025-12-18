@@ -11,29 +11,28 @@ let runInterval: number | null = null;
 
 /**
  * Execute single step
+ * Used both by the Step button and the Run loop.
  */
 export function executeSingleStep(): void {
   const store = useGameStore.getState();
   const state = store.executionState;
-  
+
   if (!state) {
+    // Nothing to execute yet
     store.setExecutionError('No execution state available');
     return;
   }
-  
-  if (store.isExecuting && !store.isPaused) {
-    return; // Already running
-  }
-  
+
+  // Ensure we are not in a paused state when stepping
   store.setIsPaused(false);
-  
+
   // Execute step directly
   const result: ExecutionResult = executeStep(state);
-  
+
   if (result.success) {
     store.setExecutionState(result.state);
     store.setExecutionError(null);
-    
+
     // Check if challenge is completed
     if (result.completed || result.state.currentLine >= result.state.instructions.length) {
       stopExecution();
@@ -50,15 +49,15 @@ export function executeSingleStep(): void {
  */
 export function runExecution(speed: number = 500): void {
   const store = useGameStore.getState();
-  
+
   if (store.isExecuting && !store.isPaused) {
     return; // Already running
   }
-  
+
   store.setIsExecuting(true);
   store.setIsPaused(false);
   store.setExecutionError(null);
-  
+
   // Execute steps at interval
   runInterval = window.setInterval(() => {
     const currentStore = useGameStore.getState();
@@ -66,7 +65,7 @@ export function runExecution(speed: number = 500): void {
       stopExecution();
       return;
     }
-    
+
     executeSingleStep();
   }, speed);
 }
@@ -98,7 +97,7 @@ export function stopExecution(): void {
     clearInterval(runInterval);
     runInterval = null;
   }
-  
+
   const store = useGameStore.getState();
   store.setIsExecuting(false);
   store.setIsPaused(false);
@@ -110,11 +109,11 @@ export function stopExecution(): void {
 export function rewindSingleStep(): void {
   const store = useGameStore.getState();
   const state = store.executionState;
-  
+
   if (!state) {
     return;
   }
-  
+
   // Use synchronous rewind for now (can be moved to worker if needed)
   const newState = rewindStep(state);
   if (newState) {
@@ -130,7 +129,7 @@ export function validateChallenge(): void {
   const store = useGameStore.getState();
   const result = store.engine.validate();
   store.setValidationResult(result);
-  
+
   if (result?.success) {
     // Save progress to localStorage
     const progress = {
@@ -139,7 +138,7 @@ export function validateChallenge(): void {
       bestStepCount: result.stepCount,
       completedAt: Date.now(),
     };
-    
+
     const savedProgress = localStorage.getItem('dsa-buddy-progress');
     const progressData = savedProgress ? JSON.parse(savedProgress) : {};
     progressData[store.currentChallenge?.id || ''] = progress;
@@ -155,4 +154,5 @@ export function resetExecution(): void {
   const store = useGameStore.getState();
   store.resetChallenge();
 }
+
 

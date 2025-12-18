@@ -11,7 +11,7 @@ import { ControlBar } from '../ui/ControlBar';
 import { ArrayView } from '../renderer/ArrayView';
 import { PointerView } from '../renderer/PointerView';
 import { ExecutionTimeline } from '../renderer/ExecutionTimeline';
-import { useArrayState, usePointers, useCurrentLine, useStepCount, useCurrentInstruction } from '../orchestrator/selectors';
+import { useArrayState, usePointer, useHand, useCurrentLine, useStepCount, useCurrentInstruction } from '../orchestrator/selectors';
 import { motion } from 'framer-motion';
 
 export function GameView() {
@@ -19,7 +19,8 @@ export function GameView() {
   const { setCurrentChallenge } = useGameStore();
   const playerInstructions = usePlayerInstructions();
   const array = useArrayState();
-  const pointers = usePointers();
+  const pointer = usePointer();
+  const hand = useHand();
   const currentLine = useCurrentLine();
   const stepCount = useStepCount();
   const currentInstruction = useCurrentInstruction();
@@ -70,11 +71,19 @@ export function GameView() {
             <div className="bg-gray-800 rounded-lg p-6">
               <h3 className="text-white font-semibold mb-4">Visualization</h3>
               
-              {/* Pointers */}
-              {Object.keys(pointers).length > 0 && (
+              {/* Hand display */}
+              {hand !== null && (
+                <div className="mb-4 bg-blue-900/30 border border-blue-500 rounded p-3">
+                  <div className="text-xs text-blue-300 mb-1">Hand</div>
+                  <div className="text-white font-mono text-lg font-bold">{hand}</div>
+                </div>
+              )}
+              
+              {/* Pointer */}
+              {array.length > 0 && (
                 <div className="mb-4">
                   <PointerView
-                    pointers={pointers}
+                    pointer={pointer}
                     arrayLength={array.length}
                   />
                 </div>
@@ -82,7 +91,7 @@ export function GameView() {
               
               {/* Array */}
               <div className="mb-4 flex justify-center">
-                <ArrayView array={array} />
+                <ArrayView array={array} highlightedIndices={[pointer]} />
               </div>
               
               {/* Execution Timeline */}

@@ -36,7 +36,33 @@ export function executeStep(state: ExecutionState): ExecutionResult {
   
   try {
     switch (instruction.type) {
-      case InstructionType.LOAD:
+      case InstructionType.MOVE_LEFT:
+        if (newState.pointer <= 0) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Cannot move left: pointer already at start',
+            completed: false,
+          };
+        }
+        newState.pointer--;
+        newState.currentLine++;
+        break;
+        
+      case InstructionType.MOVE_RIGHT:
+        if (newState.pointer >= newState.array.length - 1) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Cannot move right: pointer already at end',
+            completed: false,
+          };
+        }
+        newState.pointer++;
+        newState.currentLine++;
+        break;
+        
+      case InstructionType.SET_POINTER:
         if (instruction.index < 0 || instruction.index >= newState.array.length) {
           return {
             state: newState,
@@ -45,149 +71,204 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.registers.accumulator = newState.array[instruction.index];
+        newState.pointer = instruction.index;
         newState.currentLine++;
         break;
         
-      case InstructionType.STORE:
-        if (instruction.index < 0 || instruction.index >= newState.array.length) {
+      case InstructionType.PICK:
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
           return {
             state: newState,
             success: false,
-            error: `Index ${instruction.index} out of bounds`,
+            error: 'Pointer out of bounds',
             completed: false,
           };
         }
-        if (newState.registers.accumulator === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Accumulator is empty',
-            completed: false,
-          };
-        }
-        newState.array[instruction.index] = newState.registers.accumulator;
+        newState.hand = newState.array[newState.pointer];
         newState.currentLine++;
         break;
         
-      case InstructionType.MOVE_POINTER:
-        if (!newState.pointers[instruction.pointerId]) {
-          newState.pointers[instruction.pointerId] = 0;
-        }
-        const newPosition = newState.pointers[instruction.pointerId] + instruction.offset;
-        if (newPosition < 0 || newPosition >= newState.array.length) {
+      case InstructionType.PUT:
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
           return {
             state: newState,
             success: false,
-            error: `Pointer ${instruction.pointerId} would move out of bounds`,
+            error: 'Pointer out of bounds',
             completed: false,
           };
         }
-        newState.pointers[instruction.pointerId] = newPosition;
+        if (newState.hand === null) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Hand is empty (use PICK first)',
+            completed: false,
+          };
+        }
+        newState.array[newState.pointer] = newState.hand;
         newState.currentLine++;
         break;
         
-      case InstructionType.COMPARE:
-        if (instruction.leftIndex < 0 || instruction.leftIndex >= newState.array.length ||
-            instruction.rightIndex < 0 || instruction.rightIndex >= newState.array.length) {
+      case InstructionType.IF_GREATER:
+        if (newState.hand === null) {
           return {
             state: newState,
             success: false,
-            error: 'Comparison indices out of bounds',
+            error: 'Hand is empty (use PICK first)',
             completed: false,
           };
         }
-        const left = newState.array[instruction.leftIndex];
-        const right = newState.array[instruction.rightIndex];
-        
-        if (left === right) {
-          newState.registers.comparisonResult = 'EQUAL';
-        } else if (left > right) {
-          newState.registers.comparisonResult = 'GREATER';
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+        const targetLine = newState.labelMap[instruction.label];
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+        if (newState.hand > newState.array[newState.pointer]) {
+          newState.currentLine = targetLine;
         } else {
-          newState.registers.comparisonResult = 'LESS';
+          newState.currentLine++;
         }
-        newState.currentLine++;
         break;
         
-      case InstructionType.JUMP_IF:
-        if (newState.registers.comparisonResult === null) {
+      case InstructionType.IF_LESS:
+        if (newState.hand === null) {
           return {
             state: newState,
             success: false,
-            error: 'No comparison result available',
+            error: 'Hand is empty (use PICK first)',
             completed: false,
           };
         }
-        let shouldJump = false;
-        switch (instruction.condition) {
-          case 'EQUAL':
-            shouldJump = newState.registers.comparisonResult === 'EQUAL';
-            break;
-          case 'NOT_EQUAL':
-            shouldJump = newState.registers.comparisonResult !== 'EQUAL';
-            break;
-          case 'GREATER':
-            shouldJump = newState.registers.comparisonResult === 'GREATER';
-            break;
-          case 'LESS':
-            shouldJump = newState.registers.comparisonResult === 'LESS';
-            break;
-          case 'GREATER_EQUAL':
-            shouldJump = newState.registers.comparisonResult === 'GREATER' || 
-                        newState.registers.comparisonResult === 'EQUAL';
-            break;
-          case 'LESS_EQUAL':
-            shouldJump = newState.registers.comparisonResult === 'LESS' || 
-                        newState.registers.comparisonResult === 'EQUAL';
-            break;
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
         }
-        if (shouldJump) {
-          newState.currentLine = instruction.targetLine;
+        const targetLineLess = newState.labelMap[instruction.label];
+        if (targetLineLess === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+        if (newState.hand < newState.array[newState.pointer]) {
+          newState.currentLine = targetLineLess;
+        } else {
+          newState.currentLine++;
+        }
+        break;
+        
+      case InstructionType.IF_EQUAL:
+        if (newState.hand === null) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Hand is empty (use PICK first)',
+            completed: false,
+          };
+        }
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+        const targetLineEqual = newState.labelMap[instruction.label];
+        if (targetLineEqual === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+        if (newState.hand === newState.array[newState.pointer]) {
+          newState.currentLine = targetLineEqual;
         } else {
           newState.currentLine++;
         }
         break;
         
       case InstructionType.JUMP:
-        if (instruction.targetLine < 0 || instruction.targetLine >= newState.instructions.length) {
+        const jumpTarget = newState.labelMap[instruction.label];
+        if (jumpTarget === undefined) {
           return {
             state: newState,
             success: false,
-            error: `Jump target ${instruction.targetLine} out of bounds`,
+            error: `Label "${instruction.label}" not found`,
             completed: false,
           };
         }
-        newState.currentLine = instruction.targetLine;
+        newState.currentLine = jumpTarget;
         break;
         
-      case InstructionType.INCREMENT:
-        if (instruction.index < 0 || instruction.index >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: `Index ${instruction.index} out of bounds`,
-            completed: false,
-          };
-        }
-        newState.array[instruction.index]++;
+      case InstructionType.LABEL:
+        // Labels are no-ops during execution (they're processed during initialization)
         newState.currentLine++;
         break;
         
-      case InstructionType.DECREMENT:
-        if (instruction.index < 0 || instruction.index >= newState.array.length) {
+      case InstructionType.SWAP_WITH_NEXT:
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length - 1) {
           return {
             state: newState,
             success: false,
-            error: `Index ${instruction.index} out of bounds`,
+            error: 'Cannot swap: pointer at or beyond last element',
             completed: false,
           };
         }
-        newState.array[instruction.index]--;
+        const temp = newState.array[newState.pointer];
+        newState.array[newState.pointer] = newState.array[newState.pointer + 1];
+        newState.array[newState.pointer + 1] = temp;
         newState.currentLine++;
         break;
         
-      case InstructionType.NOOP:
+      case InstructionType.INCREMENT_VALUE:
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+        newState.array[newState.pointer]++;
+        newState.currentLine++;
+        break;
+        
+      case InstructionType.DECREMENT_VALUE:
+        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+        newState.array[newState.pointer]--;
+        newState.currentLine++;
+        break;
+        
+      case InstructionType.WAIT:
+        // Consumes a step but does nothing
         newState.currentLine++;
         break;
         
@@ -231,4 +312,3 @@ export function rewindStep(state: ExecutionState): ExecutionState | null {
   
   return newState;
 }
-

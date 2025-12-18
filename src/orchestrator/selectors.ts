@@ -34,8 +34,12 @@ export const useArrayState = (): number[] => {
   return useGameStore((state) => state.executionState?.array || []);
 };
 
-export const usePointers = (): Record<string, number> => {
-  return useGameStore((state) => state.executionState?.pointers || {});
+export const usePointer = (): number => {
+  return useGameStore((state) => state.executionState?.pointer ?? 0);
+};
+
+export const useHand = (): number | null => {
+  return useGameStore((state) => state.executionState?.hand ?? null);
 };
 
 export const useStepCount = (): number => {
