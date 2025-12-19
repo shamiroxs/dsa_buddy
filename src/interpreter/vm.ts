@@ -3,6 +3,7 @@
  * Pure logic, no React dependencies
  */
 
+
 import type { Instruction } from '../engine/instructions/types';
 import { InstructionType } from '../engine/instructions/types';
 import type { ExecutionState } from './executionModel';
@@ -207,6 +208,25 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           newState.currentLine++;
         }
         break;
+      case InstructionType.IF_END: {
+        const targetLine = newState.labelMap[instruction.label];
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+    
+        if (newState.pointer === newState.array.length - 1) {
+          newState.currentLine = targetLine;
+        } else {
+          newState.currentLine++;
+        }
+        break;
+      }
+        
         
       case InstructionType.JUMP:
         const jumpTarget = newState.labelMap[instruction.label];

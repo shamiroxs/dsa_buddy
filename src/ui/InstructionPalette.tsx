@@ -3,6 +3,7 @@
  * Drag-and-drop or click-to-add interface
  */
 
+
 import { useState } from 'react';
 import { useGameStore } from '../orchestrator/store';
 import { InstructionType } from '../engine/instructions/types';
@@ -16,6 +17,7 @@ import {
   createIfGreater,
   createIfLess,
   createIfEqual,
+  createIfEnd,
   createJump,
   createLabel,
   createSwapWithNext,
@@ -33,6 +35,11 @@ const instructionTemplates = [
   { type: InstructionType.IF_GREATER, label: 'IF_GREATER', description: 'Jump if hand > current value' },
   { type: InstructionType.IF_LESS, label: 'IF_LESS', description: 'Jump if hand < current value' },
   { type: InstructionType.IF_EQUAL, label: 'IF_EQUAL', description: 'Jump if hand === current value' },
+  { 
+    type: InstructionType.IF_END, 
+    label: 'IF_END', 
+    description: 'Jump if pointer is at last element' 
+  },  
   { type: InstructionType.JUMP, label: 'JUMP', description: 'Jump to label' },
   { type: InstructionType.LABEL, label: 'LABEL', description: 'Define a label' },
   { type: InstructionType.SWAP_WITH_NEXT, label: 'SWAP_WITH_NEXT', description: 'Swap current with next element' },
@@ -92,6 +99,10 @@ export function InstructionPalette() {
       case InstructionType.IF_EQUAL:
         instruction = createIfEqual(generateUniqueLabelName(), lineNumber);
         break;
+      case InstructionType.IF_END:
+        instruction = createIfEnd(generateUniqueLabelName(), lineNumber);
+        break;
+        
       case InstructionType.JUMP:
         instruction = createJump(generateUniqueLabelName(), lineNumber);
         break;
@@ -174,7 +185,8 @@ function InstructionLine({ instruction, lineNumber }: { instruction: Instruction
     } else if (
       (instruction.type === 'IF_GREATER' || 
        instruction.type === 'IF_LESS' || 
-       instruction.type === 'IF_EQUAL' || 
+       instruction.type === 'IF_EQUAL' ||
+       instruction.type === 'IF_END' || 
        instruction.type === 'JUMP') &&
       'label' in instruction
     ) {
@@ -217,7 +229,8 @@ function InstructionLine({ instruction, lineNumber }: { instruction: Instruction
     } else if (
       (instruction.type === 'IF_GREATER' || 
        instruction.type === 'IF_LESS' || 
-       instruction.type === 'IF_EQUAL' || 
+       instruction.type === 'IF_EQUAL' ||
+       instruction.type === 'IF_END' || 
        instruction.type === 'JUMP') &&
       'label' in instruction
     ) {
@@ -261,6 +274,9 @@ function InstructionLine({ instruction, lineNumber }: { instruction: Instruction
         return `IF_LESS ${inst.label}`;
       case InstructionType.IF_EQUAL:
         return `IF_EQUAL ${inst.label}`;
+      case InstructionType.IF_END:
+        return `IF_END ${inst.label}`;
+      
       case InstructionType.JUMP:
         return `JUMP ${inst.label}`;
       case InstructionType.LABEL:
@@ -284,6 +300,7 @@ function InstructionLine({ instruction, lineNumber }: { instruction: Instruction
     instruction.type === 'IF_GREATER' ||
     instruction.type === 'IF_LESS' ||
     instruction.type === 'IF_EQUAL' ||
+    instruction.type === 'IF_END' ||
     instruction.type === 'JUMP';
   
   if (isEditing && hasEditableParameter) {

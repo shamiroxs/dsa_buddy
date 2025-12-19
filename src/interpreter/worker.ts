@@ -3,6 +3,7 @@
  * Runs interpreter in separate thread to keep UI responsive
  */
 
+
 import type { ExecutionState } from './executionModel';
 import { executeStep, rewindStep } from './vm';
 

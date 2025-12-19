@@ -12,6 +12,7 @@ export const InstructionType = {
   IF_GREATER: 'IF_GREATER',
   IF_LESS: 'IF_LESS',
   IF_EQUAL: 'IF_EQUAL',
+  IF_END: 'IF_END',
   JUMP: 'JUMP',
   LABEL: 'LABEL',
   SWAP_WITH_NEXT: 'SWAP_WITH_NEXT',
@@ -64,6 +65,11 @@ export interface IfEqualInstruction extends BaseInstruction {
   label: string; // jump if hand === array[pointer]
 }
 
+export interface IfEndInstruction extends BaseInstruction {
+  type: 'IF_END';
+  label: string; // jump if pointer === array.length - 1
+}
+
 export interface JumpInstruction extends BaseInstruction {
   type: 'JUMP';
   label: string;
@@ -99,10 +105,12 @@ export type Instruction =
   | IfGreaterInstruction
   | IfLessInstruction
   | IfEqualInstruction
+  | IfEndInstruction
   | JumpInstruction
   | LabelInstruction
   | SwapWithNextInstruction
   | IncrementValueInstruction
   | DecrementValueInstruction
   | WaitInstruction;
+  
 

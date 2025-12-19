@@ -2,6 +2,7 @@
  * Factory functions for creating instructions
  */
 
+
 import type { Instruction } from './types';
 import { InstructionType } from './types';
 
@@ -68,6 +69,15 @@ export function createIfEqual(label: string, lineNumber: number): Instruction {
   return {
     id: `ifequal-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_EQUAL,
+    lineNumber,
+    label,
+  };
+}
+
+export function createIfEnd(label: string, lineNumber: number): Instruction {
+  return {
+    id: `ifend-${Date.now()}-${Math.random()}`,
+    type: InstructionType.IF_END,
     lineNumber,
     label,
   };

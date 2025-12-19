@@ -6,8 +6,10 @@
 import { useGameStore } from './store';
 import { executeStep, rewindStep } from '../interpreter/vm';
 import type { ExecutionResult } from '../interpreter/vm';
+import { validateChallenge as validateChallengeFn } from '../engine/validator/validator';
 
 let runInterval: number | null = null;
+
 
 /**
  * Execute single step
@@ -39,8 +41,25 @@ export function executeSingleStep(): void {
       validateChallenge();
     }
   } else {
-    store.setExecutionError(result.error || 'Execution failed');
-    stopExecution();
+    // Check if error is pointer out of bounds - if so, validate challenge instead
+    const errorMessage = result.error || '';
+    const isPointerOutOfBounds = 
+      errorMessage.includes('Pointer out of bounds') ||
+      errorMessage.includes('Cannot move right: pointer already at end') ||
+      errorMessage.includes('Cannot move left: pointer already at start') ||
+      errorMessage.includes('Cannot swap: pointer at or beyond last element');
+    
+    if (isPointerOutOfBounds) {
+      // Pointer out of bounds - treat as program completion and validate
+      store.setExecutionState(result.state);
+      store.setExecutionError(null);
+      stopExecution();
+      validateChallenge();
+    } else {
+      // Other errors - show error message
+      store.setExecutionError(result.error || 'Execution failed');
+      stopExecution();
+    }
   }
 }
 
@@ -127,7 +146,14 @@ export function rewindSingleStep(): void {
  */
 export function validateChallenge(): void {
   const store = useGameStore.getState();
-  const result = store.engine.validate();
+  
+  // Use the current execution state from the store, not the engine's stale state
+  if (!store.currentChallenge || !store.executionState) {
+    return;
+  }
+  
+  // Validate using the current execution state from the store
+  const result = validateChallengeFn(store.currentChallenge, store.executionState);
   store.setValidationResult(result);
 
   if (result?.success) {
@@ -154,5 +180,6 @@ export function resetExecution(): void {
   const store = useGameStore.getState();
   store.resetChallenge();
 }
+
 
 

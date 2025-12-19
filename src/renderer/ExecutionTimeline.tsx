@@ -66,6 +66,8 @@ function formatInstruction(instruction: Instruction): string {
       return `IF_LESS ${instruction.label}`;
     case InstructionType.IF_EQUAL:
       return `IF_EQUAL ${instruction.label}`;
+    case InstructionType.IF_END:
+      return `IF_END ${instruction.label}`;
     case InstructionType.JUMP:
       return `JUMP ${instruction.label}`;
     case InstructionType.LABEL:
