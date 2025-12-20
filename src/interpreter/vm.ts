@@ -360,7 +360,27 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       
         newState.currentLine++;
         break;
-      }        
+      }  
+      case InstructionType.SWAP_WITH_NEXT: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length - 1) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Cannot swap: pointer at or beyond last element',
+            completed: false,
+          };
+        }
+      
+        const temp = newState.array[ptr];
+        newState.array[ptr] = newState.array[ptr + 1];
+        newState.array[ptr + 1] = temp;
+      
+        newState.currentLine++;
+        break;
+      }
+          
         
       case InstructionType.INCREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);

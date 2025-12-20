@@ -176,6 +176,15 @@ export function createSwap(lineNumber: number): Instruction {
   };
 }
 
+export function createSwapWithNext(target: PointerTarget, lineNumber: number): Instruction {
+  return {
+    id: `swap-${Date.now()}-${Math.random()}`,
+    type: InstructionType.SWAP_WITH_NEXT,
+    target,
+    lineNumber,
+  };
+}
+
 
 export function createIncrementValue(
   target: PointerTarget,

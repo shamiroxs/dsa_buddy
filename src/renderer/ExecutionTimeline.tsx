@@ -102,6 +102,8 @@ function formatInstruction(instruction: Instruction): string {
 
     case InstructionType.SWAP:
       return 'SWAP';
+    case InstructionType.SWAP_WITH_NEXT:
+      return 'SWAP_WITH_NEXT';
 
     case InstructionType.JUMP:
       return `JUMP ${instruction.label}`;

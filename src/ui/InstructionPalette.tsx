@@ -23,6 +23,7 @@ import {
   createJump,
   createLabel,
   createSwap,
+  createSwapWithNext,
   createIncrementValue,
   createDecrementValue,
   createWait,
@@ -50,6 +51,7 @@ const instructionTemplates = [
   { type: InstructionType.JUMP, label: 'JUMP', description: 'Jump to label' },
   { type: InstructionType.LABEL, label: 'LABEL', description: 'Define a label' },
   { type: InstructionType.SWAP, label: 'SWAP', description: 'Swap moco and choco value' },
+  { type: InstructionType.SWAP_WITH_NEXT, label: 'SWAP_WITH_NEXT', description: 'Swap current with next element' },
   { type: InstructionType.INCREMENT_VALUE, label: 'INCREMENT_VALUE', description: 'Increment value at pointer' },
   { type: InstructionType.DECREMENT_VALUE, label: 'DECREMENT_VALUE', description: 'Decrement value at pointer' },
   { type: InstructionType.WAIT, label: 'WAIT', description: 'Wait (no operation)' },
@@ -126,6 +128,9 @@ export function InstructionPalette() {
         break;
       case InstructionType.SWAP:
         instruction = createSwap(lineNumber);
+        break;
+      case InstructionType.SWAP_WITH_NEXT:
+        instruction = createSwapWithNext(pointer, lineNumber);
         break;
       case InstructionType.INCREMENT_VALUE:
         instruction = createIncrementValue(pointer, lineNumber);
@@ -334,6 +339,8 @@ function InstructionLine({ instruction, lineNumber }: { instruction: Instruction
         return `${inst.labelName}:`;
       case InstructionType.SWAP:
         return 'SWAP';
+      case InstructionType.SWAP_WITH_NEXT:
+        return 'SWAP_WITH_NEXT';
       case InstructionType.INCREMENT_VALUE:
         return 'INCREMENT_VALUE';
       case InstructionType.DECREMENT_VALUE:
