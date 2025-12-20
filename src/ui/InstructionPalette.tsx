@@ -29,8 +29,30 @@ import {
   createWait,
 } from '../engine/instructions/factory';
 
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+
+import type { DragEndEvent } from '@dnd-kit/core';
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+
+import { CSS } from '@dnd-kit/utilities';
+
+
 //const pointer: 'MOCO' | 'CHOCO' = 'MOCO';
 //const POINTERS: Array<'MOCO' | 'CHOCO'> = ['MOCO', 'CHOCO'];
+
+type DragItem =
+  | { source: 'PALETTE'; instructionType: InstructionType; pointer: 'MOCO' | 'CHOCO' }
+  | { source: 'PROGRAM'; instructionId: string };
 
 const instructionTemplates = [
   { type: InstructionType.MOVE_LEFT, label: 'MOVE_LEFT', description: 'Move pointer left (pointer -= 1)' },
@@ -57,8 +79,31 @@ const instructionTemplates = [
   { type: InstructionType.WAIT, label: 'WAIT', description: 'Wait (no operation)' },
 ];
 
+const globalInstructionTypes: InstructionType[] = [
+  InstructionType.SWAP,
+  InstructionType.IF_MEET,
+  InstructionType.JUMP,
+  InstructionType.LABEL,
+  InstructionType.WAIT,
+];
+
+const pointerInstructionTemplates = instructionTemplates.filter(
+  (t) => !globalInstructionTypes.includes(t.type)
+);
+
+const globalInstructionTemplates = instructionTemplates.filter(
+  (t) => globalInstructionTypes.includes(t.type)
+);
+
+
 export function InstructionPalette() {
   const { playerInstructions, addInstruction } = useGameStore();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+  
+  const { reorderInstructions, removeInstruction } = useGameStore();
+  
   
   // Generate unique label name
   const generateUniqueLabelName = (): string => {
@@ -147,67 +192,232 @@ export function InstructionPalette() {
     
     addInstruction(instruction);
   };
+  function DraggablePaletteItem({
+    template,
+    pointer,
+    isGlobal = false,
+  }: {
+    template: { type: InstructionType; label: string; description: string };
+    pointer: 'MOCO' | 'CHOCO';
+    isGlobal?: boolean;
+  }) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+      useSortable({
+        id: `palette-${pointer}-${template.type}`,
+        data: {
+          source: 'PALETTE',
+          instructionType: template.type,
+          pointer,
+        } satisfies DragItem,
+      });
+  
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+  
+    // Set button color based on pointer
+    const buttonClass = isGlobal
+      ? 'bg-purple-700 hover:bg-purple-600 text-white'
+      : pointer === 'MOCO'
+      ? 'bg-blue-700 hover:bg-blue-600 text-white'
+      : 'bg-red-700 hover:bg-red-600 text-white';
+
+    return (
+      <button
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        style={style}
+        onClick={() => handleAddInstruction(template.type, pointer === 'CHOCO' ? 'MOCO' : pointer)}
+        className={`${buttonClass} px-3 py-2 rounded text-sm transition-colors`}
+        title={template.description}
+      >
+        {template.label}
+      </button>
+    );
+  }
+  
+  
+  function SortableInstructionLine({
+    instruction,
+    index,
+  }: {
+    instruction: Instruction;
+    index: number;
+  }) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+      useSortable({
+        id: instruction.id,
+        data: {
+          source: 'PROGRAM',
+          instructionId: instruction.id,
+        } satisfies DragItem,
+      });
+  
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+  
+    return (
+      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        <InstructionLine
+          instruction={instruction}
+          lineNumber={index}
+        />
+      </div>
+    );
+  }
+  
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) {
+      // Dragged out → delete if from program
+      const data = active.data.current as DragItem;
+      if (data?.source === 'PROGRAM') {
+        removeInstruction(data.instructionId);
+      }
+      return;
+    }
+  
+    const activeData = active.data.current as DragItem;
+    const overData = over.data.current as DragItem | undefined;
+  
+    // Reorder inside program
+    if (
+      activeData?.source === 'PROGRAM' &&
+      overData?.source === 'PROGRAM'
+    ) {
+      const from = playerInstructions.findIndex(i => i.id === activeData.instructionId);
+      const to = playerInstructions.findIndex(i => i.id === overData.instructionId);
+      if (from !== to) reorderInstructions(from, to);
+      return;
+    }
+  
+    // Palette → Program
+    if (activeData?.source === 'PALETTE' && over.id === 'PROGRAM_DROPZONE') {
+      handleAddInstruction(activeData.instructionType, activeData.pointer);
+    }
+  };
+  
   
   return (
-    <div className="instruction-palette bg-gray-800 rounded-lg p-4">
-      <h3 className="text-white font-semibold mb-3">Instructions</h3>
-      <div className="grid grid-cols-2 gap-4">
-        {/* MOCO */}
-        <div className="bg-blue-900/40 rounded-lg p-3">
-          <h4 className="text-blue-300 font-semibold mb-2 text-center">
-            MOCO
-          </h4>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <div className="instruction-palette bg-gray-800 rounded-lg p-4">
+        <h3 className="text-white font-semibold mb-3">Instructions</h3>
+        <div className="grid grid-cols-2 gap-4">
+          {/* MOCO */}
+          <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
+            <h4 className="text-blue-300 font-semibold mb-2 text-center">
+              MOCO
+            </h4>
 
-          <div className="grid grid-cols-2 gap-2">
-            {instructionTemplates.map((template) => (
-              <button
-                key={`moco-${template.type}`}
-                onClick={() => handleAddInstruction(template.type, 'MOCO')}
-                className="bg-blue-700 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm transition-colors"
-                title={template.description}
-              >
-                {template.label}
-              </button>
-            ))}
+            <SortableContext
+              items={pointerInstructionTemplates.map(
+                (t) => `palette-MOCO-${t.type}`
+              )}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid grid-cols-2 gap-2">
+                {pointerInstructionTemplates.map((template) => (
+                  <DraggablePaletteItem
+                    key={`moco-${template.type}`}
+                    template={template}
+                    pointer="MOCO"
+                  />
+                ))}
+              </div>
+            </SortableContext>
+
           </div>
+
+          {/* CHOCO */}
+          <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
+            <h4 className="text-red-300 font-semibold mb-2 text-center">
+              CHOCO
+            </h4>
+
+            <SortableContext
+              items={pointerInstructionTemplates.map(
+                (t) => `palette-CHOCO-${t.type}`
+              )}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid grid-cols-2 gap-2">
+                {pointerInstructionTemplates.map((template) => (
+                  <DraggablePaletteItem
+                    key={`choco-${template.type}`}
+                    template={template}
+                    pointer="CHOCO"
+                  />
+                ))}
+              </div>
+            </SortableContext>
+
+          </div>
+          {/* Global Instructions */}
+          <div className="mt-4 flex justify-center">
+            <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
+              <h4 className="text-gray-300 font-semibold mb-2 text-center">
+                BOTH
+              </h4>
+
+              <SortableContext
+                items={globalInstructionTemplates.map(
+                  (t) => `palette-MOCO-${t.type}`
+                )}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid grid-cols-2 gap-2 justify-center">
+                  {globalInstructionTemplates.map((template) => (
+                    <DraggablePaletteItem
+                      key={`global-${template.type}`}
+                      template={template}
+                      pointer="MOCO"
+                      isGlobal
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+
+            </div>
+          </div>
+
         </div>
 
-        {/* CHOCO */}
-        <div className="bg-red-900/40 rounded-lg p-3">
-          <h4 className="text-red-300 font-semibold mb-2 text-center">
-            CHOCO
-          </h4>
+        
+        {/* Current program */}
+        <div className="mt-4">
+          <h4 className="text-gray-400 text-sm mb-2">Your Program</h4>
+          <SortableContext
+            items={playerInstructions.map((i) => i.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div
+              id="PROGRAM_DROPZONE"
+              className="space-y-1 max-h-48 overflow-y-auto"
+            >
+              {playerInstructions.length === 0 ? (
+                <div className="text-gray-500 text-sm italic">
+                  No instructions yet
+                </div>
+              ) : (
+                playerInstructions.map((inst, idx) => (
+                  <SortableInstructionLine
+                    key={inst.id}
+                    instruction={inst}
+                    index={idx}
+                  />
+                ))
+              )}
+            </div>
+          </SortableContext>
 
-          <div className="grid grid-cols-2 gap-2">
-            {instructionTemplates.map((template) => (
-              <button
-                key={`choco-${template.type}`}
-                onClick={() => handleAddInstruction(template.type, 'CHOCO')}
-                className="bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded text-sm transition-colors"
-                title={template.description}
-              >
-                {template.label}
-              </button>
-            ))}
-          </div>
+
         </div>
       </div>
-
-      
-      {/* Current program */}
-      <div className="mt-4">
-        <h4 className="text-gray-400 text-sm mb-2">Your Program</h4>
-        <div className="space-y-1 max-h-48 overflow-y-auto">
-          {playerInstructions.length === 0 ? (
-            <div className="text-gray-500 text-sm italic">No instructions yet</div>
-          ) : (
-            playerInstructions.map((inst, idx) => (
-              <InstructionLine key={inst.id} instruction={inst} lineNumber={idx} />
-            ))
-          )}
-        </div>
-      </div>
-    </div>
+    </DndContext>
   );
 }
 

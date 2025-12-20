@@ -44,9 +44,10 @@ export const useCurrentInstruction = (): Instruction | null => {
     return instructions[currentLine] as Instruction;
   });
 };
+const EMPTY_ARRAY: number[] = [];
 
 export const useArrayState = (): number[] =>
-  useGameStore((state) => state.executionState?.array || []);
+  useGameStore((state) => state.executionState?.array ?? EMPTY_ARRAY);
 
 export const useHand = (): number | null =>
   useGameStore((state) => state.executionState?.hand ?? null);

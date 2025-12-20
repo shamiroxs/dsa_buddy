@@ -15,6 +15,7 @@ interface PointerViewProps {
   cellWidth?: number;
   spacing?: number;
 }
+const xOffset = 230;
 
 export function PointerView({
   arrayLength,
@@ -23,7 +24,7 @@ export function PointerView({
   cellWidth = 60,
   spacing = 10,
 }: PointerViewProps) {
-  const width = arrayLength * (cellWidth + spacing) - spacing;
+  const width = arrayLength * (cellWidth + spacing) - spacing ;
 
   function renderPointer(
     index: number,
@@ -33,7 +34,7 @@ export function PointerView({
   ) {
     if (index < 0 || index >= arrayLength) return null;
 
-    const x = index * (cellWidth + spacing) + cellWidth / 2;
+    const x = xOffset + index * (cellWidth + spacing) + cellWidth / 2;
 
     return (
       <g>
@@ -73,7 +74,7 @@ export function PointerView({
     mocoPointer === chocoPointer;
 
   return (
-    <svg width={width} height={60} className="pointer-view">
+    <svg width={xOffset+width} height={60} className="pointer-view">
       {/* MOCO pointer */}
       {mocoPointer !== undefined &&
         renderPointer(

@@ -28,12 +28,12 @@ export function ArrayView({
 
   return (
     <svg
-      width={totalWidth}
-      height={cellHeight + 60}
+      width={totalWidth+4}
+      height={cellHeight + 70}
       className="array-view"
     >
       {array.map((value, index) => {
-        const x = index * (cellWidth + spacing);
+        const x = 2 + index * (cellWidth + spacing);
 
         const hasMoco = mocoPointer === index;
         const hasChoco = chocoPointer === index;

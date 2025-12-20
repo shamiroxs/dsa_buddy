@@ -29,6 +29,8 @@ interface GameState {
   
   // Engine instance
   engine: GameEngine;
+
+  reorderInstructions: (fromIndex: number, toIndex: number) => void;
   
   // Actions
   setChallenges: (challenges: Challenge[]) => void;
@@ -58,6 +60,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerInstructions: [],
   validationResult: null,
   engine: new GameEngine(),
+
+  reorderInstructions: (fromIndex, toIndex) => {
+    const { playerInstructions } = get();
+    const updated = [...playerInstructions];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    get().setPlayerInstructions(updated);
+  },  
   
   // Actions
   setChallenges: (challenges) => set({ challenges }),
