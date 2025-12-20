@@ -28,7 +28,7 @@ export function PointerView({
   function renderPointer(
     index: number,
     color: string,
-    label: string,
+    _label: string,
     yOffset: number
   ) {
     if (index < 0 || index >= arrayLength) return null;
