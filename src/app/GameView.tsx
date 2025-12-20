@@ -1,41 +1,59 @@
 /**
  * Main game view
  * Combines all UI components
+ * Supports dual pointers (MOCO / CHOCO)
  */
 
-import { useCurrentChallenge, usePlayerInstructions, useExecutionError } from '../orchestrator/selectors';
+import { motion } from 'framer-motion';
+
+import {
+  useCurrentChallenge,
+  usePlayerInstructions,
+  useExecutionError,
+  useArrayState,
+  useMocoPointer,
+  useChocoPointer,
+  useHand,
+  useCurrentLine,
+  useStepCount,
+  useCurrentInstruction,
+} from '../orchestrator/selectors';
+
 import { useGameStore } from '../orchestrator/store';
+
 import { ChallengePanel } from '../ui/ChallengePanel';
 import { InstructionPalette } from '../ui/InstructionPalette';
 import { ControlBar } from '../ui/ControlBar';
+
 import { ArrayView } from '../renderer/ArrayView';
 import { PointerView } from '../renderer/PointerView';
 import { ExecutionTimeline } from '../renderer/ExecutionTimeline';
-import { useArrayState, usePointer, useHand, useCurrentLine, useStepCount, useCurrentInstruction } from '../orchestrator/selectors';
-import { motion } from 'framer-motion';
 
 export function GameView() {
   const challenge = useCurrentChallenge();
   const { setCurrentChallenge } = useGameStore();
-  const playerInstructions = usePlayerInstructions();
+
+  const instructions = usePlayerInstructions();
+  const executionError = useExecutionError();
+
   const array = useArrayState();
-  const pointer = usePointer();
+  const mocoPointer = useMocoPointer();
+  const chocoPointer = useChocoPointer();
+
   const hand = useHand();
   const currentLine = useCurrentLine();
   const stepCount = useStepCount();
   const currentInstruction = useCurrentInstruction();
-  const executionError = useExecutionError();
-  
-  if (!challenge) {
-    return null;
-  }
-  
-  const totalLines = playerInstructions.length || 0;
-  
+
+  if (!challenge) return null;
+
+  const totalLines = instructions.length;
+
   return (
     <div className="min-h-screen bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+
+        {/* ================= HEADER ================= */}
         <div className="mb-4 flex items-center justify-between">
           <div>
             <button
@@ -44,57 +62,77 @@ export function GameView() {
             >
               ← Back to Challenges
             </button>
-            <h1 className="text-2xl font-bold text-white">{challenge.title}</h1>
+            <h1 className="text-2xl font-bold text-white">
+              {challenge.title}
+            </h1>
           </div>
         </div>
-        
-        {/* Error Display */}
+
+        {/* ================= ERROR ================= */}
         {executionError && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-4 bg-red-900/30 border border-red-500 rounded-lg p-3"
           >
-            <div className="text-red-300 font-semibold">Execution Error</div>
-            <div className="text-red-200 text-sm mt-1">{executionError}</div>
+            <div className="text-red-300 font-semibold">
+              Execution Error
+            </div>
+            <div className="text-red-200 text-sm mt-1">
+              {executionError}
+            </div>
           </motion.div>
         )}
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Left Column: Challenge Info */}
+
+          {/* ================= LEFT ================= */}
           <div className="lg:col-span-1">
             <ChallengePanel />
           </div>
-          
-          {/* Middle Column: Visualization */}
+
+          {/* ================= CENTER ================= */}
           <div className="lg:col-span-1">
             <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-4">Visualization</h3>
-              
-              {/* Hand display */}
+              <h3 className="text-white font-semibold mb-4">
+                Visualization
+              </h3>
+
+              {/* Hand */}
               {hand !== null && (
                 <div className="mb-4 bg-blue-900/30 border border-blue-500 rounded p-3">
-                  <div className="text-xs text-blue-300 mb-1">Hand</div>
-                  <div className="text-white font-mono text-lg font-bold">{hand}</div>
+                  <div className="text-xs text-blue-300 mb-1">
+                    Hand
+                  </div>
+                  <div className="text-white font-mono text-lg font-bold">
+                    {hand}
+                  </div>
                 </div>
               )}
-              
-              {/* Pointer */}
+
+              {/* Pointers */}
               {array.length > 0 && (
                 <div className="mb-4">
                   <PointerView
-                    pointer={pointer}
                     arrayLength={array.length}
+                    mocoPointer={mocoPointer}
+                    chocoPointer={chocoPointer}
                   />
                 </div>
               )}
-              
+
+
               {/* Array */}
               <div className="mb-4 flex justify-center">
-                <ArrayView array={array} highlightedIndices={[pointer]} />
+              <ArrayView
+                array={array}
+                mocoPointer={mocoPointer}
+                chocoPointer={chocoPointer}
+              />
+
               </div>
-              
-              {/* Execution Timeline */}
+
+              {/* Timeline */}
               <ExecutionTimeline
                 currentLine={currentLine}
                 totalLines={totalLines}
@@ -103,17 +141,17 @@ export function GameView() {
               />
             </div>
           </div>
-          
-          {/* Right Column: Instructions & Controls */}
+
+          {/* ================= RIGHT ================= */}
           <div className="lg:col-span-1">
             <div className="space-y-4">
               <InstructionPalette />
               <ControlBar />
             </div>
           </div>
+
         </div>
       </div>
     </div>
   );
 }
-

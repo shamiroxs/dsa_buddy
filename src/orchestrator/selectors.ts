@@ -5,48 +5,62 @@
 import { useGameStore } from './store';
 import type { Instruction } from '../engine/instructions/types';
 
-export const useCurrentChallenge = () => useGameStore((state) => state.currentChallenge);
+/* ===================== CORE ===================== */
 
-export const useChallenges = () => useGameStore((state) => state.challenges);
+export const useCurrentChallenge = () =>
+  useGameStore((state) => state.currentChallenge);
 
-export const useExecutionState = () => useGameStore((state) => state.executionState);
+export const useChallenges = () =>
+  useGameStore((state) => state.challenges);
 
-export const usePlayerInstructions = () => useGameStore((state) => state.playerInstructions);
+export const useExecutionState = () =>
+  useGameStore((state) => state.executionState);
 
-export const useIsExecuting = () => useGameStore((state) => state.isExecuting);
+export const usePlayerInstructions = () =>
+  useGameStore((state) => state.playerInstructions);
 
-export const useIsPaused = () => useGameStore((state) => state.isPaused);
+export const useIsExecuting = () =>
+  useGameStore((state) => state.isExecuting);
 
-export const useExecutionError = () => useGameStore((state) => state.executionError);
+export const useIsPaused = () =>
+  useGameStore((state) => state.isPaused);
 
-export const useValidationResult = () => useGameStore((state) => state.validationResult);
+export const useExecutionError = () =>
+  useGameStore((state) => state.executionError);
+
+export const useValidationResult = () =>
+  useGameStore((state) => state.validationResult);
+
+/* ===================== EXECUTION ===================== */
 
 export const useCurrentInstruction = (): Instruction | null => {
   return useGameStore((state) => {
-    if (!state.executionState) return null;
-    const { currentLine, instructions } = state.executionState;
+    const exec = state.executionState;
+    if (!exec) return null;
+
+    const { currentLine, instructions } = exec;
     if (currentLine >= instructions.length) return null;
+
     return instructions[currentLine] as Instruction;
   });
 };
 
-export const useArrayState = (): number[] => {
-  return useGameStore((state) => state.executionState?.array || []);
-};
+export const useArrayState = (): number[] =>
+  useGameStore((state) => state.executionState?.array || []);
 
-export const usePointer = (): number => {
-  return useGameStore((state) => state.executionState?.pointer ?? 0);
-};
+export const useHand = (): number | null =>
+  useGameStore((state) => state.executionState?.hand ?? null);
 
-export const useHand = (): number | null => {
-  return useGameStore((state) => state.executionState?.hand ?? null);
-};
+export const useStepCount = (): number =>
+  useGameStore((state) => state.executionState?.stepCount ?? 0);
 
-export const useStepCount = (): number => {
-  return useGameStore((state) => state.executionState?.stepCount || 0);
-};
+export const useCurrentLine = (): number =>
+  useGameStore((state) => state.executionState?.currentLine ?? 0);
 
-export const useCurrentLine = (): number => {
-  return useGameStore((state) => state.executionState?.currentLine || 0);
-};
+/* ===================== POINTERS ===================== */
 
+export const useMocoPointer = (): number =>
+  useGameStore((state) => state.executionState?.mocoPointer ?? 0);
+
+export const useChocoPointer = (): number =>
+  useGameStore((state) => state.executionState?.chocoPointer ?? 0);

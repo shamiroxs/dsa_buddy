@@ -3,23 +3,34 @@
  * Intuitive, game-like instruction set for array manipulation
  */
 
+export type PointerTarget = 'MOCO' | 'CHOCO';
+
 export const InstructionType = {
   MOVE_LEFT: 'MOVE_LEFT',
   MOVE_RIGHT: 'MOVE_RIGHT',
+  MOVE_TO_END: 'MOVE_TO_END',
+
   SET_POINTER: 'SET_POINTER',
   PICK: 'PICK',
   PUT: 'PUT',
+
   IF_GREATER: 'IF_GREATER',
   IF_LESS: 'IF_LESS',
   IF_EQUAL: 'IF_EQUAL',
   IF_END: 'IF_END',
+  IF_MEET: 'IF_MEET',
+
   JUMP: 'JUMP',
   LABEL: 'LABEL',
-  SWAP_WITH_NEXT: 'SWAP_WITH_NEXT',
+
+  SWAP: 'SWAP',
+
   INCREMENT_VALUE: 'INCREMENT_VALUE',
   DECREMENT_VALUE: 'DECREMENT_VALUE',
+
   WAIT: 'WAIT',
 } as const;
+
 
 export type InstructionType = typeof InstructionType[keyof typeof InstructionType];
 
@@ -27,47 +38,67 @@ export interface BaseInstruction {
   id: string;
   type: InstructionType;
   lineNumber: number;
+  target?: PointerTarget;
 }
 
 export interface MoveLeftInstruction extends BaseInstruction {
   type: 'MOVE_LEFT';
+  target: PointerTarget;
 }
 
 export interface MoveRightInstruction extends BaseInstruction {
   type: 'MOVE_RIGHT';
+  target: PointerTarget;
+}
+
+export interface MoveToEndInstruction extends BaseInstruction {
+  type: 'MOVE_TO_END';
+  target: PointerTarget;
 }
 
 export interface SetPointerInstruction extends BaseInstruction {
   type: 'SET_POINTER';
   index: number; // pointer = index
+  target: PointerTarget;
 }
 
 export interface PickInstruction extends BaseInstruction {
   type: 'PICK'; // hand = array[pointer]
+  target: PointerTarget;
 }
 
 export interface PutInstruction extends BaseInstruction {
   type: 'PUT'; // array[pointer] = hand
+  target: PointerTarget;
 }
 
 export interface IfGreaterInstruction extends BaseInstruction {
   type: 'IF_GREATER';
   label: string; // jump if hand > array[pointer]
+  target: PointerTarget;
 }
 
 export interface IfLessInstruction extends BaseInstruction {
   type: 'IF_LESS';
   label: string; // jump if hand < array[pointer]
+  target: PointerTarget;
 }
 
 export interface IfEqualInstruction extends BaseInstruction {
   type: 'IF_EQUAL';
   label: string; // jump if hand === array[pointer]
+  target: PointerTarget;
 }
 
 export interface IfEndInstruction extends BaseInstruction {
   type: 'IF_END';
   label: string; // jump if pointer === array.length - 1
+  target: PointerTarget;
+}
+
+export interface IfMeetInstruction extends BaseInstruction {
+  type: 'IF_MEET';
+  label: string; // jump if moco === choco
 }
 
 export interface JumpInstruction extends BaseInstruction {
@@ -80,16 +111,18 @@ export interface LabelInstruction extends BaseInstruction {
   labelName: string;
 }
 
-export interface SwapWithNextInstruction extends BaseInstruction {
-  type: 'SWAP_WITH_NEXT'; // swap array[pointer] with array[pointer+1]
+export interface SwapInstruction extends BaseInstruction {
+  type: 'SWAP'; // swap array[moco] <-> array[choco]
 }
 
 export interface IncrementValueInstruction extends BaseInstruction {
   type: 'INCREMENT_VALUE'; // array[pointer]++
+  target: PointerTarget;
 }
 
 export interface DecrementValueInstruction extends BaseInstruction {
   type: 'DECREMENT_VALUE'; // array[pointer]--
+  target: PointerTarget;
 }
 
 export interface WaitInstruction extends BaseInstruction {
@@ -99,6 +132,7 @@ export interface WaitInstruction extends BaseInstruction {
 export type Instruction =
   | MoveLeftInstruction
   | MoveRightInstruction
+  | MoveToEndInstruction
   | SetPointerInstruction
   | PickInstruction
   | PutInstruction
@@ -106,11 +140,12 @@ export type Instruction =
   | IfLessInstruction
   | IfEqualInstruction
   | IfEndInstruction
+  | IfMeetInstruction
   | JumpInstruction
   | LabelInstruction
-  | SwapWithNextInstruction
+  | SwapInstruction
   | IncrementValueInstruction
   | DecrementValueInstruction
   | WaitInstruction;
-  
+
 

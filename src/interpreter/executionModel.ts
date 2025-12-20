@@ -8,7 +8,8 @@ export interface ExecutionState {
   array: number[];
   
   // Single pointer (index position in array)
-  pointer: number;
+  mocoPointer: number;
+  chocoPointer: number;
   
   // Hand register (temporary storage - like holding a value)
   hand: number | null;
@@ -41,7 +42,8 @@ export function createInitialState(
   
   return {
     array: [...initialArray],
-    pointer: 0,
+    mocoPointer: 0,
+    chocoPointer: 0,
     hand: null,
     currentLine: 0,
     stepCount: 0,
@@ -54,7 +56,8 @@ export function createInitialState(
 export function cloneState(state: ExecutionState): ExecutionState {
   return {
     array: [...state.array],
-    pointer: state.pointer,
+    mocoPointer: state.mocoPointer,
+    chocoPointer: state.chocoPointer,
     hand: state.hand,
     currentLine: state.currentLine,
     stepCount: state.stepCount,

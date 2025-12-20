@@ -16,6 +16,23 @@ export interface ExecutionResult {
   completed: boolean;
 }
 
+function getPointer(state: ExecutionState, target: 'MOCO' | 'CHOCO'): number {
+  return target === 'MOCO' ? state.mocoPointer : state.chocoPointer;
+}
+
+function setPointer(
+  state: ExecutionState,
+  target: 'MOCO' | 'CHOCO',
+  value: number
+): void {
+  if (target === 'MOCO') {
+    state.mocoPointer = value;
+  } else {
+    state.chocoPointer = value;
+  }
+}
+
+
 /**
  * Execute a single instruction
  */
@@ -37,8 +54,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
   
   try {
     switch (instruction.type) {
-      case InstructionType.MOVE_LEFT:
-        if (newState.pointer <= 0) {
+      case InstructionType.MOVE_LEFT: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr <= 0) {
           return {
             state: newState,
             success: false,
@@ -46,12 +65,17 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.pointer--;
+      
+        setPointer(newState, instruction.target, ptr - 1);
         newState.currentLine++;
         break;
+      }
+      
         
-      case InstructionType.MOVE_RIGHT:
-        if (newState.pointer >= newState.array.length - 1) {
+      case InstructionType.MOVE_RIGHT: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr >= newState.array.length - 1) {
           return {
             state: newState,
             success: false,
@@ -59,9 +83,21 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.pointer++;
+      
+        setPointer(newState, instruction.target, ptr + 1);
         newState.currentLine++;
         break;
+      }
+      
+      case InstructionType.MOVE_TO_END: {
+        setPointer(
+          newState,
+          instruction.target,
+          newState.array.length - 1
+        );
+        newState.currentLine++;
+        break;
+      }   
         
       case InstructionType.SET_POINTER:
         if (instruction.index < 0 || instruction.index >= newState.array.length) {
@@ -72,12 +108,14 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.pointer = instruction.index;
+        setPointer(newState, instruction.target, instruction.index);
         newState.currentLine++;
         break;
         
-      case InstructionType.PICK:
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+      case InstructionType.PICK: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
           return {
             state: newState,
             success: false,
@@ -85,149 +123,203 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.hand = newState.array[newState.pointer];
+      
+        newState.hand = newState.array[ptr];
         newState.currentLine++;
-        break;
-        
-      case InstructionType.PUT:
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            completed: false,
-          };
-        }
-        if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            completed: false,
-          };
-        }
-        newState.array[newState.pointer] = newState.hand;
-        newState.currentLine++;
-        break;
-        
-      case InstructionType.IF_GREATER:
-        if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            completed: false,
-          };
-        }
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            completed: false,
-          };
-        }
-        const targetLine = newState.labelMap[instruction.label];
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            completed: false,
-          };
-        }
-        if (newState.hand > newState.array[newState.pointer]) {
-          newState.currentLine = targetLine;
-        } else {
-          newState.currentLine++;
-        }
-        break;
-        
-      case InstructionType.IF_LESS:
-        if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            completed: false,
-          };
-        }
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            completed: false,
-          };
-        }
-        const targetLineLess = newState.labelMap[instruction.label];
-        if (targetLineLess === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            completed: false,
-          };
-        }
-        if (newState.hand < newState.array[newState.pointer]) {
-          newState.currentLine = targetLineLess;
-        } else {
-          newState.currentLine++;
-        }
-        break;
-        
-      case InstructionType.IF_EQUAL:
-        if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            completed: false,
-          };
-        }
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            completed: false,
-          };
-        }
-        const targetLineEqual = newState.labelMap[instruction.label];
-        if (targetLineEqual === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            completed: false,
-          };
-        }
-        if (newState.hand === newState.array[newState.pointer]) {
-          newState.currentLine = targetLineEqual;
-        } else {
-          newState.currentLine++;
-        }
-        break;
-      case InstructionType.IF_END: {
-        const targetLine = newState.labelMap[instruction.label];
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            completed: false,
-          };
-        }
-    
-        if (newState.pointer === newState.array.length - 1) {
-          newState.currentLine = targetLine;
-        } else {
-          newState.currentLine++;
-        }
         break;
       }
         
         
+      case InstructionType.PUT: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+      
+        if (newState.hand === null) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Hand is empty (use PICK first)',
+            completed: false,
+          };
+        }
+      
+        newState.array[ptr] = newState.hand;
+        newState.currentLine++;
+        break;
+      }
+      
+        
+      case InstructionType.IF_GREATER: {
+        if (newState.hand === null) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Hand is empty (use PICK first)',
+            completed: false,
+          };
+        }
+      
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+      
+        const targetLine = newState.labelMap[instruction.label];
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+      
+        if (newState.hand > newState.array[ptr]) {
+          newState.currentLine = targetLine;
+        } else {
+          newState.currentLine++;
+        }
+      
+        break;
+      }
+        
+      case InstructionType.IF_LESS: {
+        if (newState.hand === null) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Hand is empty (use PICK first)',
+            completed: false,
+          };
+        }
+      
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+      
+        const targetLine = newState.labelMap[instruction.label];
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+      
+        if (newState.hand < newState.array[ptr]) {
+          newState.currentLine = targetLine;
+        } else {
+          newState.currentLine++;
+        }
+      
+        break;
+      }
+      
+      case InstructionType.IF_EQUAL: {
+        if (newState.hand === null) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Hand is empty (use PICK first)',
+            completed: false,
+          };
+        }
+      
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+      
+        const targetLine = newState.labelMap[instruction.label];
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+      
+        if (newState.hand === newState.array[ptr]) {
+          newState.currentLine = targetLine;
+        } else {
+          newState.currentLine++;
+        }
+      
+        break;
+      }     
+           
+      case InstructionType.IF_END: {
+        const ptr = getPointer(newState, instruction.target);
+        const targetLine = newState.labelMap[instruction.label];
+      
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+      
+        if (ptr === newState.array.length - 1) {
+          newState.currentLine = targetLine;
+        } else {
+          newState.currentLine++;
+        }
+      
+        break;
+      }     
+        
+      case InstructionType.IF_MEET: {
+        const targetLine = newState.labelMap[instruction.label];
+      
+        if (targetLine === undefined) {
+          return {
+            state: newState,
+            success: false,
+            error: `Label "${instruction.label}" not found`,
+            completed: false,
+          };
+        }
+      
+        if (newState.mocoPointer === newState.chocoPointer) {
+          newState.currentLine = targetLine;
+        } else {
+          newState.currentLine++;
+        }
+      
+        break;
+      }
+      
       case InstructionType.JUMP:
         const jumpTarget = newState.labelMap[instruction.label];
         if (jumpTarget === undefined) {
@@ -246,23 +338,14 @@ export function executeStep(state: ExecutionState): ExecutionResult {
         newState.currentLine++;
         break;
         
-      case InstructionType.SWAP_WITH_NEXT:
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length - 1) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Cannot swap: pointer at or beyond last element',
-            completed: false,
-          };
-        }
-        const temp = newState.array[newState.pointer];
-        newState.array[newState.pointer] = newState.array[newState.pointer + 1];
-        newState.array[newState.pointer + 1] = temp;
-        newState.currentLine++;
-        break;
-        
-      case InstructionType.INCREMENT_VALUE:
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+      case InstructionType.SWAP: {
+        const moco = newState.mocoPointer;
+        const choco = newState.chocoPointer;
+      
+        if (
+          moco < 0 || moco >= newState.array.length ||
+          choco < 0 || choco >= newState.array.length
+        ) {
           return {
             state: newState,
             success: false,
@@ -270,12 +353,19 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.array[newState.pointer]++;
+      
+        const temp = newState.array[moco];
+        newState.array[moco] = newState.array[choco];
+        newState.array[choco] = temp;
+      
         newState.currentLine++;
         break;
+      }        
         
-      case InstructionType.DECREMENT_VALUE:
-        if (newState.pointer < 0 || newState.pointer >= newState.array.length) {
+      case InstructionType.INCREMENT_VALUE: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
           return {
             state: newState,
             success: false,
@@ -283,9 +373,30 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             completed: false,
           };
         }
-        newState.array[newState.pointer]--;
+      
+        newState.array[ptr]++;
         newState.currentLine++;
         break;
+      }
+      
+        
+      case InstructionType.DECREMENT_VALUE: {
+        const ptr = getPointer(newState, instruction.target);
+      
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return {
+            state: newState,
+            success: false,
+            error: 'Pointer out of bounds',
+            completed: false,
+          };
+        }
+      
+        newState.array[ptr]--;
+        newState.currentLine++;
+        break;
+      }
+      
         
       case InstructionType.WAIT:
         // Consumes a step but does nothing

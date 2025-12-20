@@ -1,64 +1,96 @@
 /**
  * SVG-based pointer visualization
- * Shows single pointer as arrow pointing to array index
+ * Shows MOCO (blue) and CHOCO (red) pointers
+ * Pure rendering, no business logic
  */
 
 import { motion } from 'framer-motion';
 
 interface PointerViewProps {
-  pointer: number;
   arrayLength: number;
+
+  mocoPointer?: number;
+  chocoPointer?: number;
+
   cellWidth?: number;
   spacing?: number;
 }
 
 export function PointerView({
-  pointer,
   arrayLength,
+  mocoPointer,
+  chocoPointer,
   cellWidth = 60,
   spacing = 10,
 }: PointerViewProps) {
-  if (pointer < 0 || pointer >= arrayLength) {
-    return null;
-  }
-  
-  const x = pointer * (cellWidth + spacing) + cellWidth / 2;
-  const color = '#3b82f6'; // blue
-  
-  return (
-    <svg
-      width={arrayLength * (cellWidth + spacing) - spacing}
-      height={50}
-      className="pointer-view"
-    >
+  const width = arrayLength * (cellWidth + spacing) - spacing;
+
+  function renderPointer(
+    index: number,
+    color: string,
+    label: string,
+    yOffset: number
+  ) {
+    if (index < 0 || index >= arrayLength) return null;
+
+    const x = index * (cellWidth + spacing) + cellWidth / 2;
+
+    return (
       <g>
-        {/* Arrow pointing down */}
+        {/* Arrow */}
         <motion.path
-          d={`M ${x} 0 L ${x - 8} 20 M ${x} 0 L ${x + 8} 20`}
+          d={`M ${x} ${yOffset} L ${x - 8} ${yOffset + 20} M ${x} ${yOffset} L ${x + 8} ${yOffset + 20}`}
           stroke={color}
           strokeWidth={3}
           fill="none"
           strokeLinecap="round"
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
         />
-        
-        {/* Pointer label */}
+
+        {/* Label */}
         <motion.text
           x={x}
-          y={-5}
+          y={yOffset - 6}
           textAnchor="middle"
           fill={color}
-          fontSize="12"
+          fontSize="11"
           fontWeight="600"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
         >
-          pointer
+          {}
         </motion.text>
       </g>
+    );
+  }
+
+  const sameIndex =
+    mocoPointer !== undefined &&
+    chocoPointer !== undefined &&
+    mocoPointer === chocoPointer;
+
+  return (
+    <svg width={width} height={60} className="pointer-view">
+      {/* MOCO pointer */}
+      {mocoPointer !== undefined &&
+        renderPointer(
+          mocoPointer,
+          '#3b82f6', // blue
+          'MOCO',
+          sameIndex ? 0 : 10
+        )}
+
+      {/* CHOCO pointer */}
+      {chocoPointer !== undefined &&
+        renderPointer(
+          chocoPointer,
+          '#dc2626', // red
+          'CHOCO',
+          sameIndex ? 26 : 10
+        )}
     </svg>
   );
 }

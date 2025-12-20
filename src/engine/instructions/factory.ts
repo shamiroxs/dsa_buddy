@@ -3,83 +3,150 @@
  */
 
 
-import type { Instruction } from './types';
+import type { Instruction, PointerTarget } from './types';
 import { InstructionType } from './types';
 
-export function createMoveLeft(lineNumber: number): Instruction {
+export function createMoveLeft(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
   return {
     id: `moveleft-${Date.now()}-${Math.random()}`,
     type: InstructionType.MOVE_LEFT,
+    target,
     lineNumber,
   };
 }
 
-export function createMoveRight(lineNumber: number): Instruction {
+export function createMoveRight(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
   return {
     id: `moveright-${Date.now()}-${Math.random()}`,
     type: InstructionType.MOVE_RIGHT,
+    target,
     lineNumber,
   };
 }
 
-export function createSetPointer(index: number, lineNumber: number): Instruction {
+export function createMoveToEnd(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
+  return {
+    id: `movetoend-${Date.now()}-${Math.random()}`,
+    type: InstructionType.MOVE_TO_END,
+    target,
+    lineNumber,
+  };
+}
+
+export function createSetPointer(
+  target: PointerTarget,
+  index: number,
+  lineNumber: number
+): Instruction {
   return {
     id: `setptr-${Date.now()}-${Math.random()}`,
     type: InstructionType.SET_POINTER,
-    lineNumber,
+    target,
     index,
+    lineNumber,
   };
 }
 
-export function createPick(lineNumber: number): Instruction {
+
+export function createPick(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
   return {
     id: `pick-${Date.now()}-${Math.random()}`,
     type: InstructionType.PICK,
+    target,
     lineNumber,
   };
 }
 
-export function createPut(lineNumber: number): Instruction {
+export function createPut(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
   return {
     id: `put-${Date.now()}-${Math.random()}`,
     type: InstructionType.PUT,
+    target,
     lineNumber,
   };
 }
 
-export function createIfGreater(label: string, lineNumber: number): Instruction {
+
+export function createIfGreater(
+  target: PointerTarget,
+  label: string,
+  lineNumber: number
+): Instruction {
   return {
     id: `ifgreater-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_GREATER,
-    lineNumber,
+    target,
     label,
+    lineNumber,
   };
 }
 
-export function createIfLess(label: string, lineNumber: number): Instruction {
+export function createIfLess(
+  target: PointerTarget,
+  label: string,
+  lineNumber: number
+): Instruction {
   return {
     id: `ifless-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_LESS,
-    lineNumber,
+    target,
     label,
+    lineNumber,
   };
 }
 
-export function createIfEqual(label: string, lineNumber: number): Instruction {
+export function createIfEqual(
+  target: PointerTarget,
+  label: string,
+  lineNumber: number
+): Instruction {
   return {
     id: `ifequal-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_EQUAL,
-    lineNumber,
+    target,
     label,
+    lineNumber,
   };
 }
 
-export function createIfEnd(label: string, lineNumber: number): Instruction {
+export function createIfEnd(
+  target: PointerTarget,
+  label: string,
+  lineNumber: number
+): Instruction {
   return {
     id: `ifend-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_END,
-    lineNumber,
+    target,
     label,
+    lineNumber,
+  };
+}
+
+export function createIfMeet(
+  label: string,
+  lineNumber: number
+): Instruction {
+  return {
+    id: `ifmeet-${Date.now()}-${Math.random()}`,
+    type: InstructionType.IF_MEET,
+    label,
+    lineNumber,
   };
 }
 
@@ -101,29 +168,39 @@ export function createLabel(labelName: string, lineNumber: number): Instruction 
   };
 }
 
-export function createSwapWithNext(lineNumber: number): Instruction {
+export function createSwap(lineNumber: number): Instruction {
   return {
     id: `swap-${Date.now()}-${Math.random()}`,
-    type: InstructionType.SWAP_WITH_NEXT,
+    type: InstructionType.SWAP,
     lineNumber,
   };
 }
 
-export function createIncrementValue(lineNumber: number): Instruction {
+
+export function createIncrementValue(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
   return {
     id: `incval-${Date.now()}-${Math.random()}`,
     type: InstructionType.INCREMENT_VALUE,
+    target,
     lineNumber,
   };
 }
 
-export function createDecrementValue(lineNumber: number): Instruction {
+export function createDecrementValue(
+  target: PointerTarget,
+  lineNumber: number
+): Instruction {
   return {
     id: `decval-${Date.now()}-${Math.random()}`,
     type: InstructionType.DECREMENT_VALUE,
+    target,
     lineNumber,
   };
 }
+
 
 export function createWait(lineNumber: number): Instruction {
   return {
