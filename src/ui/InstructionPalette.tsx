@@ -365,7 +365,7 @@ export function InstructionPalette() {
           relative
           max-w-sm
           flex items-center justify-between
-          px-5 py-1
+          px-5 py-0.5
           rounded-lg
           border
           shadow-md
@@ -490,7 +490,7 @@ export function InstructionPalette() {
   
     return (
       <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center">
           {isEditing && hasEditableParameter ? (
             <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm w-full max-w-sm">
               <span className="text-gray-400 w-6">{index + 1}</span>
