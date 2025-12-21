@@ -30,7 +30,7 @@ export function ArrayView({
     <svg
       width={totalWidth+4}
       height={cellHeight + 70}
-      className="array-view"
+      className="array-view block mx-auto"
     >
       {array.map((value, index) => {
         const x = 2 + index * (cellWidth + spacing);

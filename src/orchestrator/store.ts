@@ -31,6 +31,8 @@ interface GameState {
   engine: GameEngine;
 
   reorderInstructions: (fromIndex: number, toIndex: number) => void;
+
+  clearPlayerInstructions: () => void;
   
   // Actions
   setChallenges: (challenges: Challenge[]) => void;
@@ -68,6 +70,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     updated.splice(toIndex, 0, moved);
     get().setPlayerInstructions(updated);
   },  
+
+  clearPlayerInstructions: () => {
+    get().setPlayerInstructions([]);
+  },
   
   // Actions
   setChallenges: (challenges) => set({ challenges }),
@@ -76,7 +82,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { challenges } = get();
     const challenge = challenges.find((c) => c.id === challengeId);
     if (challenge) {
-      set({ currentChallenge: challenge });
+      set({ currentChallenge: challenge, playerInstructions: [] });
       // Initialize will be called separately
     }
   },

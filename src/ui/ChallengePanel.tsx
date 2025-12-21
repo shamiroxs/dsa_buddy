@@ -46,21 +46,7 @@ export function ChallengePanel() {
         <h3 className="text-gray-400 text-sm mb-2">Initial Array</h3>
         <ArrayView array={challenge.initialArray} />
       </div>
-      
-      {/* Target Array */}
-      <div className="mb-4">
-        <h3 className="text-gray-400 text-sm mb-2">Target Array</h3>
-        <ArrayView array={challenge.targetArray} />
-      </div>
-      
-      {/* Current Array */}
-      {currentArray.length > 0 && (
-        <div className="mb-4">
-          <h3 className="text-gray-400 text-sm mb-2">Current Array</h3>
-          <ArrayView array={currentArray} />
-        </div>
-      )}
-      
+          
       {/* Validation Result */}
       {validationResult && (
         <motion.div

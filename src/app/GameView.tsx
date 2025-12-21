@@ -139,6 +139,7 @@ export function GameView() {
                 stepCount={stepCount}
                 currentInstruction={currentInstruction}
               />
+            <ControlBar />
             </div>
           </div>
 
@@ -146,7 +147,6 @@ export function GameView() {
           <div className="lg:col-span-1">
             <div className="space-y-4">
               <InstructionPalette />
-              <ControlBar />
             </div>
           </div>
 
