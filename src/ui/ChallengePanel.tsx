@@ -3,15 +3,14 @@
  * Shows challenge description, initial/target arrays, and validation results
  */
 
-import { useCurrentChallenge, useValidationResult, useArrayState } from '../orchestrator/selectors';
+import { useCurrentChallenge, useValidationResult } from '../orchestrator/selectors';
 import { ArrayView } from '../renderer/ArrayView';
 import { motion } from 'framer-motion';
 
 export function ChallengePanel() {
   const challenge = useCurrentChallenge();
   const validationResult = useValidationResult();
-  const currentArray = useArrayState();
-  
+ 
   if (!challenge) {
     return (
       <div className="challenge-panel bg-gray-800 rounded-lg p-4">
