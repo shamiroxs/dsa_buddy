@@ -116,13 +116,14 @@ const OWNER_STYLE_MAP = {
 
 
 export function InstructionPalette() {
-  const { playerInstructions, addInstruction, clearPlayerInstructions } = useGameStore();
+  const { playerInstructions, addInstruction, clearPlayerInstructions, executionState } = useGameStore();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
   
   const { reorderInstructions, removeInstruction } = useGameStore();
   
+  const currentLine = executionState?.currentLine ?? null;
   
   // Generate unique label name
   const generateUniqueLabelName = (): string => {
@@ -221,9 +222,10 @@ export function InstructionPalette() {
     return (
       <div
         ref={setNodeRef}
-        className={`space-y-1 flex-1 overflow-y-auto rounded p-1 ${
+        className={`space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent ${
           isOver ? 'ring-2 ring-green-400' : ''
         }`}
+        style={{ direction: 'rtl' }}
       >
         {children}
       </div>
@@ -398,9 +400,11 @@ export function InstructionPalette() {
   function SortableInstructionLine({
     instruction,
     index,
+    isActive,
   }: {
     instruction: Instruction;
     index: number;
+    isActive: boolean;
   }) {
     const { updateInstruction, playerInstructions } = useGameStore();
   
@@ -489,49 +493,79 @@ export function InstructionPalette() {
     };
   
     return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="flex justify-center"
+      >
         <div className="flex flex-col items-center">
-          {isEditing && hasEditableParameter ? (
-            <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm w-full max-w-sm">
-              <span className="text-gray-400 w-6">{index + 1}</span>
-              <input
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSave();
-                  if (e.key === 'Escape') handleCancel();
-                }}
-                autoFocus
-                className="flex-1 bg-gray-600 text-white px-2 py-1 rounded font-mono"
+    
+          {/* Instruction row (arrow is positioned relative to THIS only) */}
+          <div className="relative flex justify-center">
+            {isActive && (
+              <span
+                className="
+                  absolute
+                  -left-2
+                  -translate-x-full
+                  top-1/2
+                  -translate-y-1/2
+                  text-green-400
+                  text-lg
+                  select-none
+                "
+              >
+                ▶
+              </span>
+            )}
+    
+            {isEditing && hasEditableParameter ? (
+              <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm w-full max-w-sm">
+                <span className="text-gray-400 w-6">{index + 1}</span>
+                <input
+                  type="text"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSave();
+                    if (e.key === 'Escape') handleCancel();
+                  }}
+                  autoFocus
+                  className="flex-1 bg-gray-600 text-white px-2 py-1 rounded font-mono"
+                />
+                <button
+                  onClick={handleSave}
+                  className="text-green-400 hover:text-green-300 text-xs"
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="text-gray-400 hover:text-gray-300 text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <FlowchartBlock
+                instruction={instruction}
+                lineNumber={index}
+                onEdit={hasEditableParameter ? handleEdit : undefined}
               />
-              <button
-                onClick={handleSave}
-                className="text-green-400 hover:text-green-300 text-xs"
-              >
-                ✓
-              </button>
-              <button
-                onClick={handleCancel}
-                className="text-gray-400 hover:text-gray-300 text-xs"
-              >
-                ×
-              </button>
-            </div>
-          ) : (
-            <FlowchartBlock
-              instruction={instruction}
-              lineNumber={index}
-              onEdit={hasEditableParameter ? handleEdit : undefined}
-            />
-          )}
-  
+            )}
+          </div>
+    
+          {/* Down arrow (separate row, NOT affecting centering) */}
           {index < playerInstructions.length - 1 && (
-            <div className="text-gray-400 text-sm">↓</div>
+            <div className="text-gray-400 text-sm leading-none mt-0.5 select-none">
+              ↓
+            </div>
           )}
         </div>
       </div>
-    );
+    );    
   }
   
   
@@ -622,7 +656,7 @@ export function InstructionPalette() {
         <h3 className="text-white font-semibold mb-3">Instructions</h3>
         <div className="flex gap-4">
           {/* Current program */}
-          <div className="w-1/2 mt-4 flex flex-col min-h-0">
+          <div className="w-1/2 mt-4 flex flex-col min-h-0 max-h-[126vh]">
             <div className="flex items-center mb-2">
               <button
                 onClick={() => {
@@ -661,6 +695,7 @@ export function InstructionPalette() {
                       key={inst.id}
                       instruction={inst}
                       index={idx}
+                      isActive={currentLine === idx}
                     />
                   ))
                 )}

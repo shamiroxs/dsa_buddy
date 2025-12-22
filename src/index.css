@@ -13,3 +13,27 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* Transparent scrollbar */
+.scrollbar-transparent {
+  scrollbar-width: thin;                 /* Firefox */
+  scrollbar-color: rgba(255,255,255,0.35) transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.scrollbar-transparent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.55);
+}
