@@ -221,7 +221,7 @@ export function InstructionPalette() {
     return (
       <div
         ref={setNodeRef}
-        className={`space-y-1 h-80 overflow-y-auto rounded p-1 ${
+        className={`space-y-1 flex-1 overflow-y-auto rounded p-1 ${
           isOver ? 'ring-2 ring-green-400' : ''
         }`}
       >
@@ -620,9 +620,9 @@ export function InstructionPalette() {
     >
       <div className="instruction-palette bg-gray-800 rounded-lg p-4">
         <h3 className="text-white font-semibold mb-3">Instructions</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex gap-4">
           {/* Current program */}
-          <div className="mt-4">
+          <div className="w-1/2 mt-4 flex flex-col min-h-0">
             <div className="flex items-center mb-2">
               <button
                 onClick={() => {
@@ -669,82 +669,84 @@ export function InstructionPalette() {
             </SortableContext>
             </ProgramDropzone>
           </div>
-          {/* Global Instructions */}
-          <div className="flex justify-center">
+          <div className="w-1/2 flex flex-col gap-4">
+            {/* Global Instructions */}
+            <div className="flex justify-center">
+              <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
+                <h4 className="text-gray-300 font-semibold mb-2 text-center">
+                  BOTH
+                </h4>
+
+                <SortableContext
+                  items={globalInstructionTemplates.map(
+                    (t) => `palette-MOCO-${t.type}`
+                  )}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="grid grid-cols-2 gap-2 justify-center">
+                    {globalInstructionTemplates.map((template) => (
+                      <DraggablePaletteItem
+                        key={`global-${template.type}`}
+                        template={template}
+                        pointer="MOCO"
+                        isGlobal
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+
+              </div>
+            </div>
+
+            {/* MOCO */}
             <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
-              <h4 className="text-gray-300 font-semibold mb-2 text-center">
-                BOTH
+              <h4 className="text-blue-300 font-semibold mb-2 text-center">
+                MOCO
               </h4>
 
               <SortableContext
-                items={globalInstructionTemplates.map(
+                items={pointerInstructionTemplates.map(
                   (t) => `palette-MOCO-${t.type}`
                 )}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="grid grid-cols-2 gap-2 justify-center">
-                  {globalInstructionTemplates.map((template) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {pointerInstructionTemplates.map((template) => (
                     <DraggablePaletteItem
-                      key={`global-${template.type}`}
+                      key={`moco-${template.type}`}
                       template={template}
                       pointer="MOCO"
-                      isGlobal
                     />
                   ))}
                 </div>
               </SortableContext>
 
             </div>
-          </div>
 
-          {/* MOCO */}
-          <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
-            <h4 className="text-blue-300 font-semibold mb-2 text-center">
-              MOCO
-            </h4>
+            {/* CHOCO */}
+            <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
+              <h4 className="text-red-300 font-semibold mb-2 text-center">
+                CHOCO
+              </h4>
 
-            <SortableContext
-              items={pointerInstructionTemplates.map(
-                (t) => `palette-MOCO-${t.type}`
-              )}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="grid grid-cols-2 gap-2">
-                {pointerInstructionTemplates.map((template) => (
-                  <DraggablePaletteItem
-                    key={`moco-${template.type}`}
-                    template={template}
-                    pointer="MOCO"
-                  />
-                ))}
-              </div>
-            </SortableContext>
+              <SortableContext
+                items={pointerInstructionTemplates.map(
+                  (t) => `palette-CHOCO-${t.type}`
+                )}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  {pointerInstructionTemplates.map((template) => (
+                    <DraggablePaletteItem
+                      key={`choco-${template.type}`}
+                      template={template}
+                      pointer="CHOCO"
+                    />
+                  ))}
+                </div>
+              </SortableContext>
 
-          </div>
-
-          {/* CHOCO */}
-          <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
-            <h4 className="text-red-300 font-semibold mb-2 text-center">
-              CHOCO
-            </h4>
-
-            <SortableContext
-              items={pointerInstructionTemplates.map(
-                (t) => `palette-CHOCO-${t.type}`
-              )}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="grid grid-cols-2 gap-2">
-                {pointerInstructionTemplates.map((template) => (
-                  <DraggablePaletteItem
-                    key={`choco-${template.type}`}
-                    template={template}
-                    pointer="CHOCO"
-                  />
-                ))}
-              </div>
-            </SortableContext>
-
+            </div>
           </div>
           
 
