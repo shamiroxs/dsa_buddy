@@ -3,6 +3,22 @@
  */
 
 import type { Instruction } from '../instructions/types';
+import type { InstructionType } from '../instructions/types';
+import type { PointerTarget } from '../instructions/types';
+
+export interface InstructionCapabilities {
+  /** Which pointers are available in this challenge */
+  allowedPointers: PointerTarget[];
+
+  /** Instructions user can place */
+  allowedInstructions: InstructionType[];
+
+  /**
+   * Extra instructions shown for inspiration.
+   * These are UI-visible but still must be allowed to be used.
+   */
+  suggestedInstructions?: InstructionType[];
+}
 
 export const Difficulty = {
   EASY: 'EASY',
@@ -22,6 +38,7 @@ export interface Challenge {
   maxSteps?: number; // Optional optimization goal
   instructions: Instruction[]; // Starting instructions (can be empty)
   unlocked: boolean;
+  capabilities: InstructionCapabilities;
 }
 
 export interface ChallengeProgress {

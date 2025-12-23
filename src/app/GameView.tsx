@@ -31,14 +31,24 @@ import { ExecutionTimeline } from '../renderer/ExecutionTimeline';
 
 export function GameView() {
   const challenge = useCurrentChallenge();
+  if (!challenge) return;
+  const allowedPointers = challenge.capabilities.allowedPointers;
+
+  const showMoco = allowedPointers.includes('MOCO');
+  const showChoco = allowedPointers.includes('CHOCO');
+
   const { setCurrentChallenge } = useGameStore();
 
   const instructions = usePlayerInstructions();
   const executionError = useExecutionError();
 
   const array = useArrayState();
-  const mocoPointer = useMocoPointer();
-  const chocoPointer = useChocoPointer();
+  const rawMocoPointer = useMocoPointer();
+  const rawChocoPointer = useChocoPointer();
+  
+  const mocoPointer = showMoco ? rawMocoPointer : undefined;
+  const chocoPointer = showChoco ? rawChocoPointer : undefined;
+  
 
   const hand = useHand();
   const currentLine = useCurrentLine();

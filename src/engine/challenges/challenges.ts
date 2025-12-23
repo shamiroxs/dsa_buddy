@@ -1,47 +1,43 @@
 /**
  * Challenge definitions
  * MVP: 7-10 handcrafted Array challenges
- */
+ */ 
 
 import type { Challenge } from './types';
 import { Difficulty } from './types';
+import { InstructionType } from '../instructions/types';
 
 export const challenges: Challenge[] = [
   {
     id: 'challenge-1',
-    title: 'Find Maximum',
-    description: 'Find the maximum value in the array and store it at index 0.',
+    title: 'Larger of First Two',
+    description: 'Compare the first two elements and store the larger value at index 0.',
     difficulty: Difficulty.EASY,
-    initialArray: [3, 7, 2, 9, 1, 5],
-    targetArray: [9, 7, 2, 9, 1, 5],
-    maxSteps: 46,
+    initialArray: [4, 9, 6, 2],
+    targetArray: [9, 9, 6, 2],
+    maxSteps: 10,
     instructions: [],
     unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_RIGHT,
+        InstructionType.SET_POINTER,
+        InstructionType.PICK,
+        InstructionType.PUT,
+  
+        InstructionType.IF_GREATER,
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+      ],
+      suggestedInstructions: [
+        InstructionType.IF_GREATER,
+      ],
+    },
   },
+  
   {
     id: 'challenge-2',
-    title: 'Reverse Array',
-    description: 'Reverse the array in-place.',
-    difficulty: Difficulty.EASY,
-    initialArray: [1, 2, 3, 4, 5],
-    targetArray: [5, 4, 3, 2, 1],
-    maxSteps: 20,
-    instructions: [],
-    unlocked: true,
-  },
-  {
-    id: 'challenge-3',
-    title: 'Count Even Numbers',
-    description: 'Count the number of even numbers and store the count at index 0.',
-    difficulty: Difficulty.EASY,
-    initialArray: [2, 5, 8, 3, 6, 1],
-    targetArray: [3, 5, 8, 3, 6, 1],
-    maxSteps: 25,
-    instructions: [],
-    unlocked: true,
-  },
-  {
-    id: 'challenge-4',
     title: 'Swap First and Last',
     description: 'Swap the first and last elements of the array.',
     difficulty: Difficulty.EASY,
@@ -50,6 +46,78 @@ export const challenges: Challenge[] = [
     maxSteps: 10,
     instructions: [],
     unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO', 'CHOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.MOVE_TO_END,
+        InstructionType.PICK,
+        InstructionType.PUT,
+        InstructionType.SWAP,
+      ],
+    }
+  },
+  {
+    id: 'challenge-3',
+    title: 'Reverse Array',
+    description: 'Reverse the array in-place.',
+    difficulty: Difficulty.EASY,
+    initialArray: [1, 2, 3, 4, 5],
+    targetArray: [5, 4, 3, 2, 1],
+    maxSteps: 20,
+    instructions: [],
+    unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO', 'CHOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.MOVE_TO_END,
+        InstructionType.PICK,
+        InstructionType.PUT,
+        InstructionType.IF_MEET,
+        InstructionType.SWAP,
+        InstructionType.JUMP,
+        InstructionType.LABEL,
+      ],
+    }
+    
+  },
+  
+  {
+    id: 'challenge-4',
+    title: 'Find Maximum',
+    description: 'Find the maximum value in the array and store it at index 0.',
+    difficulty: Difficulty.EASY,
+    initialArray: [3, 7, 2, 9, 1, 5],
+    targetArray: [9, 7, 2, 9, 1, 5],
+    maxSteps: 46,
+    instructions: [],
+    unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.SET_POINTER,
+        InstructionType.PICK,
+        InstructionType.PUT,
+
+        InstructionType.IF_GREATER,
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+        InstructionType.IF_END,
+
+        InstructionType.JUMP,
+        InstructionType.LABEL,
+        InstructionType.WAIT,
+      ],
+      suggestedInstructions: [
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+      ],
+    },
   },
   {
     id: 'challenge-5',
@@ -61,7 +129,69 @@ export const challenges: Challenge[] = [
     maxSteps: 30,
     instructions: [],
     unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO', 'CHOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.MOVE_TO_END,
+        InstructionType.SET_POINTER,
+        InstructionType.PICK,
+        InstructionType.PUT,
+
+        InstructionType.IF_GREATER,
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+        InstructionType.IF_END,
+
+        InstructionType.JUMP,
+        InstructionType.LABEL,
+        InstructionType.WAIT,
+      ],
+      suggestedInstructions: [
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+      ],
+    }
   },
+  /*
+  {
+    id: 'challenge-3',
+    title: 'Count Even Numbers',
+    description: 'Count the number of even numbers and store the count at index 0.',
+    difficulty: Difficulty.EASY,
+    initialArray: [2, 5, 8, 3, 6, 1],
+    targetArray: [3, 5, 8, 3, 6, 1],
+    maxSteps: 25,
+    instructions: [],
+    unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO', 'CHOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.MOVE_TO_END,
+        InstructionType.SET_POINTER,
+        InstructionType.PICK,
+        InstructionType.PUT,
+
+        InstructionType.IF_GREATER,
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+        InstructionType.IF_END,
+
+        InstructionType.JUMP,
+        InstructionType.LABEL,
+        InstructionType.WAIT,
+      ],
+      suggestedInstructions: [
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+      ],
+    }
+  },
+  
+  
   {
     id: 'challenge-6',
     title: 'Find Duplicate',
@@ -116,6 +246,6 @@ export const challenges: Challenge[] = [
     maxSteps: 40,
     instructions: [],
     unlocked: false, // Locked in MVP
-  },
+  },*/
 ];
 

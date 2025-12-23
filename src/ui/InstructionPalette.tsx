@@ -5,6 +5,7 @@
 
 
 import { useState } from 'react';
+import { useRef, useLayoutEffect, useMemo } from 'react';
 import { useGameStore } from '../orchestrator/store';
 import { InstructionType } from '../engine/instructions/types';
 import type { Instruction } from '../engine/instructions/types';
@@ -88,14 +89,6 @@ const globalInstructionTypes: InstructionType[] = [
   InstructionType.WAIT,
 ];
 
-const pointerInstructionTemplates = instructionTemplates.filter(
-  (t) => !globalInstructionTypes.includes(t.type)
-);
-
-const globalInstructionTemplates = instructionTemplates.filter(
-  (t) => globalInstructionTypes.includes(t.type)
-);
-
 const OWNER_STYLE_MAP = {
   MOCO: {
     bg: 'bg-blue-700',
@@ -122,6 +115,32 @@ export function InstructionPalette() {
   );
   
   const { reorderInstructions, removeInstruction } = useGameStore();
+  const { currentChallenge } = useGameStore();
+
+  const capabilities = currentChallenge?.capabilities;
+  const allowedPointers = capabilities?.allowedPointers ?? ['MOCO', 'CHOCO'];
+  const allowedInstructions = new Set(
+    capabilities?.allowedInstructions ?? Object.values(InstructionType)
+  );
+
+  const pointerInstructionTemplates = instructionTemplates.filter(
+    (t) =>
+      !globalInstructionTypes.includes(t.type) &&
+      allowedInstructions.has(t.type)
+  );
+
+  const globalInstructionTemplates = instructionTemplates.filter(
+    (t) =>
+      globalInstructionTypes.includes(t.type) &&
+      allowedInstructions.has(t.type)
+  );
+
+
+  const programContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // instruction.id → DOMRect
+  const instructionRects = useRef<Map<string, DOMRect>>(new Map());
+
   
   const currentLine = executionState?.currentLine ?? null;
   
@@ -146,6 +165,7 @@ export function InstructionPalette() {
   const handleAddInstruction = (type: InstructionType, pointer: 'MOCO' | 'CHOCO') => {
     const lineNumber = playerInstructions.length;
     let instruction: Instruction;
+    if (!allowedInstructions.has(type)) return;
     
     // Create instruction with default values (user can edit later)
     switch (type) {
@@ -225,7 +245,6 @@ export function InstructionPalette() {
         className={`space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent ${
           isOver ? 'ring-2 ring-green-400' : ''
         }`}
-        style={{ direction: 'rtl' }}
       >
         {children}
       </div>
@@ -397,6 +416,47 @@ export function InstructionPalette() {
     );
   }
 
+  const labelMap = useMemo(() => {
+    const map = new Map<string, Instruction>();
+    playerInstructions.forEach((inst) => {
+      if (inst.type === InstructionType.LABEL && 'labelName' in inst) {
+        map.set(inst.labelName, inst);
+      }
+    });
+    return map;
+  }, [playerInstructions]);
+
+  const arrows = useMemo(() => {
+    const results: Array<{
+      from: Instruction;
+      to: Instruction;
+      color: string;
+    }> = [];
+  
+    for (const inst of playerInstructions) {
+      if (!('label' in inst)) continue;
+      const target = labelMap.get(inst.label);
+      if (!target) continue;
+  
+      const owner = getInstructionOwner(inst);
+      const color =
+        owner === 'MOCO'
+          ? '#3b82f6'
+          : owner === 'CHOCO'
+          ? '#ef4444'
+          : '#a855f7';
+  
+      results.push({ from: inst, to: target, color });
+    }
+  
+    return results;
+  }, [playerInstructions, labelMap]);
+  
+  const instructionTransforms = useRef<
+    Map<string, { x: number; y: number }>
+  >(new Map());
+
+
   function SortableInstructionLine({
     instruction,
     index,
@@ -406,6 +466,8 @@ export function InstructionPalette() {
     index: number;
     isActive: boolean;
   }) {
+    const rowRef = useRef<HTMLDivElement | null>(null);
+
     const { updateInstruction, playerInstructions } = useGameStore();
   
     const { attributes, listeners, setNodeRef, transform, transition } =
@@ -416,7 +478,17 @@ export function InstructionPalette() {
           instructionId: instruction.id,
         } satisfies DragItem,
       });
-  
+      useLayoutEffect(() => { 
+        if (!rowRef.current) return; 
+        const rect = rowRef.current.getBoundingClientRect(); 
+        instructionRects.current.set(instruction.id, rect); 
+
+        return () => { 
+          instructionRects.current.delete(instruction.id); 
+        }; 
+      
+      }, [instruction.id, transform]);
+
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
@@ -491,10 +563,15 @@ export function InstructionPalette() {
       setIsEditing(false);
       setEditValue('');
     };
-  
+
     return (
       <div
-        ref={setNodeRef}
+        id={instruction.id}
+        ref={(node) => {
+          setNodeRef(node);
+          rowRef.current = node;
+        }}
+
         style={style}
         {...attributes}
         {...listeners}
@@ -565,7 +642,8 @@ export function InstructionPalette() {
           )}
         </div>
       </div>
-    );    
+    );  
+      
   }
   
   
@@ -637,6 +715,81 @@ export function InstructionPalette() {
       </div>
     );
   }
+
+  const getVisualRect = (id: string) => {
+    const rect = instructionRects.current.get(id);
+    if (!rect) return null;
+  
+    const t = instructionTransforms.current.get(id);
+    if (!t) return rect;
+  
+    return {
+      ...rect,
+      top: rect.top + t.y,
+      bottom: rect.bottom + t.y,
+      left: rect.left + t.x,
+      right: rect.right + t.x,
+    };
+  };
+  
+  function ProgramArrowsOverlay() {
+    const container = programContainerRef.current;
+    if (!container) return null;
+  
+    const containerRect = container.getBoundingClientRect();
+    const laneX = containerRect.width - 28;
+  
+    return (
+      <svg
+        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+      >
+        <defs>
+          <marker
+            id="arrowhead"
+            markerWidth="8"
+            markerHeight="8"
+            refX="3.5"
+            refY="2"
+            orient="auto"
+          >
+            <path d="M0,0 L0,4 L4,2 z" fill="currentColor" />
+          </marker>
+        </defs>
+  
+        {arrows.map(({ from, to, color }) => {
+          const fromRect = getVisualRect(from.id);
+          const toRect = getVisualRect(to.id);          
+          if (!fromRect || !toRect) return null;
+  
+          const startX = fromRect.right - containerRect.left - 140;
+          const startY = fromRect.top + fromRect.height / 3 - containerRect.top;
+  
+          const endX = toRect.right - containerRect.left - 162;
+          const endY = toRect.top + toRect.height / 3 - containerRect.top;
+  
+          const d = `
+            M ${startX} ${startY}
+            C ${laneX} ${startY},
+              ${laneX} ${endY},
+              ${endX} ${endY}
+          `;
+  
+          return (
+            <path
+              key={`${from.id}->${to.id}`}
+              d={d}
+              stroke={color}
+              strokeWidth={4}
+              fill="none"
+              markerEnd="url(#arrowhead)"
+              opacity={0.7}
+            />
+          );
+        })}
+      </svg>
+    );
+  }
+  
   
   return (
     <DndContext
@@ -656,7 +809,11 @@ export function InstructionPalette() {
         <h3 className="text-white font-semibold mb-3">Instructions</h3>
         <div className="flex gap-4">
           {/* Current program */}
-          <div className="w-1/2 mt-4 flex flex-col min-h-0 max-h-[126vh]">
+          <div
+            ref={programContainerRef}
+            className="w-1/2 mt-4 flex flex-col min-h-0 max-h-[126vh] relative"
+          >
+
             <div className="flex items-center mb-2">
               <button
                 onClick={() => {
@@ -677,7 +834,7 @@ export function InstructionPalette() {
 
               <h4 className="text-gray-400 text-sm mx-auto">Your Program</h4>
             </div>
-
+            <ProgramArrowsOverlay />
             <ProgramDropzone>
             <SortableContext
               items={playerInstructions.map((i) => i.id)}
@@ -734,6 +891,7 @@ export function InstructionPalette() {
             </div>
 
             {/* MOCO */}
+            {allowedPointers.includes('MOCO') && (
             <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
               <h4 className="text-blue-300 font-semibold mb-2 text-center">
                 MOCO
@@ -757,8 +915,10 @@ export function InstructionPalette() {
               </SortableContext>
 
             </div>
+            )}
 
             {/* CHOCO */}
+            {allowedPointers.includes('CHOCO') && (
             <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
               <h4 className="text-red-300 font-semibold mb-2 text-center">
                 CHOCO
@@ -782,6 +942,7 @@ export function InstructionPalette() {
               </SortableContext>
 
             </div>
+            )}
           </div>
           
 
