@@ -29,6 +29,9 @@ export const challenges: Challenge[] = [
         InstructionType.IF_GREATER,
         InstructionType.IF_LESS,
         InstructionType.IF_EQUAL,
+
+        InstructionType.JUMP,
+        InstructionType.LABEL,
       ],
       suggestedInstructions: [
         InstructionType.IF_GREATER,
