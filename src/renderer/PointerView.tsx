@@ -73,7 +73,11 @@ export function PointerView({
     mocoPointer === chocoPointer;
 
   return (
-    <svg width={width} height={60} className="pointer-view block mx-auto">
+    <svg
+      viewBox={`0 0 ${width} ${60}`}
+      preserveAspectRatio="xMidYMid meet"
+      className="pointer-view w-full max-w-[420px] h-auto block mx-auto"
+    >
       {/* MOCO pointer */}
       {mocoPointer !== undefined &&
         renderPointer(
