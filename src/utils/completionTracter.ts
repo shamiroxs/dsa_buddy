@@ -4,7 +4,7 @@ import { getAnonymousUserId } from './anonymousIdentity';
 
 const COMPLETION_ENDPOINT =
   import.meta.env.VITE_COMPLETION_ENDPOINT ||
-  'https://your-endpoint.vercel.app/api/completion';
+  'https://dsa-buddy-smoky.vercel.app/api/completion';
 
 export type CompletionEvent = {
   challengeId: string;
