@@ -747,16 +747,16 @@ export function InstructionPalette() {
   function ProgramArrowsOverlay() {
     const container = programContainerRef.current;
     if (!container) return null;
-    const width = typeof window !== 'undefined' ? window.innerWidth : 0;
+    
   
     const containerRect = container.getBoundingClientRect();
     const laneX = containerRect.width < 360
-      ? containerRect.width * 0.6
+      ? containerRect.width * 0.82
       : containerRect.width * 0.9;
 
     return (
       <svg
-        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+        className="absolute top-0 left-8 w-full h-full pointer-events-none"
       >
         <defs>
           <marker
