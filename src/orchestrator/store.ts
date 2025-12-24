@@ -29,6 +29,7 @@ interface GameState {
   
   // Engine instance
   engine: GameEngine;
+  
 
   reorderInstructions: (fromIndex: number, toIndex: number) => void;
 

@@ -7,6 +7,7 @@ import { useGameStore } from './store';
 import { executeStep, rewindStep } from '../interpreter/vm';
 import type { ExecutionResult } from '../interpreter/vm';
 import { validateChallenge as validateChallengeFn } from '../engine/validator/validator';
+import { trackChallengeCompletion } from '../utils/completionTracter';
 
 let runInterval: number | null = null;
 
@@ -169,6 +170,13 @@ export function validateChallenge(): void {
     const progressData = savedProgress ? JSON.parse(savedProgress) : {};
     progressData[store.currentChallenge?.id || ''] = progress;
     localStorage.setItem('dsa-buddy-progress', JSON.stringify(progressData));
+
+    trackChallengeCompletion({
+      challengeId: store.currentChallenge.id,
+      stepCount: result.stepCount,
+      instructionCount: store.executionState.instructions.length,
+      executionMode: store.isExecuting ? 'run' : 'step',
+    });
   }
 }
 
