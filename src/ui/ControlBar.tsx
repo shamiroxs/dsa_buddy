@@ -17,11 +17,11 @@ export function ControlBar() {
   const isPaused = useIsPaused();
   
   return (
-    <div className="control-bar bg-gray-800 rounded-lg p-3 sm:p-4 flex flex-row items-stretch sm:items-center justify-center gap-3">
+    <div className="control-bar bg-gray-800 rounded-lg p-3 flex flex-wrap items-center justify-center gap-3">
       <button
         onClick={executeSingleStep}
         disabled={isExecuting && !isPaused}
-        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-semibold"
+        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
       >
         ▶ Step
       </button>
@@ -29,14 +29,14 @@ export function ControlBar() {
       {!isExecuting || isPaused ? (
         <button
           onClick={() => runExecution(500)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold"
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
         >
           ⏩ Run
         </button>
       ) : (
         <button
           onClick={pauseExecution}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold"
+          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
         >
           ⏸ Pause
         </button>
@@ -45,14 +45,14 @@ export function ControlBar() {
       <button
         onClick={rewindSingleStep}
         disabled={isExecuting && !isPaused}
-        className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-semibold"
+        className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
       >
         ⏪ Rewind
       </button>
       
       <button
         onClick={resetExecution}
-        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold"
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
       >
         ↺ Reset
       </button>
