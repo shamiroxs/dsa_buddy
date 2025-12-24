@@ -407,6 +407,8 @@ export function InstructionPalette() {
           font-mono
           text-sm
           group
+          select-none
+          touch-none
         `}
       >  
         {/* Instruction text */}
