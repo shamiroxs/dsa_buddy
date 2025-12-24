@@ -17,7 +17,7 @@ export function ControlBar() {
   const isPaused = useIsPaused();
   
   return (
-    <div className="control-bar bg-gray-800 rounded-lg p-4 flex items-center justify-center gap-3">
+    <div className="control-bar bg-gray-800 rounded-lg p-3 sm:p-4 flex flex-row items-stretch sm:items-center justify-center gap-3">
       <button
         onClick={executeSingleStep}
         disabled={isExecuting && !isPaused}

@@ -30,7 +30,7 @@ export function ArrayView({
     <svg
       viewBox={`0 0 ${totalWidth + 4} ${cellHeight + 70}`}
       preserveAspectRatio="xMidYMid meet"
-      className="w-full max-w-[420px] h-auto block mx-auto"
+      className="w-full max-w-[360px] h-auto block mx-auto"
     >
       {array.map((value, index) => {
         const x = 2 + index * (cellWidth + spacing);

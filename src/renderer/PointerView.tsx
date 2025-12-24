@@ -76,7 +76,7 @@ export function PointerView({
     <svg
       viewBox={`0 0 ${width} ${60}`}
       preserveAspectRatio="xMidYMid meet"
-      className="pointer-view w-full max-w-[420px] h-auto block mx-auto"
+      className="pointer-view w-full max-w-[360px] h-auto block mx-auto"
     >
       {/* MOCO pointer */}
       {mocoPointer !== undefined &&
