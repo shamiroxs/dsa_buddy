@@ -751,7 +751,7 @@ export function InstructionPalette() {
   
     const containerRect = container.getBoundingClientRect();
     const laneX = containerRect.width < 360
-      ? containerRect.width * 0.82
+      ? containerRect.width * 0.6
       : containerRect.width * 0.9;
 
     return (
