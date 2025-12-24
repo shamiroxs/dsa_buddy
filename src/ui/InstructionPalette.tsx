@@ -747,10 +747,13 @@ export function InstructionPalette() {
   function ProgramArrowsOverlay() {
     const container = programContainerRef.current;
     if (!container) return null;
+    const width = typeof window !== 'undefined' ? window.innerWidth : 0;
   
     const containerRect = container.getBoundingClientRect();
-    const laneX = containerRect.width - 28;
-  
+    const laneX = containerRect.width < 360
+      ? containerRect.width * 0.82
+      : containerRect.width * 0.9;
+
     return (
       <svg
         className="absolute top-0 left-0 w-full h-full pointer-events-none"
@@ -773,10 +776,10 @@ export function InstructionPalette() {
           const toRect = getVisualRect(to.id);          
           if (!fromRect || !toRect) return null;
   
-          const startX = fromRect.right - containerRect.left - 140;
+          const startX = fromRect.right - containerRect.left * 4.5;
           const startY = fromRect.top + fromRect.height / 3 - containerRect.top;
   
-          const endX = toRect.right - containerRect.left - 162;
+          const endX = toRect.right - containerRect.left * 5;
           const endY = toRect.top + toRect.height / 3 - containerRect.top;
   
           const d = `
