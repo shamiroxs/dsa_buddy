@@ -30,6 +30,7 @@ export const challenges: Challenge[] = [
         InstructionType.IF_LESS,
 
         InstructionType.LABEL,
+        InstructionType.JUMP,
       ],
       suggestedInstructions: [
         InstructionType.PICK,
