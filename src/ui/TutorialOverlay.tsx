@@ -19,7 +19,7 @@ const STEPS = [
     text: 'Click PUT',
   },
   {
-    title: 'Step 4: Vitualize',
+    title: 'Step 4: Visualize',
     text: 'Click Run/Step',
   },
 ];
