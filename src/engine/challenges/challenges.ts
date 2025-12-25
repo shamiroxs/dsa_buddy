@@ -15,7 +15,7 @@ export const challenges: Challenge[] = [
     difficulty: Difficulty.EASY,
     initialArray: [4, 9, 6, 2],
     targetArray: [9, 9, 6, 2],
-    maxSteps: 10,
+    maxSteps: 7,
     instructions: [],
     unlocked: true,
     capabilities: {
