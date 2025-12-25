@@ -23,6 +23,7 @@ import { useGameStore } from '../orchestrator/store';
 
 import { ChallengePanel } from '../ui/ChallengePanel';
 import { InstructionPalette } from '../ui/InstructionPalette';
+import { TutorialOverlay } from '../ui/TutorialOverlay';
 import { ControlBar } from '../ui/ControlBar';
 
 import { ArrayView } from '../renderer/ArrayView';
@@ -156,6 +157,7 @@ export function GameView() {
           {/* ================= RIGHT ================= */}
           <div className="lg:col-span-1">
             <div className="space-y-4">
+              <TutorialOverlay />
               <InstructionPalette />
             </div>
           </div>

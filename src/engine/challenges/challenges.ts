@@ -9,6 +9,32 @@ import { InstructionType } from '../instructions/types';
 
 export const challenges: Challenge[] = [
   {
+    id: 'challenge-0',
+    title: 'Start Here',
+    description: 'Copy the first value into the second box',
+    difficulty: Difficulty.EASY,
+    initialArray: [7, 0, 0, 0],
+    targetArray: [7, 7, 0, 0],
+    
+    maxSteps: 7,
+    instructions: [],
+    unlocked: true,
+    capabilities: {
+      allowedPointers: ['MOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.PICK,
+        InstructionType.PUT,
+      ],
+      suggestedInstructions: [
+        InstructionType.PICK,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.PUT,
+      ],
+    },
+  },
+  {
     id: 'challenge-1',
     title: 'Larger of First Two',
     description: 'Compare the first two elements and store the larger value at index 0.',
@@ -154,9 +180,8 @@ export const challenges: Challenge[] = [
       ],
     }
   },
-  /*
   {
-    id: 'challenge-3',
+    id: 'challenge-6',
     title: 'Count Even Numbers',
     description: 'Count the number of even numbers and store the count at index 0.',
     difficulty: Difficulty.EASY,
@@ -164,7 +189,7 @@ export const challenges: Challenge[] = [
     targetArray: [3, 5, 8, 3, 6, 1],
     maxSteps: 25,
     instructions: [],
-    unlocked: true,
+    unlocked: false,
     capabilities: {
       allowedPointers: ['MOCO', 'CHOCO'],
       allowedInstructions: [
@@ -193,7 +218,7 @@ export const challenges: Challenge[] = [
   
   
   {
-    id: 'challenge-6',
+    id: 'challenge-7',
     title: 'Find Duplicate',
     description: 'Find the duplicate number in the array and store it at index 0. Array contains numbers 1 to n with one duplicate.',
     difficulty: Difficulty.MEDIUM,
@@ -201,8 +226,33 @@ export const challenges: Challenge[] = [
     targetArray: [2, 3, 4, 2, 2],
     maxSteps: 25,
     instructions: [],
-    unlocked: true,
+    unlocked: false,
+    capabilities: {
+      allowedPointers: ['MOCO', 'CHOCO'],
+      allowedInstructions: [
+        InstructionType.MOVE_LEFT,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.MOVE_TO_END,
+        InstructionType.SET_POINTER,
+        InstructionType.PICK,
+        InstructionType.PUT,
+
+        InstructionType.IF_GREATER,
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+        InstructionType.IF_END,
+
+        InstructionType.JUMP,
+        InstructionType.LABEL,
+        InstructionType.WAIT,
+      ],
+      suggestedInstructions: [
+        InstructionType.IF_LESS,
+        InstructionType.IF_EQUAL,
+      ],
+    }
   },
+  /*
   {
     id: 'challenge-7',
     title: 'Two Sum',

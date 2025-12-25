@@ -93,7 +93,14 @@ interface GameState {
   
   // Engine instance
   engine: GameEngine;
-  
+
+  // Tutorial (First-run coach)
+  isTutorialActive: boolean;
+  tutorialStep: number;
+
+  startTutorial: () => void;
+  nextTutorialStep: () => void;
+  endTutorial: () => void;
 
   reorderInstructions: (fromIndex: number, toIndex: number) => void;
 
@@ -137,6 +144,27 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerInstructions: [],
   validationResult: null,
   engine: new GameEngine(),
+
+    // Tutorial
+  isTutorialActive: false,
+  tutorialStep: 0,
+
+  startTutorial: () =>
+    set({
+      isTutorialActive: true,
+      tutorialStep: 0,
+    }),
+  
+  nextTutorialStep: () =>
+    set((state) => ({
+      tutorialStep: state.tutorialStep + 1,
+    })),
+  
+  endTutorial: () =>
+    set({
+      isTutorialActive: false,
+      tutorialStep: 0,
+    }),
 
   // Completion state
   completedChallengeIds: loadCompletedFromProgress(),
@@ -182,13 +210,23 @@ export const useGameStore = create<GameState>((set, get) => ({
   setChallenges: (challenges) => set({ challenges }),
   
   selectChallenge: (challengeId) => {
-    const { challenges } = get();
+    const { challenges, completedChallengeIds } = get();
     const challenge = challenges.find((c) => c.id === challengeId);
-    if (challenge) {
-      set({ currentChallenge: challenge, playerInstructions: [] });
-      // Initialize will be called separately
-    }
+  
+    if (!challenge) return;
+  
+    const isTutorial =
+      challenge.id === 'challenge-0' &&
+      !completedChallengeIds.has('challenge-0');
+  
+    set({
+      currentChallenge: challenge,
+      playerInstructions: [],
+      isTutorialActive: isTutorial,
+      tutorialStep: 0,
+    });
   },
+  
   
   setCurrentChallenge: (challenge) => set({ currentChallenge: challenge }),
   
@@ -203,10 +241,15 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   
   addInstruction: (instruction) => {
-    const { playerInstructions } = get();
+    const { playerInstructions, isTutorialActive, tutorialStep, nextTutorialStep } = get();
     const newInstructions = [...playerInstructions, instruction];
     get().setPlayerInstructions(newInstructions);
+  
+    if (isTutorialActive && tutorialStep < 4) {
+      nextTutorialStep();
+    }
   },
+  
   
   removeInstruction: (instructionId) => {
     const { playerInstructions } = get();

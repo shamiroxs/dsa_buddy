@@ -288,6 +288,16 @@ export function InstructionPalette() {
     pointer: 'MOCO' | 'CHOCO';
     isGlobal?: boolean;
   }) {
+    const { isTutorialActive, tutorialStep } = useGameStore();
+
+    const shouldPulse =
+      isTutorialActive &&
+      (
+        (tutorialStep === 1 && template.type === InstructionType.PICK) ||
+        (tutorialStep === 2 && template.type === InstructionType.MOVE_RIGHT) ||
+        (tutorialStep === 3 && template.type === InstructionType.PUT)
+      );
+
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({
         id: `palette-${pointer}-${template.type}`,
@@ -318,7 +328,10 @@ export function InstructionPalette() {
         {...listeners}
         style={style}
         onClick={() => handleAddInstruction(template.type, pointer)}
-        className={`${buttonClass} px-3 py-2 rounded text-sm transition-colors select-none touch-none`}
+        className={`${buttonClass} 
+          ${shouldPulse ? 'animate-pulse ring-2 ring-yellow-400' : ''}
+          px-3 py-2 rounded text-sm transition-colors select-none touch-none`
+        }
         title={template.description}
       >
         {template.label}

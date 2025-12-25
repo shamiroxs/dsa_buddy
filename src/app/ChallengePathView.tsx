@@ -15,13 +15,17 @@ export function ChallengePathView() {
   const getNodeColor = (
     difficulty: Difficulty,
     unlocked: boolean,
-    completed: boolean
+    completed: boolean,
+    index: number
   ) => {
     // Option A: completed challenge
     if (completed) return 'bg-indigo-500';
 
     // Locked challenge
     if (!unlocked) return 'bg-gray-700';
+
+    // Tutorial
+    if (index === 0) return 'bg-cyan-600'
 
     // Unlocked but not completed
     switch (difficulty) {
@@ -100,11 +104,12 @@ export function ChallengePathView() {
                     getNodeColor(
                       challenge.difficulty,
                       challenge.unlocked,
-                      completed
+                      completed,
+                      index
                     )
                   )}
                 >
-                  {index + 1}
+                  {index}
                 </button>
 
                 {/* Title */}

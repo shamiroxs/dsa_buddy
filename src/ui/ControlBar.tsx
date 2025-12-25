@@ -10,29 +10,56 @@ import {
   rewindSingleStep,
   resetExecution,
 } from '../orchestrator/controller';
+import { useGameStore } from '../orchestrator/store';
 import { useIsExecuting, useIsPaused } from '../orchestrator/selectors';
 
 export function ControlBar() {
   const isExecuting = useIsExecuting();
   const isPaused = useIsPaused();
+  const { isTutorialActive, tutorialStep, endTutorial } = useGameStore();
+
+  const highlightRun =
+    isTutorialActive && tutorialStep === 4;
+
   
   return (
     <div className="control-bar bg-gray-800 rounded-lg p-3 flex flex-wrap items-center justify-center gap-3">
       <button
-        onClick={executeSingleStep}
+        onClick={() => {
+          if (isTutorialActive && tutorialStep === 4) {
+            endTutorial();
+          }
+          executeSingleStep();
+        }}
         disabled={isExecuting && !isPaused}
-        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
+        className={`
+          bg-blue-600 hover:bg-blue-700
+          disabled:bg-gray-600 disabled:cursor-not-allowed
+          text-white px-4 py-2 rounded font-semibold
+          ${highlightRun ? 'ring-2 ring-green-400 animate-pulse' : ''}
+        `}
       >
         ▶ Step
       </button>
+
       
       {!isExecuting || isPaused ? (
         <button
-          onClick={() => runExecution(500)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
-        >
-          ⏩ Run
-        </button>
+        onClick={() => {
+          if (isTutorialActive && tutorialStep === 4) {
+            endTutorial();
+          }
+          runExecution(500);
+        }}
+        className={`
+          bg-green-600 hover:bg-green-700
+          text-white px-4 py-2 rounded font-semibold
+          ${highlightRun ? 'ring-2 ring-green-400 animate-pulse' : ''}
+        `}
+      >
+        ⏩ Run
+      </button>
+      
       ) : (
         <button
           onClick={pauseExecution}

@@ -20,6 +20,10 @@ export function executeSingleStep(): void {
   const store = useGameStore.getState();
   const state = store.executionState;
 
+  if (store.isTutorialActive) {
+    store.endTutorial();
+  }
+
   if (!state) {
     // Nothing to execute yet
     store.setExecutionError('No execution state available');
@@ -69,6 +73,10 @@ export function executeSingleStep(): void {
  */
 export function runExecution(speed: number = 500): void {
   const store = useGameStore.getState();
+
+  if (store.isTutorialActive) {
+    store.endTutorial();
+  }
 
   if (store.isExecuting && !store.isPaused) {
     return; // Already running
@@ -158,6 +166,11 @@ export function validateChallenge(): void {
   store.setValidationResult(result);
 
   if (result?.success) {
+
+    if (store.isTutorialActive) {
+      store.endTutorial();
+    }
+    
     // Mark challenge as completed in store
     store.markChallengeCompleted(
       store.currentChallenge.id,
