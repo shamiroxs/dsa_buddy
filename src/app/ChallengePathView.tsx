@@ -59,7 +59,7 @@ export function ChallengePathView() {
           Enter into your compartment
         </p>
 
-        <div className="relative flex flex-col items-center">
+        <div className="relative flex flex-col items-center min-h-screen">
           {/* Base path line */}
           <div className="absolute top-0 bottom-0 w-0.5 sm:w-1 bg-gray-700 rounded" />
 
