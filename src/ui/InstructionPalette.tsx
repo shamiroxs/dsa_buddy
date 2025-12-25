@@ -904,7 +904,7 @@ export function InstructionPalette() {
                   )}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="grid grid-cols-2 gap-2 justify-center">
+                  <div className="grid grid-cols-2 gap-2">
                     {globalInstructionTemplates.map((template) => (
                       <DraggablePaletteItem
                         key={`global-${template.type}`}
@@ -917,11 +917,12 @@ export function InstructionPalette() {
                 </SortableContext>
 
               </div>
-            </div>
+              </div>
             )}
 
             {/* MOCO */}
             {allowedPointers.includes('MOCO') && (
+            <div className="flex justify-center">
             <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
               <h4 className="text-blue-300 font-semibold mb-2 text-center">
                 MOCO
@@ -945,10 +946,12 @@ export function InstructionPalette() {
               </SortableContext>
 
             </div>
+            </div>
             )}
 
             {/* CHOCO */}
             {allowedPointers.includes('CHOCO') && (
+            <div className="flex justify-center">
             <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
               <h4 className="text-red-300 font-semibold mb-2 text-center">
                 CHOCO
@@ -971,6 +974,7 @@ export function InstructionPalette() {
                 </div>
               </SortableContext>
 
+            </div>
             </div>
             )}
           </div>
