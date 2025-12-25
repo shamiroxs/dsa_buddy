@@ -22,19 +22,13 @@ export const challenges: Challenge[] = [
       allowedPointers: ['MOCO'],
       allowedInstructions: [
         InstructionType.MOVE_RIGHT,
-        InstructionType.SET_POINTER,
+        InstructionType.MOVE_LEFT,
         InstructionType.PICK,
         InstructionType.PUT,
-  
-        InstructionType.IF_GREATER,
-        InstructionType.IF_LESS,
-        InstructionType.IF_EQUAL,
-
-        InstructionType.JUMP,
-        InstructionType.LABEL,
       ],
       suggestedInstructions: [
-        InstructionType.IF_GREATER,
+        InstructionType.PICK,
+        InstructionType.PUT,
       ],
     },
   },

@@ -878,6 +878,7 @@ export function InstructionPalette() {
           </div>
           <div className="w-full lg:w-1/2 flex flex-col gap-4">
             {/* Global Instructions */}
+            {globalInstructionTemplates.length > 0 && (
             <div className="flex justify-center">
               <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
                 <h4 className="text-gray-300 font-semibold mb-2 text-center">
@@ -904,6 +905,7 @@ export function InstructionPalette() {
 
               </div>
             </div>
+            )}
 
             {/* MOCO */}
             {allowedPointers.includes('MOCO') && (

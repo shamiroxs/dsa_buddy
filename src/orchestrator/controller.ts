@@ -158,19 +158,12 @@ export function validateChallenge(): void {
   store.setValidationResult(result);
 
   if (result?.success) {
-    // Save progress to localStorage
-    const progress = {
-      challengeId: store.currentChallenge?.id,
-      completed: true,
-      bestStepCount: result.stepCount,
-      completedAt: Date.now(),
-    };
-
-    const savedProgress = localStorage.getItem('dsa-buddy-progress');
-    const progressData = savedProgress ? JSON.parse(savedProgress) : {};
-    progressData[store.currentChallenge?.id || ''] = progress;
-    localStorage.setItem('dsa-buddy-progress', JSON.stringify(progressData));
-
+    // Mark challenge as completed in store
+    store.markChallengeCompleted(
+      store.currentChallenge.id,
+      result.stepCount
+    );
+    
     trackChallengeCompletion({
       challengeId: store.currentChallenge.id,
       stepCount: result.stepCount,

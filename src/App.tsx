@@ -2,7 +2,7 @@
 import { Routes } from './app/routes';
 import { useEffect } from 'react';
 import { getAnonymousUserId } from './utils/anonymousIdentity';
-import './App.css';
+import './App.css'; 
 
 function App() {
   useEffect(() => {

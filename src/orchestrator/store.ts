@@ -10,6 +10,70 @@ import type { Instruction } from '../engine/instructions/types';
 import type { ValidationResult } from '../engine/validator/validator';
 import { GameEngine } from '../engine/engine';
 
+const PROGRESS_KEY = 'dsa-buddy-progress';
+
+type StoredProgress = Record<
+  string,
+  {
+    challengeId: string;
+    completed: boolean;
+    bestStepCount?: number;
+    completedAt?: number;
+  }
+>;
+
+function loadCompletedFromProgress(): Set<string> {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (!raw) return new Set();
+
+    const progress: StoredProgress = JSON.parse(raw);
+    return new Set(
+      Object.values(progress)
+        .filter((p) => p.completed)
+        .map((p) => p.challengeId)
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+function upsertProgressEntry(
+  challengeId: string,
+  data: {
+    challengeId: string;
+    completed: boolean;
+    bestStepCount?: number;
+    completedAt?: number;
+  }
+) {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    const progress: StoredProgress = raw ? JSON.parse(raw) : {};
+
+    const existing = progress[challengeId];
+
+    progress[challengeId] = {
+      challengeId,
+      completed: true,
+
+      // keep the BEST (minimum) step count
+      bestStepCount:
+        existing?.bestStepCount != null && data.bestStepCount != null
+          ? Math.min(existing.bestStepCount, data.bestStepCount)
+          : data.bestStepCount ?? existing?.bestStepCount,
+
+      // update completion time only on first completion
+      completedAt: existing?.completedAt ?? data.completedAt ?? Date.now(),
+    };
+
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+
 interface GameState {
   // Challenge state
   currentChallenge: Challenge | null;
@@ -50,6 +114,16 @@ interface GameState {
   setValidationResult: (result: ValidationResult | null) => void;
   resetChallenge: () => void;
   initializeChallenge: () => void;
+
+  // Completion state
+  completedChallengeIds: Set<string>;
+  isChallengeCompleted: (challengeId: string) => boolean;
+  markChallengeCompleted: (
+    challengeId: string,
+    bestStepCount?: number
+  ) => void;
+  
+
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -63,6 +137,34 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerInstructions: [],
   validationResult: null,
   engine: new GameEngine(),
+
+  // Completion state
+  completedChallengeIds: loadCompletedFromProgress(),
+
+  isChallengeCompleted: (challengeId) => {
+    return get().completedChallengeIds.has(challengeId);
+  },
+
+  markChallengeCompleted: (challengeId, bestStepCount?: number) => {
+    set((state) => {
+      if (state.completedChallengeIds.has(challengeId)) {
+        return state;
+      }
+  
+      const next = new Set(state.completedChallengeIds);
+      next.add(challengeId);
+  
+      upsertProgressEntry(challengeId, {
+        challengeId,
+        completed: true,
+        bestStepCount,
+        completedAt: Date.now(),
+      });
+  
+      return { completedChallengeIds: next };
+    });
+  },
+  
 
   reorderInstructions: (fromIndex, toIndex) => {
     const { playerInstructions } = get();
