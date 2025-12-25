@@ -25,6 +25,11 @@ export const challenges: Challenge[] = [
         InstructionType.MOVE_LEFT,
         InstructionType.PICK,
         InstructionType.PUT,
+
+        InstructionType.IF_GREATER,
+        InstructionType.IF_LESS,
+
+        InstructionType.LABEL,
       ],
       suggestedInstructions: [
         InstructionType.PICK,
