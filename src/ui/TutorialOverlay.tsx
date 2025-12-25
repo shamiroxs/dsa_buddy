@@ -7,20 +7,20 @@ const STEPS = [
   },
   
   {
-    title: 'Step 1: PICK',
-    text: 'Click PICK to grab the number under MOCO.',
+    title: 'Step 1: Grab the number.',
+    text: 'Click PICK',
   },
   {
-    title: 'Step 2: MOVE',
-    text: 'Click MOVE_RIGHT to move MOCO.',
+    title: 'Step 2: Move MOCO to right',
+    text: 'Click MOVE_RIGHT',
   },
   {
-    title: 'Step 3: PUT',
-    text: 'Click PUT to place the number.',
+    title: 'Step 3: Place the number',
+    text: 'Click PUT',
   },
   {
-    title: 'Step 4: Run',
-    text: 'Click Run/Step to vitualize.',
+    title: 'Step 4: Vitualize',
+    text: 'Click Run/Step',
   },
 ];
 
