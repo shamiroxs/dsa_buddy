@@ -49,8 +49,6 @@ export const challenges: Challenge[] = [
         InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
         InstructionType.MOVE_TO_END,
-        InstructionType.PICK,
-        InstructionType.PUT,
         InstructionType.SWAP,
       ],
     }
@@ -103,7 +101,6 @@ export const challenges: Challenge[] = [
 
         InstructionType.IF_GREATER,
         InstructionType.IF_LESS,
-        InstructionType.IF_EQUAL,
         InstructionType.IF_END,
 
         InstructionType.JUMP,

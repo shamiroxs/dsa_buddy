@@ -61,11 +61,11 @@ export function ChallengePathView() {
 
         <div className="relative flex flex-col items-center">
           {/* Base path line */}
-          <div className="absolute top-0 bottom-0 w-1 bg-gray-700 rounded" />
+          <div className="absolute top-0 bottom-0 w-0.5 sm:w-1 bg-gray-700 rounded" />
 
           {/* Completed path overlay */}
           <div
-            className="absolute top-0 w-1 bg-indigo-500 rounded transition-all duration-500"
+            className="absolute top-0 w-0.5 sm:w-1 bg-indigo-500 rounded transition-all duration-500"
             style={{ 
               height: `${progressPercent}%`,
               transition: 'height 0.4s ease-out'}}
@@ -80,7 +80,7 @@ export function ChallengePathView() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="relative z-10 flex flex-col items-center mb-16 overflow-visible"
+                className="relative z-10 flex flex-col items-center mb-10 sm:mb-16 overflow-visible"
               >
                 {/* Node */}
                 <button
@@ -89,7 +89,11 @@ export function ChallengePathView() {
                     challenge.unlocked && selectChallenge(challenge.id)
                   }
                   className={clsx(
-                    'w-16 h-16 rounded-full flex items-center justify-center',
+                    // Mobile first
+                    'w-12 h-12 text-sm',
+                    // Desktop
+                    'sm:w-16 sm:h-16 sm:text-lg',
+                    'rounded-full flex items-center justify-center',
                     'text-white font-bold text-lg shadow-lg',
                     'transition-transform active:scale-95',
                     challenge.unlocked && 'hover:scale-105',
@@ -104,10 +108,10 @@ export function ChallengePathView() {
                 </button>
 
                 {/* Title */}
-                <div className="absolute left-20 top-1/2 -translate-y-1/2 w-64 text-left whitespace-normal">
+                <div className="absolute left-14 sm:left-20 top-1/2 -translate-y-1/2 w-64 text-left whitespace-normal">
                   <p
                     className={clsx(
-                      'font-semibold',
+                      'font-semibold text-sm sm:text-base',
                       challenge.unlocked
                         ? 'text-white'
                         : 'text-gray-500'
