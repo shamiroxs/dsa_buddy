@@ -9,7 +9,7 @@ import { Difficulty } from '../engine/challenges/types';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 
-export function ChallengeListView() {
+export function ChallengePathView() {
   const { selectChallenge } = useGameStore();
 
   const getNodeColor = (difficulty: Difficulty, unlocked: boolean) => {
@@ -29,10 +29,10 @@ export function ChallengeListView() {
     <div className="min-h-screen bg-gray-900 py-12 px-4">
       <div className="max-w-xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-2 text-center">
-          DSA Buddy
+          Algorithm Express
         </h1>
         <p className="text-gray-400 mb-12 text-center">
-          Learn algorithms step by step
+          Enter into your compartment
         </p>
 
         <div className="relative flex flex-col items-center">

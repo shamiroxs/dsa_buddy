@@ -7,7 +7,7 @@ import { challenges } from '../engine/challenges/challenges';
 import { useGameStore } from '../orchestrator/store';
 import { useEffect } from 'react';
 import { GameView } from './GameView';
-import { ChallengeListView } from './ChallengeListView';
+import { ChallengePathView } from './ChallengePathView'; 
 
 export function Routes() {
   const { currentChallenge, setChallenges, initializeChallenge } = useGameStore();
@@ -35,7 +35,7 @@ export function Routes() {
     return <GameView />;
   }
   
-  return <ChallengeListView />;
+  return <ChallengePathView />;
 }
 
 
