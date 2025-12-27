@@ -38,7 +38,7 @@ export function executeSingleStep(): void {
 
   if (result.success) {
     store.setExecutionState(result.state);
-    store.setExecutionError(null);
+    store.setExecutionError(null, null);
 
     // Check if challenge is completed
     if (result.completed || result.state.currentLine >= result.state.instructions.length) {
@@ -54,18 +54,37 @@ export function executeSingleStep(): void {
       errorMessage.includes('Cannot move left: pointer already at start') ||
       errorMessage.includes('Cannot swap: pointer at or beyond last element');
     
-    if (isPointerOutOfBounds) {
-      // Pointer out of bounds - treat as program completion and validate
-      store.setExecutionState(result.state);
-      store.setExecutionError(null);
-      stopExecution();
-      validateChallenge();
-    } else {
-      // Other errors - show error message
-      store.setExecutionError(result.error || 'Execution failed');
-      stopExecution();
+      if (isPointerOutOfBounds) {
+        // Temporarily update state to perform validation
+        store.setExecutionState(result.state);
+  
+        const validationResult = store.currentChallenge && store.executionState
+          ? validateChallengeFn(store.currentChallenge, store.executionState)
+          : null;
+  
+        if (validationResult?.success) {
+          // Challenge actually completed despite pointer error
+          stopExecution();
+          store.setExecutionError(null, null);
+          store.setValidationResult(validationResult);
+          if (store.currentChallenge && store.executionState) {
+            store.markChallengeCompleted(
+              store.currentChallenge.id,
+              store.executionState.stepCount
+            );
+          }
+        } else {
+          // Challenge not correct → show error
+          store.setExecutionError(result.error || 'Execution failed', result.errorContext ?? null);
+          stopExecution();
+        }
+  
+      } else {
+        // Other errors → just show error
+        store.setExecutionError(result.error || 'Execution failed', result.errorContext ?? null);
+        stopExecution();
+      }
     }
-  }
 }
 
 /**
@@ -194,6 +213,3 @@ export function resetExecution(): void {
   const store = useGameStore.getState();
   store.resetChallenge();
 }
-
-
-

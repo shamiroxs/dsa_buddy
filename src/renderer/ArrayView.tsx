@@ -4,6 +4,7 @@
  */
 
 import { motion } from 'framer-motion';
+import type { ExecutionErrorContext } from '../interpreter/vm';
 
 interface ArrayViewProps {
   array: number[];
@@ -14,6 +15,8 @@ interface ArrayViewProps {
 
   cellWidth?: number;
   cellHeight?: number;
+
+  errorContext?: ExecutionErrorContext;
 }
 
 export function ArrayView({
@@ -22,6 +25,8 @@ export function ArrayView({
   chocoPointer,
   cellWidth = 60,
   cellHeight = 60,
+  errorContext
+
 }: ArrayViewProps) {
   const spacing = 10;
   const totalWidth = array.length * (cellWidth + spacing) - spacing;
@@ -38,6 +43,10 @@ export function ArrayView({
         const hasMoco = mocoPointer === index;
         const hasChoco = chocoPointer === index;
         const both = hasMoco && hasChoco;
+
+        const isErrorCell =
+        errorContext?.kind === 'ARRAY_INDEX' &&
+        errorContext.index === index;
 
         const fill = both
           ? '#7c3aed' // purple
@@ -64,11 +73,13 @@ export function ArrayView({
               width={cellWidth}
               height={cellHeight}
               rx={6}
-              fill={fill}
-              stroke={stroke}
+              fill={isErrorCell ? '#7f1d1d' : fill}
+              stroke={isErrorCell ? '#ef4444' : stroke}
+              animate={{
+                scale: isErrorCell ? 1.1 : 1,
+              }}
               strokeWidth={2}
               initial={{ scale: 1 }}
-              animate={{ scale: hasMoco || hasChoco ? 1.05 : 1 }}
               transition={{ duration: 0.2 }}
             />
 

@@ -28,6 +28,9 @@ export const useIsPaused = () =>
 export const useExecutionError = () =>
   useGameStore((state) => state.executionError);
 
+export const useExecutionErrorContext = () =>
+  useGameStore((s) => s.executionErrorContext);
+
 export const useValidationResult = () =>
   useGameStore((state) => state.validationResult);
 

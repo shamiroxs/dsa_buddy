@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import type { Challenge } from '../engine/challenges/types';
 import type { ExecutionState } from '../interpreter/executionModel';
+import type { ExecutionErrorContext } from '../interpreter/vm';
 import type { Instruction } from '../engine/instructions/types';
 import type { ValidationResult } from '../engine/validator/validator';
 import { GameEngine } from '../engine/engine';
@@ -84,6 +85,7 @@ interface GameState {
   isExecuting: boolean;
   isPaused: boolean;
   executionError: string | null;
+  executionErrorContext: ExecutionErrorContext | null;
   
   // Player instructions
   playerInstructions: Instruction[];
@@ -117,7 +119,7 @@ interface GameState {
   setExecutionState: (state: ExecutionState | null) => void;
   setIsExecuting: (isExecuting: boolean) => void;
   setIsPaused: (isPaused: boolean) => void;
-  setExecutionError: (error: string | null) => void;
+  setExecutionError: (error: string | null, context?: ExecutionErrorContext | null) => void;
   setValidationResult: (result: ValidationResult | null) => void;
   resetChallenge: () => void;
   initializeChallenge: () => void;
@@ -141,6 +143,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   isExecuting: false,
   isPaused: false,
   executionError: null,
+  executionErrorContext: null,
   playerInstructions: [],
   validationResult: null,
   engine: new GameEngine(),
@@ -236,7 +239,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { currentChallenge, engine } = get();
     if (currentChallenge) {
       const newState = engine.initializeChallenge(currentChallenge, instructions);
-      set({ executionState: newState, validationResult: null, executionError: null });
+      set({ executionState: newState, validationResult: null, executionError: null, executionErrorContext: null });
     }
   },
   
@@ -270,8 +273,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   setIsExecuting: (isExecuting) => set({ isExecuting }),
   
   setIsPaused: (isPaused) => set({ isPaused }),
+
+  setExecutionError: (
+    error: string | null,
+    context: ExecutionErrorContext | null = null
+  ) =>
+    set({
+      executionError: error,
+      executionErrorContext: context,
+    }),
   
-  setExecutionError: (error) => set({ executionError: error }),
   
   setValidationResult: (result) => set({ validationResult: result }),
   
@@ -284,6 +295,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           executionState: newState,
           validationResult: null,
           executionError: null,
+          executionErrorContext: null,
           isExecuting: false,
           isPaused: false,
         });
@@ -299,6 +311,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         executionState: newState,
         validationResult: null,
         executionError: null,
+        executionErrorContext: null,
         isExecuting: false,
         isPaused: false,
       });

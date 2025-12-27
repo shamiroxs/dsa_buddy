@@ -49,6 +49,8 @@ import {
 
 import { CSS } from '@dnd-kit/utilities';
 
+import { useExecutionErrorContext } from '../orchestrator/selectors';
+
 
 //const pointer: 'MOCO' | 'CHOCO' = 'MOCO';
 //const POINTERS: Array<'MOCO' | 'CHOCO'> = ['MOCO', 'CHOCO'];
@@ -481,6 +483,7 @@ export function InstructionPalette() {
     Map<string, { x: number; y: number }>
   >(new Map());
 
+  const errorContext = useExecutionErrorContext();
 
   function SortableInstructionLine({
     instruction,
@@ -518,6 +521,11 @@ export function InstructionPalette() {
       transform: CSS.Transform.toString(transform),
       transition,
     };
+
+    const isError =
+    errorContext?.kind === 'INSTRUCTION' &&
+    errorContext.line === index;
+
   
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -600,7 +608,10 @@ export function InstructionPalette() {
         style={style}
         {...attributes}
         {...listeners}
-        className="flex justify-center"
+        className={`
+          flex justify-center
+        `}
+        
       >
         <div className="flex flex-col items-center">
     
@@ -645,17 +656,21 @@ export function InstructionPalette() {
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="text-gray-400 hover:text-gray-300 text-xs"
+                  className="text-gray-500 hover:text-gray-300 text-xs"
                 >
                   ×
                 </button>
               </div>
             ) : (
+              <div
+                className={isError ? 'ring-2 ring-red-500 rounded-lg justify-center' : ''}
+              >
               <FlowchartBlock
                 instruction={instruction}
                 lineNumber={index}
                 onEdit={hasEditableParameter ? handleEdit : undefined}
               />
+              </div>
             )}
           </div>
     

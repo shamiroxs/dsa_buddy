@@ -17,6 +17,7 @@ import {
   useCurrentLine,
   useStepCount,
   useCurrentInstruction,
+  useExecutionErrorContext,
 } from '../orchestrator/selectors';
 
 import { useGameStore } from '../orchestrator/store';
@@ -42,6 +43,7 @@ export function GameView() {
 
   const instructions = usePlayerInstructions();
   const executionError = useExecutionError();
+  const executionErrorContext = useExecutionErrorContext();
 
   const array = useArrayState();
   const rawMocoPointer = useMocoPointer();
@@ -79,22 +81,6 @@ export function GameView() {
           </div>
         </div>
 
-        {/* ================= ERROR ================= */}
-        {executionError && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 bg-red-900/30 border border-red-500 rounded-lg p-3"
-          >
-            <div className="text-red-300 font-semibold">
-              Execution Error
-            </div>
-            <div className="text-red-200 text-sm mt-1">
-              {executionError}
-            </div>
-          </motion.div>
-        )}
-
         <div className="grid grid-cols-1 gap-4">
 
           {/* ================= LEFT ================= */}
@@ -128,6 +114,7 @@ export function GameView() {
                     arrayLength={array.length}
                     mocoPointer={mocoPointer}
                     chocoPointer={chocoPointer}
+                    errorContext={executionErrorContext ?? undefined}
                   />
                 </div>
               )}
@@ -139,6 +126,7 @@ export function GameView() {
                 array={array}
                 mocoPointer={mocoPointer}
                 chocoPointer={chocoPointer}
+                errorContext={executionErrorContext ?? undefined}
               />
 
               </div>
@@ -150,10 +138,29 @@ export function GameView() {
                 stepCount={stepCount}
                 currentInstruction={currentInstruction}
               />
+              {/* ================= ERROR ================= */}
+              {executionError && (
+                
+              <div className="bg-gray-800 rounded-lg p-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-900/30 border border-red-500 rounded p-3"
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-sm text-red-300 font-semibold">
+                    Execution Error
+                  </div>
+                  <div className="text-red-200 text-sm mt-1">
+                    {executionError}
+                  </div>
+                </motion.div>
+              </div>
+              )}
             <ControlBar />
             </div>
           </div>
-
+          
           {/* ================= RIGHT ================= */}
           <div className="lg:col-span-1">
             <div className="space-y-4">

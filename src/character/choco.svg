@@ -1,0 +1,32 @@
+<svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- HEAD -->
+  <g id="head" transform="translate(24 14)">
+    <ellipse cx="0" cy="0" rx="10" ry="8" fill="#fde68a"/>
+
+    <!-- Eyes -->
+    <circle cx="-4" cy="-1" r="2" fill="#0f172a"/>
+    <circle cx="4" cy="-1" r="2" fill="#0f172a"/>
+
+    <!-- Antenna -->
+    <line x1="0" y1="-8" x2="0" y2="-14" stroke="#0f172a" stroke-width="1.5"/>
+    <circle cx="0" cy="-16" r="2" fill="#dc2626"/>
+  </g>
+
+  <!-- BODY / COAT -->
+  <g id="coat" transform="translate(24 34)">
+    <path
+      d="M-12 -8 Q0 -14 12 -8 V12 Q0 18 -12 12 Z"
+      fill="#dc2626"
+    />
+
+    <!-- Buttons -->
+    <circle cx="0" cy="-2" r="1.5" fill="#fee2e2"/>
+    <circle cx="0" cy="4" r="1.5" fill="#fee2e2"/>
+  </g>
+
+  <!-- LEGS -->
+  <g id="legs" transform="translate(24 50)">
+    <rect x="-6" y="0" width="4" height="10" rx="2" fill="#1e293b"/>
+    <rect x="2" y="0" width="4" height="10" rx="2" fill="#1e293b"/>
+  </g>
+</svg>

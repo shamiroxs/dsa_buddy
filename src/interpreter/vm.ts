@@ -9,10 +9,17 @@ import { InstructionType } from '../engine/instructions/types';
 import type { ExecutionState } from './executionModel';
 import { cloneState } from './executionModel';
 
+export type ExecutionErrorContext =
+  | { kind: 'INSTRUCTION'; line: number }
+  | { kind: 'POINTER'; target: 'MOCO' | 'CHOCO' }
+  | { kind: 'ARRAY_INDEX'; index: number }
+  | { kind: 'ARRAY_RANGE'; from: number; to: number };
+
 export interface ExecutionResult {
   state: ExecutionState;
   success: boolean;
   error?: string;
+  errorContext?: ExecutionErrorContext;
   completed: boolean;
 }
 
@@ -62,6 +69,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Cannot move left: pointer already at start',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -80,6 +91,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Cannot move right: pointer already at end',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -105,6 +120,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Index ${instruction.index} out of bounds`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -120,6 +139,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -138,6 +161,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -147,6 +174,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Hand is empty (use PICK first)',
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -163,6 +194,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Hand is empty (use PICK first)',
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -174,6 +209,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -184,6 +223,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Label "${instruction.label}" not found`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -203,6 +246,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Hand is empty (use PICK first)',
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -214,6 +261,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -224,6 +275,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Label "${instruction.label}" not found`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -243,6 +298,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Hand is empty (use PICK first)',
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -254,6 +313,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -264,6 +327,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Label "${instruction.label}" not found`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -286,6 +353,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Label "${instruction.label}" not found`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -307,6 +378,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Label "${instruction.label}" not found`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -327,6 +402,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: `Label "${instruction.label}" not found`,
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -350,6 +429,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'INSTRUCTION',
+              line: newState.currentLine,
+            },
             completed: false,
           };
         }
@@ -369,6 +452,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Cannot swap: pointer at or beyond last element',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -390,6 +477,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -408,6 +499,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             state: newState,
             success: false,
             error: 'Pointer out of bounds',
+            errorContext: {
+              kind: 'POINTER',
+              target: instruction.target,
+            },
             completed: false,
           };
         }
@@ -428,6 +523,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           state: newState,
           success: false,
           error: `Unknown instruction type: ${(instruction as any).type}`,
+          errorContext: {
+            kind: 'INSTRUCTION',
+            line: newState.currentLine,
+          },
           completed: false,
         };
     }
