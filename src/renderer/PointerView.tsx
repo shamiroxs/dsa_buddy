@@ -41,11 +41,28 @@ export function PointerView({
 
     return (
       <g>
+        {/* Error ring / pulse */}
+        {isError && (
+          <motion.path
+            d={`M ${x} ${yOffset} L ${x - 8} ${yOffset + 20} M ${x} ${yOffset} L ${x + 8} ${yOffset + 20}`}
+            stroke="#ef4444"            // yellow-400
+            strokeWidth={6}             // ring thickness
+            fill="none"
+            strokeLinecap="round"
+            initial={{ opacity: 0.4 }}
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        )}
         {/* Arrow */}
         <motion.path
           d={`M ${x} ${yOffset} L ${x - 8} ${yOffset + 20} M ${x} ${yOffset} L ${x + 8} ${yOffset + 20}`}
-          stroke={isError ? '#ef4444' : color}
-          strokeWidth={isError ? 4 : 3}
+          stroke={color}
+          strokeWidth={3}
           fill="none"
           strokeLinecap="round"
           initial={{ opacity: 0, y: -6 }}
@@ -59,22 +76,6 @@ export function PointerView({
             x: isError ? { duration: 0.3 } : undefined,
           }}
         />
-
-
-        {/* Label */}
-        <motion.text
-          x={x}
-          y={yOffset - 6}
-          textAnchor="middle"
-          fill={color}
-          fontSize="11"
-          fontWeight="600"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          {}
-        </motion.text>
       </g>
     );
   }
