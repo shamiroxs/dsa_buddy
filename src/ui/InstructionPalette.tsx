@@ -60,28 +60,28 @@ type DragItem =
   | { source: 'PROGRAM'; instructionId: string };
 
 const instructionTemplates = [
-  { type: InstructionType.MOVE_LEFT, label: 'MOVE_LEFT', description: 'Move pointer left (pointer -= 1)' },
-  { type: InstructionType.MOVE_RIGHT, label: 'MOVE_RIGHT', description: 'Move pointer right (pointer += 1)' },
-  { type: InstructionType.MOVE_TO_END, label: 'MOVE_TO_END', description: 'Move pointer to end (pointer = length - 1)' },
-  { type: InstructionType.SET_POINTER, label: 'SET_POINTER', description: 'Set pointer to index' },
-  { type: InstructionType.PICK, label: 'PICK', description: 'Pick value at pointer into hand' },
-  { type: InstructionType.PUT, label: 'PUT', description: 'Put hand value at pointer' },
-  { type: InstructionType.IF_GREATER, label: 'IF_GREATER', description: 'Jump if hand > current value' },
-  { type: InstructionType.IF_LESS, label: 'IF_LESS', description: 'Jump if hand < current value' },
-  { type: InstructionType.IF_EQUAL, label: 'IF_EQUAL', description: 'Jump if hand === current value' },
+  { type: InstructionType.MOVE_LEFT, label: '← Left', description: 'Move pointer left (pointer -= 1)' },
+  { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
+  { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
+  { type: InstructionType.SET_POINTER, label: 'Set ↦', description: 'Set pointer to index' },
+  { type: InstructionType.PICK, label: 'Pick ↑', description: 'Pick value at pointer into hand' },
+  { type: InstructionType.PUT, label: 'Put ↓', description: 'Put hand value at pointer' },
+  { type: InstructionType.IF_GREATER, label: 'IFGreat ?', description: 'Jump if hand > current value' },
+  { type: InstructionType.IF_LESS, label: 'IFLess ?', description: 'Jump if hand < current value' },
+  { type: InstructionType.IF_EQUAL, label: 'IFEqual ?', description: 'Jump if hand === current value' },
   { 
     type: InstructionType.IF_END, 
-    label: 'IF_END', 
+    label: 'IFEnd ?', 
     description: 'Jump if pointer is at last element' 
   },  
-  { type: InstructionType.IF_MEET, label: 'IF_MEET', description: 'Jump if moco === choco' },
-  { type: InstructionType.JUMP, label: 'JUMP', description: 'Jump to label' },
-  { type: InstructionType.LABEL, label: 'LABEL', description: 'Define a label' },
-  { type: InstructionType.SWAP, label: 'SWAP', description: 'Swap moco and choco value' },
-  { type: InstructionType.SWAP_WITH_NEXT, label: 'SWAP_WITH_NEXT', description: 'Swap current with next element' },
-  { type: InstructionType.INCREMENT_VALUE, label: 'INCREMENT_VALUE', description: 'Increment value at pointer' },
-  { type: InstructionType.DECREMENT_VALUE, label: 'DECREMENT_VALUE', description: 'Decrement value at pointer' },
-  { type: InstructionType.WAIT, label: 'WAIT', description: 'Wait (no operation)' },
+  { type: InstructionType.IF_MEET, label: 'IFMeet ?', description: 'Jump if moco === choco' },
+  { type: InstructionType.JUMP, label: 'Jump ⟲', description: 'Jump to label' },
+  { type: InstructionType.LABEL, label: 'Label', description: 'Define a label' },
+  { type: InstructionType.SWAP, label: 'Swap ⇄', description: 'Swap moco and choco value' },
+  { type: InstructionType.SWAP_WITH_NEXT, label: 'SwapNext →←', description: 'Swap current with next element' },
+  { type: InstructionType.INCREMENT_VALUE, label: 'Value +', description: 'Increment value at pointer' },
+  { type: InstructionType.DECREMENT_VALUE, label: 'Value -', description: 'Decrement value at pointer' },
+  { type: InstructionType.WAIT, label: 'Wait', description: 'Wait (no operation)' },
 ];
 
 const globalInstructionTypes: InstructionType[] = [
@@ -343,42 +343,42 @@ export function InstructionPalette() {
   const formatInstruction = (inst: Instruction): string => {
     switch (inst.type) {
       case InstructionType.MOVE_LEFT:
-        return 'MOVE_LEFT';
+        return '← Left';
       case InstructionType.MOVE_RIGHT:
-        return 'MOVE_RIGHT';
+        return 'Right →';
       case InstructionType.MOVE_TO_END:
-        return 'MOVE_TO_END';
+        return 'ToEnd →→';
       case InstructionType.SET_POINTER:
-        return `SET_POINTER ${inst.index}`;
+        return `Set ${inst.index}`;
       case InstructionType.PICK:
-        return 'PICK';
+        return 'Pick ↑';
       case InstructionType.PUT:
-        return 'PUT';
+        return 'Put ↓';
       case InstructionType.IF_GREATER:
-        return `IF_GREATER ${inst.label}`;
+        return `IFGreat ${inst.label}`;
       case InstructionType.IF_LESS:
-        return `IF_LESS ${inst.label}`;
+        return `IFLess ${inst.label}`;
       case InstructionType.IF_EQUAL:
-        return `IF_EQUAL ${inst.label}`;
+        return `IFEqual ${inst.label}`;
       case InstructionType.IF_END:
-        return `IF_END ${inst.label}`;
+        return `IFEnd ${inst.label}`;
       case InstructionType.IF_MEET:
-        return `IF_MEET ${inst.label}`;
+        return `IFMeet ${inst.label}`;
     
       case InstructionType.JUMP:
-        return `JUMP ${inst.label}`;
+        return `Jump ${inst.label}`;
       case InstructionType.LABEL:
         return `${inst.labelName}:`;
       case InstructionType.SWAP:
-        return 'SWAP';
+        return 'Swap ⇄';
       case InstructionType.SWAP_WITH_NEXT:
-        return 'SWAP_WITH_NEXT';
+        return 'SwapNext →←';
       case InstructionType.INCREMENT_VALUE:
-        return 'INCREMENT_VALUE';
+        return 'Value +';
       case InstructionType.DECREMENT_VALUE:
-        return 'DECREMENT_VALUE';
+        return 'Value -';
       case InstructionType.WAIT:
-        return 'WAIT';
+        return 'Wait';
       default:
         return 'UNKNOWN';
     }
