@@ -12,11 +12,11 @@ const STEPS = [
   },
   {
     title: 'Step 2: Move MOCO to right',
-    text: 'Drag & Drop Right →'',
+    text: 'Drag & Drop Right →',
   },
   {
     title: 'Step 3: Place the number',
-    text: 'Click / Drag & Drop Put ↓,
+    text: 'Click / Drag & Drop Put ↓',
   },
   {
     title: 'Step 4: Visualize',
