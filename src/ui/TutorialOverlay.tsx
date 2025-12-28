@@ -8,7 +8,7 @@ const STEPS = [
   
   {
     title: 'Step 1: Grab the number.',
-    text: 'Drag & Drop PICK',
+    text: 'Click PICK',
   },
   {
     title: 'Step 2: Move MOCO to right',
@@ -16,7 +16,7 @@ const STEPS = [
   },
   {
     title: 'Step 3: Place the number',
-    text: 'Drag & Drop PUT',
+    text: 'Click / Drag & Drop PUT',
   },
   {
     title: 'Step 4: Visualize',
