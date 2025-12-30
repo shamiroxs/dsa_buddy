@@ -113,7 +113,7 @@ interface GameState {
   selectChallenge: (challengeId: string) => void;
   setCurrentChallenge: (challenge: Challenge | null) => void;
   setPlayerInstructions: (instructions: Instruction[]) => void;
-  addInstruction: (instruction: Instruction) => void;
+  addInstruction: (instruction: Instruction, index?: number) => void;
   removeInstruction: (instructionId: string) => void;
   updateInstruction: (instructionId: string, instruction: Instruction) => void;
   setExecutionState: (state: ExecutionState | null) => void;
@@ -243,15 +243,34 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
   
-  addInstruction: (instruction) => {
-    const { playerInstructions, isTutorialActive, tutorialStep, nextTutorialStep } = get();
-    const newInstructions = [...playerInstructions, instruction];
+  addInstruction: (instruction, index) => {
+    const {
+      playerInstructions,
+      isTutorialActive,
+      tutorialStep,
+      nextTutorialStep,
+    } = get();
+  
+    const newInstructions = [...playerInstructions];
+  
+    if (index === undefined || index < 0 || index > newInstructions.length) {
+      newInstructions.push(instruction);
+    } else {
+      newInstructions.splice(index, 0, instruction);
+    }
+  
+    // Renumber line numbers if your engine relies on them
+    newInstructions.forEach((inst, i) => {
+      (inst as any).lineNumber = i;
+    });
+  
     get().setPlayerInstructions(newInstructions);
   
     if (isTutorialActive && tutorialStep < 4) {
       nextTutorialStep();
     }
   },
+  
   
   
   removeInstruction: (instructionId) => {

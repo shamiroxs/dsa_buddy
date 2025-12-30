@@ -6,6 +6,53 @@
 import type { Instruction, PointerTarget } from './types';
 import { InstructionType } from './types';
 
+export function createInstruction(
+  type: InstructionType,
+  pointer: 'MOCO' | 'CHOCO',
+  lineNumber: number
+): Instruction {
+  switch (type) {
+    case InstructionType.MOVE_LEFT:
+      return createMoveLeft(pointer, lineNumber);
+    case InstructionType.MOVE_RIGHT:
+      return createMoveRight(pointer, lineNumber);
+    case InstructionType.MOVE_TO_END:
+      return createMoveToEnd(pointer, lineNumber);
+    case InstructionType.SET_POINTER:
+      return createSetPointer(pointer, 0, lineNumber);
+    case InstructionType.PICK:
+      return createPick(pointer, lineNumber);
+    case InstructionType.PUT:
+      return createPut(pointer, lineNumber);
+    case InstructionType.IF_GREATER:
+      return createIfGreater(pointer, lineNumber);
+    case InstructionType.IF_LESS:
+      return createIfLess(pointer, lineNumber);
+    case InstructionType.IF_EQUAL:
+      return createIfEqual(pointer, lineNumber);
+    case InstructionType.IF_END:
+      return createIfEnd(pointer, 'label', lineNumber);
+    case InstructionType.IF_MEET:
+      return createIfMeet('label', lineNumber);
+    case InstructionType.JUMP:
+      return createJump('label', lineNumber);
+    case InstructionType.LABEL:
+      return createLabel('label', lineNumber);
+    case InstructionType.SWAP:
+      return createSwap(lineNumber);
+    case InstructionType.SWAP_WITH_NEXT:
+      return createSwapWithNext(pointer, lineNumber);
+    case InstructionType.INCREMENT_VALUE:
+      return createIncrementValue(pointer, lineNumber);
+    case InstructionType.DECREMENT_VALUE:
+      return createDecrementValue(pointer, lineNumber);
+    case InstructionType.WAIT:
+      return createWait(lineNumber);
+    default:
+      throw new Error('Unsupported instruction');
+  }
+}
+
 export function createMoveLeft(
   target: PointerTarget,
   lineNumber: number
@@ -84,42 +131,39 @@ export function createPut(
 
 export function createIfGreater(
   target: PointerTarget,
-  label: string,
   lineNumber: number
 ): Instruction {
   return {
     id: `ifgreater-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_GREATER,
     target,
-    label,
+    body: [],
     lineNumber,
   };
 }
 
 export function createIfLess(
   target: PointerTarget,
-  label: string,
   lineNumber: number
 ): Instruction {
   return {
     id: `ifless-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_LESS,
     target,
-    label,
+    body: [],
     lineNumber,
   };
 }
 
 export function createIfEqual(
   target: PointerTarget,
-  label: string,
   lineNumber: number
 ): Instruction {
   return {
     id: `ifequal-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_EQUAL,
     target,
-    label,
+    body: [],
     lineNumber,
   };
 }

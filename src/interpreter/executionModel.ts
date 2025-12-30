@@ -3,6 +3,11 @@
  * Tracks array state, pointers, registers, and execution position
  */
 
+export interface ExecutionFrame {
+  instructions: any[]; // Instruction[]
+  line: number;
+}
+
 export interface ExecutionState {
   // Array state
   array: number[];
@@ -15,17 +20,16 @@ export interface ExecutionState {
   hand: number | null;
   
   // Execution state
-  currentLine: number;
+  executionStack: ExecutionFrame[];
   stepCount: number;
-  
-  // Program
-  instructions: any[]; // Will be typed with Instruction from engine
   
   // Label map for jumps (label name -> line number)
   labelMap: Record<string, number>;
   
   // History for rewind
   history: ExecutionState[];
+  currentLine: number;
+  instructions: any[];
 }
 
 export function createInitialState(
@@ -45,9 +49,15 @@ export function createInitialState(
     mocoPointer: 0,
     chocoPointer: 0,
     hand: null,
+    executionStack: [
+      {
+        instructions,
+        line: 0,
+      },
+    ],
     currentLine: 0,
-    stepCount: 0,
     instructions,
+    stepCount: 0,
     labelMap,
     history: [],
   };
@@ -59,9 +69,13 @@ export function cloneState(state: ExecutionState): ExecutionState {
     mocoPointer: state.mocoPointer,
     chocoPointer: state.chocoPointer,
     hand: state.hand,
+    executionStack: state.executionStack.map(frame => ({
+      instructions: frame.instructions,
+      line: frame.line,
+    })),
     currentLine: state.currentLine,
-    stepCount: state.stepCount,
     instructions: state.instructions,
+    stepCount: state.stepCount,
     labelMap: { ...state.labelMap },
     history: [...state.history],
   };

@@ -39,16 +39,34 @@ function setPointer(
   }
 }
 
+function instructionError(
+  state: ExecutionState,
+  line: number,
+  message: string
+): ExecutionResult {
+  return {
+    state,
+    success: false,
+    error: message,
+    errorContext: {
+      kind: 'INSTRUCTION',
+      line,
+    },
+    completed: false,
+  };
+}
 
 /**
  * Execute a single instruction
  */
 export function executeStep(state: ExecutionState): ExecutionResult {
-  // Save current state to history
   const newState = cloneState(state);
   newState.history.push(cloneState(state));
-  
-  if (newState.currentLine >= newState.instructions.length) {
+
+  const stack = newState.executionStack;
+
+  // Program finished
+  if (stack.length === 0) {
     return {
       state: newState,
       success: false,
@@ -56,493 +74,307 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       completed: true,
     };
   }
-  
-  const instruction = newState.instructions[newState.currentLine] as Instruction;
-  
+
+  const frame = stack[stack.length - 1];
+
+  // End of current frame
+  if (frame.line >= frame.instructions.length) {
+    stack.pop();
+
+    if (stack.length === 0) {
+      return {
+        state: newState,
+        success: true,
+        completed: true,
+      };
+    }
+
+    // Resume parent frame
+    stack[stack.length - 1].line++;
+    newState.stepCount++;
+
+    return {
+      state: newState,
+      success: true,
+      completed: false,
+    };
+  }
+
+  const instruction = frame.instructions[frame.line] as Instruction;
+
   try {
     switch (instruction.type) {
-      case InstructionType.MOVE_LEFT: {
-        const ptr = getPointer(newState, instruction.target);
-      
-        if (ptr <= 0) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Cannot move left: pointer already at start',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
-        }
-      
-        setPointer(newState, instruction.target, ptr - 1);
-        newState.currentLine++;
-        break;
-      }
-      
-        
-      case InstructionType.MOVE_RIGHT: {
-        const ptr = getPointer(newState, instruction.target);
-      
-        if (ptr >= newState.array.length - 1) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Cannot move right: pointer already at end',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
-        }
-      
-        setPointer(newState, instruction.target, ptr + 1);
-        newState.currentLine++;
-        break;
-      }
-      
-      case InstructionType.MOVE_TO_END: {
-        setPointer(
-          newState,
-          instruction.target,
-          newState.array.length - 1
-        );
-        newState.currentLine++;
-        break;
-      }   
-        
-      case InstructionType.SET_POINTER:
-        if (instruction.index < 0 || instruction.index >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: `Index ${instruction.index} out of bounds`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
-        setPointer(newState, instruction.target, instruction.index);
-        newState.currentLine++;
-        break;
-        
-      case InstructionType.PICK: {
-        const ptr = getPointer(newState, instruction.target);
-      
-        if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
-        }
-      
-        newState.hand = newState.array[ptr];
-        newState.currentLine++;
-        break;
-      }
-        
-        
-      case InstructionType.PUT: {
-        const ptr = getPointer(newState, instruction.target);
-      
-        if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
-        }
-      
-        if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
-      
-        newState.array[ptr] = newState.hand;
-        newState.currentLine++;
-        break;
-      }
-      
-        
-      case InstructionType.IF_GREATER: {
-        if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
-      
-        const ptr = getPointer(newState, instruction.target);
-      
-        if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
-        }
-      
-        const targetLine = newState.labelMap[instruction.label];
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
-      
-        if (newState.hand > newState.array[ptr]) {
-          newState.currentLine = targetLine;
-        } else {
-          newState.currentLine++;
-        }
-      
-        break;
-      }
-        
+
+      /* ─────────────── IF BLOCKS ─────────────── */
+
       case InstructionType.IF_LESS: {
         if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Hand is empty');
         }
-      
+
         const ptr = getPointer(newState, instruction.target);
-      
+
         if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
         }
-      
-        const targetLine = newState.labelMap[instruction.label];
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
-      
+
         if (newState.hand < newState.array[ptr]) {
-          newState.currentLine = targetLine;
+          stack.push({ instructions: instruction.body, line: 0 });
         } else {
-          newState.currentLine++;
+          frame.line++;
         }
-      
         break;
       }
-      
+
+      case InstructionType.IF_GREATER: {
+        if (newState.hand === null) {
+          return instructionError(newState, frame.line, 'Hand is empty');
+        }
+
+        const ptr = getPointer(newState, instruction.target);
+
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
+        }
+
+        if (newState.hand > newState.array[ptr]) {
+          stack.push({ instructions: instruction.body, line: 0 });
+        } else {
+          frame.line++;
+        }
+        break;
+      }
+
       case InstructionType.IF_EQUAL: {
         if (newState.hand === null) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Hand is empty (use PICK first)',
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Hand is empty');
         }
-      
+
         const ptr = getPointer(newState, instruction.target);
-      
+
         if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
         }
-      
-        const targetLine = newState.labelMap[instruction.label];
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
-      
+
         if (newState.hand === newState.array[ptr]) {
-          newState.currentLine = targetLine;
+          stack.push({ instructions: instruction.body, line: 0 });
         } else {
-          newState.currentLine++;
+          frame.line++;
         }
-      
         break;
-      }     
-           
+      }
+
       case InstructionType.IF_END: {
         const ptr = getPointer(newState, instruction.target);
-        const targetLine = newState.labelMap[instruction.label];
-      
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
-        }
       
         if (ptr === newState.array.length - 1) {
-          newState.currentLine = targetLine;
-        } else {
-          newState.currentLine++;
-        }
+          const targetLine = newState.labelMap[instruction.label];
+          if (targetLine === undefined) {
+            return instructionError(
+              newState,
+              frame.line,
+              `Label "${instruction.label}" not found`
+            );
+          }
       
-        break;
-      }     
-        
-      case InstructionType.IF_MEET: {
-        const targetLine = newState.labelMap[instruction.label];
-      
-        if (targetLine === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
+          // Jump always resets to top-level frame
+          newState.executionStack = [
+            {
+              instructions: newState.executionStack[0].instructions,
+              line: targetLine,
             },
-            completed: false,
-          };
-        }
-      
-        if (newState.mocoPointer === newState.chocoPointer) {
-          newState.currentLine = targetLine;
+          ];
         } else {
-          newState.currentLine++;
+          frame.line++;
         }
-      
         break;
       }
       
-      case InstructionType.JUMP:
-        const jumpTarget = newState.labelMap[instruction.label];
-        if (jumpTarget === undefined) {
-          return {
-            state: newState,
-            success: false,
-            error: `Label "${instruction.label}" not found`,
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
+      case InstructionType.IF_MEET: {
+        if (newState.mocoPointer === newState.chocoPointer) {
+          const targetLine = newState.labelMap[instruction.label];
+          if (targetLine === undefined) {
+            return instructionError(
+              newState,
+              frame.line,
+              `Label "${instruction.label}" not found`
+            );
+          }
+      
+          newState.executionStack = [
+            {
+              instructions: newState.executionStack[0].instructions,
+              line: targetLine,
             },
-            completed: false,
-          };
+          ];
+        } else {
+          frame.line++;
         }
-        newState.currentLine = jumpTarget;
         break;
-        
+      }
+      
+
+      /* ─────────────── JUMP / LABEL ─────────────── */
+
+      case InstructionType.JUMP: {
+        const target = newState.labelMap[instruction.label];
+        if (target === undefined) {
+          return instructionError(
+            newState,
+            frame.line,
+            `Label "${instruction.label}" not found`
+          );
+        }
+
+        // Reset stack to top-level frame
+        newState.executionStack = [
+          {
+            instructions: newState.executionStack[0].instructions,
+            line: target,
+          },
+        ];
+        break;
+      }
+
       case InstructionType.LABEL:
-        // Labels are no-ops during execution (they're processed during initialization)
-        newState.currentLine++;
+        frame.line++;
         break;
-        
-      case InstructionType.SWAP: {
-        const moco = newState.mocoPointer;
-        const choco = newState.chocoPointer;
-      
-        if (
-          moco < 0 || moco >= newState.array.length ||
-          choco < 0 || choco >= newState.array.length
-        ) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'INSTRUCTION',
-              line: newState.currentLine,
-            },
-            completed: false,
-          };
+
+      /* ─────────────── NORMAL INSTRUCTIONS ─────────────── */
+
+      case InstructionType.MOVE_LEFT: {
+        const ptr = getPointer(newState, instruction.target);
+        if (ptr <= 0) {
+          return instructionError(newState, frame.line, 'Cannot move left');
         }
-      
-        const temp = newState.array[moco];
-        newState.array[moco] = newState.array[choco];
-        newState.array[choco] = temp;
-      
-        newState.currentLine++;
+        setPointer(newState, instruction.target, ptr - 1);
+        frame.line++;
         break;
-      }  
+      }
+
+      case InstructionType.MOVE_RIGHT: {
+        const ptr = getPointer(newState, instruction.target);
+        if (ptr >= newState.array.length - 1) {
+          return instructionError(newState, frame.line, 'Cannot move right');
+        }
+        setPointer(newState, instruction.target, ptr + 1);
+        frame.line++;
+        break;
+      }
+
+      case InstructionType.MOVE_TO_END:
+        setPointer(newState, instruction.target, newState.array.length - 1);
+        frame.line++;
+        break;
+
+      case InstructionType.SET_POINTER:
+        if (
+          instruction.index < 0 ||
+          instruction.index >= newState.array.length
+        ) {
+          return instructionError(newState, frame.line, 'Index out of bounds');
+        }
+        setPointer(newState, instruction.target, instruction.index);
+        frame.line++;
+        break;
+
+      case InstructionType.PICK: {
+        const ptr = getPointer(newState, instruction.target);
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
+        }
+        newState.hand = newState.array[ptr];
+        frame.line++;
+        break;
+      }
+
+      case InstructionType.PUT: {
+        const ptr = getPointer(newState, instruction.target);
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
+        }
+        if (newState.hand === null) {
+          return instructionError(newState, frame.line, 'Hand is empty');
+        }
+        newState.array[ptr] = newState.hand;
+        frame.line++;
+        break;
+      }
+
+      case InstructionType.SWAP: {
+        const m = newState.mocoPointer;
+        const c = newState.chocoPointer;
+        if (
+          m < 0 || m >= newState.array.length ||
+          c < 0 || c >= newState.array.length
+        ) {
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
+        }
+        const temp = newState.array[m];
+        newState.array[m] = newState.array[c];
+        newState.array[c] = temp;
+        frame.line++;
+        break;
+      }
+
       case InstructionType.SWAP_WITH_NEXT: {
         const ptr = getPointer(newState, instruction.target);
-      
         if (ptr < 0 || ptr >= newState.array.length - 1) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Cannot swap: pointer at or beyond last element',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Cannot swap');
         }
-      
         const temp = newState.array[ptr];
         newState.array[ptr] = newState.array[ptr + 1];
         newState.array[ptr + 1] = temp;
-      
-        newState.currentLine++;
+        frame.line++;
         break;
       }
-          
-        
+
       case InstructionType.INCREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);
-      
         if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
         }
-      
         newState.array[ptr]++;
-        newState.currentLine++;
+        frame.line++;
         break;
       }
-      
-        
+
       case InstructionType.DECREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);
-      
         if (ptr < 0 || ptr >= newState.array.length) {
-          return {
-            state: newState,
-            success: false,
-            error: 'Pointer out of bounds',
-            errorContext: {
-              kind: 'POINTER',
-              target: instruction.target,
-            },
-            completed: false,
-          };
+          return instructionError(newState, frame.line, 'Pointer out of bounds');
         }
-      
         newState.array[ptr]--;
-        newState.currentLine++;
+        frame.line++;
         break;
       }
-      
-        
+
       case InstructionType.WAIT:
-        // Consumes a step but does nothing
-        newState.currentLine++;
+        frame.line++;
         break;
-        
+
       default:
-        return {
-          state: newState,
-          success: false,
-          error: `Unknown instruction type: ${(instruction as any).type}`,
-          errorContext: {
-            kind: 'INSTRUCTION',
-            line: newState.currentLine,
-          },
-          completed: false,
-        };
+        return instructionError(newState, frame.line, 'Unknown instruction');
     }
-    
+
     newState.stepCount++;
+    const topFrame = newState.executionStack[0];
+
+    newState.currentLine = topFrame
+      ? topFrame.line
+      : newState.instructions.length;
     
     return {
       state: newState,
       success: true,
-      completed: newState.currentLine >= newState.instructions.length,
+      completed: false,
     };
-  } catch (error) {
+
+  } catch (err) {
     return {
       state: newState,
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: err instanceof Error ? err.message : 'Execution error',
       completed: false,
     };
   }

@@ -10,6 +10,7 @@ import { useGameStore } from '../orchestrator/store';
 import { InstructionType } from '../engine/instructions/types';
 import type { Instruction } from '../engine/instructions/types';
 import {
+  createInstruction,
   createMoveLeft,
   createMoveRight,
   createMoveToEnd,
@@ -38,7 +39,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { useDroppable } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import { DragOverlay } from '@dnd-kit/core';
 
 import {
@@ -51,24 +52,47 @@ import { CSS } from '@dnd-kit/utilities';
 
 import { useExecutionErrorContext } from '../orchestrator/selectors';
 
+import {
+  closestCenter,
+  rectIntersection,
+} from '@dnd-kit/core';
+import type { CollisionDetection } from '@dnd-kit/core';
+
+const collisionDetection: CollisionDetection = (args) => {
+  // 1️⃣ Prefer IF_BODY intersections
+  const ifBodyCollisions = rectIntersection({
+    ...args,
+    droppableContainers: args.droppableContainers.filter(
+      c => c.id.toString().startsWith('IF_BODY_')
+    ),
+  });
+
+  if (ifBodyCollisions.length > 0) {
+    return ifBodyCollisions;
+  }
+
+  // 2️⃣ Fallback to sortable behavior
+  return closestCenter(args);
+};
 
 //const pointer: 'MOCO' | 'CHOCO' = 'MOCO';
 //const POINTERS: Array<'MOCO' | 'CHOCO'> = ['MOCO', 'CHOCO'];
 
 type DragItem =
   | { source: 'PALETTE'; instructionType: InstructionType; pointer: 'MOCO' | 'CHOCO'; isGlobal?: boolean; }
-  | { source: 'PROGRAM'; instructionId: string };
+  | { source: 'PROGRAM'; instructionId: string }
+  | { source: 'IF_BODY'; instructionId: string; parentIfId: string };
 
 const instructionTemplates = [
   { type: InstructionType.MOVE_LEFT, label: '← Left', description: 'Move pointer left (pointer -= 1)' },
   { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
   { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
-  { type: InstructionType.SET_POINTER, label: 'Set ↦', description: 'Set pointer to index' },
+  { type: InstructionType.SET_POINTER, label: 'Goto ↦', description: 'Set pointer to index' },
   { type: InstructionType.PICK, label: 'Pick ↑', description: 'Pick value at pointer into hand' },
   { type: InstructionType.PUT, label: 'Put ↓', description: 'Put hand value at pointer' },
-  { type: InstructionType.IF_GREATER, label: 'IFGreat ?', description: 'Jump if hand > current value' },
-  { type: InstructionType.IF_LESS, label: 'IFLess ?', description: 'Jump if hand < current value' },
-  { type: InstructionType.IF_EQUAL, label: 'IFEqual ?', description: 'Jump if hand === current value' },
+  { type: InstructionType.IF_GREATER, label: 'IFGreat ?', description: 'If hand > current value' },
+  { type: InstructionType.IF_LESS, label: 'IFLess ?', description: 'If hand < current value' },
+  { type: InstructionType.IF_EQUAL, label: 'IFEqual ?', description: 'If hand === current value' },
   { 
     type: InstructionType.IF_END, 
     label: 'IFEnd ?', 
@@ -110,6 +134,21 @@ const OWNER_STYLE_MAP = {
   },
 } as const;
 
+function getPointerClientY(event: DragEndEvent | DragOverEvent): number {
+  const e = event.activatorEvent;
+
+  if (!e) return 0;
+
+  if (e instanceof MouseEvent) {
+    return e.clientY;
+  }
+
+  if (e instanceof TouchEvent && e.touches[0]) {
+    return e.touches[0].clientY;
+  }
+
+  return 0;
+}
 
 export function InstructionPalette() {
   const { playerInstructions, addInstruction, clearPlayerInstructions, executionState } = useGameStore();
@@ -126,7 +165,7 @@ export function InstructionPalette() {
   );
   
   
-  const { reorderInstructions, removeInstruction } = useGameStore();
+  const { reorderInstructions, removeInstruction, updateInstruction } = useGameStore();
   const { currentChallenge } = useGameStore();
 
   const capabilities = currentChallenge?.capabilities;
@@ -150,9 +189,14 @@ export function InstructionPalette() {
 
   const programContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // instruction.id → DOMRect
-  const instructionRects = useRef<Map<string, DOMRect>>(new Map());
-
+  // instruction.S → DOMRect
+  const programRects = useRef<Map<string, DOMRect>>(new Map());
+  const ifBodyRects = useRef<Map<string, Map<string, DOMRect>>>(new Map());
+  
+  const [insertPreview, setInsertPreview] = useState<{
+    id: string;
+    position: 'above' | 'below';
+  } | null>(null);
   
   const currentLine = executionState?.currentLine ?? null;
   
@@ -202,13 +246,13 @@ export function InstructionPalette() {
         instruction = createPut(pointer, lineNumber);
         break;
       case InstructionType.IF_GREATER:
-        instruction = createIfGreater(pointer, generateUniqueLabelName(), lineNumber);
+        instruction = createIfGreater(pointer, lineNumber);
         break;
       case InstructionType.IF_LESS:
-        instruction = createIfLess(pointer, generateUniqueLabelName(), lineNumber);
+        instruction = createIfLess(pointer, lineNumber);
         break;
       case InstructionType.IF_EQUAL:
-        instruction = createIfEqual(pointer, generateUniqueLabelName(), lineNumber);
+        instruction = createIfEqual(pointer, lineNumber);
         break;
       case InstructionType.IF_END:
         instruction = createIfEnd(pointer, generateUniqueLabelName(), lineNumber);
@@ -349,17 +393,17 @@ export function InstructionPalette() {
       case InstructionType.MOVE_TO_END:
         return 'ToEnd →→';
       case InstructionType.SET_POINTER:
-        return `Set ${inst.index}`;
+        return `Goto ${inst.index}`;
       case InstructionType.PICK:
         return 'Pick ↑';
       case InstructionType.PUT:
         return 'Put ↓';
       case InstructionType.IF_GREATER:
-        return `IFGreat ${inst.label}`;
+        return 'IFGreat';
       case InstructionType.IF_LESS:
-        return `IFLess ${inst.label}`;
+        return 'IFLess';
       case InstructionType.IF_EQUAL:
-        return `IFEqual ${inst.label}`;
+        return 'IFEqual';
       case InstructionType.IF_END:
         return `IFEnd ${inst.label}`;
       case InstructionType.IF_MEET:
@@ -489,34 +533,74 @@ export function InstructionPalette() {
     instruction,
     index,
     isActive,
+    insertPreview,
+    parentIfId,
   }: {
     instruction: Instruction;
     index: number;
     isActive: boolean;
+    insertPreview: {
+      id: string;
+      position: 'above' | 'below';
+    } | null;
+    parentIfId?: string;
   }) {
+    const { setNodeRef: setDropRef } = useDroppable({
+      id: instruction.id,
+    });
+    
+    const showGapAbove =
+      insertPreview?.id === instruction.id &&
+      insertPreview.position === 'above';
+
+    const showGapBelow =
+      insertPreview?.id === instruction.id &&
+      insertPreview.position === 'below';
+
+        
     const rowRef = useRef<HTMLDivElement | null>(null);
 
     const { updateInstruction, playerInstructions } = useGameStore();
   
     const { attributes, listeners, setNodeRef, transform, transition } =
-      useSortable({
-        id: instruction.id,
-        data: {
-          source: 'PROGRAM',
-          instructionId: instruction.id,
-        } satisfies DragItem,
-      });
-      useLayoutEffect(() => { 
-        if (!rowRef.current) return; 
-        const rect = rowRef.current.getBoundingClientRect(); 
-        instructionRects.current.set(instruction.id, rect); 
-
-        return () => { 
-          instructionRects.current.delete(instruction.id); 
-        }; 
-      
-      }, [instruction.id, transform]);
-
+    useSortable({
+      id: instruction.id,
+      data: parentIfId
+        ? {
+            source: 'IF_BODY',
+            instructionId: instruction.id,
+            parentIfId,
+          }
+        : {
+            source: 'PROGRAM',
+            instructionId: instruction.id,
+          },
+    });
+    
+    useLayoutEffect(() => {
+      if (!rowRef.current) return;
+      const rect = rowRef.current.getBoundingClientRect();
+    
+      if (!parentIfId) {
+        programRects.current.set(instruction.id, rect);
+      } else {
+        if (!ifBodyRects.current.has(parentIfId)) {
+          ifBodyRects.current.set(parentIfId, new Map());
+        }
+        ifBodyRects.current
+          .get(parentIfId)!
+          .set(instruction.id, rect);
+      }
+    
+      return () => {
+        if (!parentIfId) {
+          programRects.current.delete(instruction.id);
+        } else {
+          ifBodyRects.current.get(parentIfId)?.delete(instruction.id);
+        }
+      };
+    }, [instruction.id, transform, parentIfId]);
+    
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
@@ -552,6 +636,19 @@ export function InstructionPalette() {
       }
       setIsEditing(true);
     };
+
+    function collectLabels(instructions: Instruction[], set = new Set<string>()) {
+      for (const inst of instructions) {
+        if (inst.type === InstructionType.LABEL && 'labelName' in inst) {
+          set.add(inst.labelName);
+        }
+        if ('body' in inst) {
+          collectLabels(inst.body, set);
+        }
+      }
+      return set;
+    }
+    
   
     const handleSave = () => {
       let updatedInstruction: Instruction | null = null;
@@ -564,12 +661,9 @@ export function InstructionPalette() {
       } else if (instruction.type === InstructionType.LABEL && 'labelName' in instruction) {
         const labelName = editValue.trim();
         if (labelName.length > 0) {
-          const existingLabels = new Set(
-            playerInstructions
-              .filter((i) => i.type === InstructionType.LABEL)
-              .map((i: any) => i.labelName)
-          );
+          const existingLabels = collectLabels(playerInstructions);
           existingLabels.delete(instruction.labelName);
+
           if (!existingLabels.has(labelName)) {
             updatedInstruction = { ...instruction, labelName };
           } else {
@@ -584,9 +678,24 @@ export function InstructionPalette() {
         }
       }
   
-      if (updatedInstruction) {
+      if (!updatedInstruction) return;
+
+      if (!parentIfId) {
+        // top-level instruction
         updateInstruction(instruction.id, updatedInstruction);
+      } else {
+        // nested instruction
+        const parentIf = playerInstructions.find(i => i.id === parentIfId);
+        if (!parentIf || !('body' in parentIf)) return;
+
+        updateInstruction(parentIf.id, {
+          ...parentIf,
+          body: parentIf.body.map(child =>
+            child.id === instruction.id ? updatedInstruction : child
+          ),
+        });
       }
+
   
       setIsEditing(false);
       setEditValue('');
@@ -597,11 +706,26 @@ export function InstructionPalette() {
       setEditValue('');
     };
 
+    const { setNodeRef: setIfBodyRef, isOver } = useDroppable({
+      id: `IF_BODY_${instruction.id}`,
+      data: {
+        source: 'IF_BODY',
+        parentIfId: instruction.id,
+      },
+    });   
+    
+
+    const isBlockIf =
+    instruction.type === InstructionType.IF_GREATER ||
+    instruction.type === InstructionType.IF_LESS ||
+    instruction.type === InstructionType.IF_EQUAL;
+
     return (
       <div
         id={instruction.id}
         ref={(node) => {
           setNodeRef(node);
+          setDropRef(node);
           rowRef.current = node;
         }}
 
@@ -609,14 +733,19 @@ export function InstructionPalette() {
         {...attributes}
         {...listeners}
         className={`
-          flex justify-center
+          flex justify-center relative
         `}
         
       >
         <div className="flex flex-col items-center">
-    
+          {/* GAP ABOVE */}
+          {showGapAbove && (
+            <div className="h-8 transition-all duration-150" />
+          )}
+         
           {/* Instruction row (arrow is positioned relative to THIS only) */}
           <div className="relative flex justify-center">
+            
             {isActive && (
               <span
                 className="
@@ -672,8 +801,43 @@ export function InstructionPalette() {
               />
               </div>
             )}
+            
           </div>
-    
+          {/* Nested IF box */}
+          {isBlockIf && (
+            <div
+              ref={setIfBodyRef}
+              className={`
+                ml-4 mt-1 mb-2 p-2
+                border-l-4 border-dashed
+                rounded bg-gray-900
+                min-h-[40px] w-full
+                ${isOver ? 'border-green-400' : 'border-gray-500'}
+              `}
+            >
+              <SortableContext
+                items={instruction.body.map((i) => i.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {instruction.body.map((child, childIdx) => (
+                  <SortableInstructionLine
+                    key={child.id}
+                    instruction={child}
+                    index={childIdx}
+                    isActive={false}
+                    insertPreview={insertPreview}
+                    parentIfId={instruction.id}
+                  />
+                ))}
+              </SortableContext>
+            </div>
+          )}
+
+          {/* GAP BELOW */}
+          {showGapBelow && (
+              <div className="h-8 transition-all duration-150" />
+            )}
+
           {/* Down arrow (separate row, NOT affecting centering) */}
           {index < playerInstructions.length - 1 && (
             <div className="text-gray-400 text-sm leading-none mt-0.5 select-none">
@@ -685,44 +849,271 @@ export function InstructionPalette() {
     );  
       
   }
+  function getInsertIndex(
+    event: DragEndEvent | DragOverEvent,
+    overInstructionId: string,
+    instructions: Instruction[],
+    rectMap: Map<string, DOMRect>
+  ) {
+    const hoverIndex = instructions.findIndex(
+      i => i.id === overInstructionId
+    );
+  
+    if (hoverIndex === -1) return instructions.length;
+  
+    const rect = rectMap.get(overInstructionId);
+    if (!rect) return hoverIndex;
+  
+    const pointerY = getPointerClientY(event);
+    const midpoint = rect.top + rect.height / 2;
+  
+    return pointerY > midpoint ? hoverIndex + 1 : hoverIndex;
+  }
+  
   
   
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    const activeData = active.data.current as DragItem;
-    const overData = over?.data.current as DragItem | undefined;
+    if (!over) return;
   
-    // PROGRAM instruction handling
-    if (activeData?.source === 'PROGRAM') {
-      const droppedInProgram =
-        over?.id === 'PROGRAM_DROPZONE' ||
-        overData?.source === 'PROGRAM';
+    const activeData = active.data.current as DragItem | undefined;
+    const overData = over.data.current as
+      | { source: 'PROGRAM'; instructionId: string }
+      | { source: 'IF_BODY'; instructionId: string; parentIfId: string }
+      | undefined;
   
-      // Delete only if dropped outside program
-      if (!droppedInProgram) {
-        removeInstruction(activeData.instructionId);
+    if (!activeData) return;
+  
+    /* ─────────────────────────────────────────────
+       PALETTE → IF_BODY
+    ───────────────────────────────────────────── */
+    if (
+      activeData.source === 'PALETTE' &&
+      overData?.source === 'IF_BODY'
+    ) {
+      const parentIf = playerInstructions.find(
+        i => i.id === overData.parentIfId
+      );
+      if (!parentIf || !('body' in parentIf)) return;
+  
+      const rects =
+        ifBodyRects.current.get(overData.parentIfId) ?? new Map();
+
+      const insertIndex = getInsertIndex(
+        event,
+        overData.instructionId,
+        parentIf.body,
+        rects
+      );
+
+  
+      const newInstruction = createInstruction(
+        activeData.instructionType,
+        activeData.pointer,
+        insertIndex
+      );
+  
+      const newBody = [...parentIf.body];
+      newBody.splice(insertIndex, 0, newInstruction);
+  
+      updateInstruction(parentIf.id, {
+        ...parentIf,
+        body: newBody,
+      });
+  
+      return;
+    }
+  
+    /* ─────────────────────────────────────────────
+       PALETTE → PROGRAM
+    ───────────────────────────────────────────── */
+    if (activeData.source === 'PALETTE') {
+      if (over.id === 'PROGRAM_DROPZONE') {
+        handleAddInstruction(
+          activeData.instructionType,
+          activeData.pointer
+        );
+        return;
+      }
+  
+      if (overData?.source === 'PROGRAM') {
+        const insertIndex = getInsertIndex(
+          event,
+          overData.instructionId,
+          playerInstructions,
+          programRects.current
+        );
+  
+        const instruction = createInstruction(
+          activeData.instructionType,
+          activeData.pointer,
+          insertIndex
+        );
+  
+        addInstruction(instruction, insertIndex);
         return;
       }
     }
   
-    // Reorder inside program
+    /* ─────────────────────────────────────────────
+       PROGRAM → IF_BODY
+    ───────────────────────────────────────────── */
     if (
-      activeData?.source === 'PROGRAM' &&
-      overData?.source === 'PROGRAM'
+      activeData.source === 'PROGRAM' &&
+      overData?.source === 'IF_BODY'
     ) {
-      const from = playerInstructions.findIndex(i => i.id === activeData.instructionId);
-      const to = playerInstructions.findIndex(i => i.id === overData.instructionId);
-      if (from !== to) reorderInstructions(from, to);
+      const parentIf = playerInstructions.find(
+        i => i.id === overData.parentIfId
+      );
+      if (!parentIf || !('body' in parentIf)) return;
+  
+      const inst = playerInstructions.find(
+        i => i.id === activeData.instructionId
+      );
+      if (!inst) return;
+  
+      removeInstruction(inst.id);
+  
+      const rects =
+        ifBodyRects.current.get(overData.parentIfId) ?? new Map();
+
+      const insertIndex = getInsertIndex(
+        event,
+        overData.instructionId,
+        parentIf.body,
+        rects
+      );
+  
+      const newBody = [...parentIf.body];
+      newBody.splice(insertIndex, 0, inst);
+  
+      updateInstruction(parentIf.id, {
+        ...parentIf,
+        body: newBody,
+      });
+  
       return;
     }
   
-    // Palette → Program
+    /* ─────────────────────────────────────────────
+       IF_BODY → PROGRAM
+    ───────────────────────────────────────────── */
     if (
-      activeData?.source === 'PALETTE' &&
-      (over?.id === 'PROGRAM_DROPZONE' ||
+      activeData.source === 'IF_BODY' &&
+      (over.id === 'PROGRAM_DROPZONE' ||
         overData?.source === 'PROGRAM')
     ) {
-      handleAddInstruction(activeData.instructionType, activeData.pointer);
+      const parentIf = playerInstructions.find(
+        i => i.id === activeData.parentIfId
+      );
+      if (!parentIf || !('body' in parentIf)) return;
+  
+      const inst = parentIf.body.find(
+        i => i.id === activeData.instructionId
+      );
+      if (!inst) return;
+  
+      updateInstruction(parentIf.id, {
+        ...parentIf,
+        body: parentIf.body.filter(i => i.id !== inst.id),
+      });
+  
+      const insertIndex =
+        overData?.source === 'PROGRAM'
+          ? getInsertIndex(
+              event,
+              overData.instructionId,
+              playerInstructions,
+              programRects.current
+            )
+          : playerInstructions.length;
+
+      addInstruction(inst, insertIndex);
+      return;
+    }
+  
+    /* ─────────────────────────────────────────────
+       IF_BODY → IF_BODY (same parent reorder)
+    ───────────────────────────────────────────── */
+    if (
+      activeData.source === 'IF_BODY' &&
+      overData?.source === 'IF_BODY' &&
+      activeData.parentIfId === overData.parentIfId
+    ) {
+      const parentIf = playerInstructions.find(
+        i => i.id === activeData.parentIfId
+      );
+      if (!parentIf || !('body' in parentIf)) return;
+  
+      const from = parentIf.body.findIndex(
+        i => i.id === activeData.instructionId
+      );
+
+      const rects =
+        ifBodyRects.current.get(activeData.parentIfId) ?? new Map();
+
+  
+      const insertIndex = getInsertIndex(
+        event,
+        overData.instructionId,
+        parentIf.body,
+        rects
+      );
+  
+      if (from === insertIndex) return;
+  
+      const newBody = [...parentIf.body];
+      const [moved] = newBody.splice(from, 1);
+  
+      const finalIndex =
+        insertIndex > from ? insertIndex - 1 : insertIndex;
+  
+      newBody.splice(finalIndex, 0, moved);
+  
+      updateInstruction(parentIf.id, {
+        ...parentIf,
+        body: newBody,
+      });
+  
+      return;
+    }
+  
+    /* ─────────────────────────────────────────────
+       PROGRAM → PROGRAM reorder
+    ───────────────────────────────────────────── */
+    if (
+      activeData.source === 'PROGRAM' &&
+      overData?.source === 'PROGRAM'
+    ) {
+      const from = playerInstructions.findIndex(
+        i => i.id === activeData.instructionId
+      );
+  
+      const to = getInsertIndex(
+        event,
+        overData.instructionId,
+        playerInstructions,
+        programRects.current
+      );
+  
+      if (from !== to) {
+        reorderInstructions(from, to);
+      }
+      return;
+    }
+  
+    /* ─────────────────────────────────────────────
+       PROGRAM → outside → delete
+    ───────────────────────────────────────────── */
+    if (activeData.source === 'PROGRAM') {
+      const droppedInsideProgram =
+        over.id === 'PROGRAM_DROPZONE' ||
+        overData?.source === 'PROGRAM' ||
+        overData?.source === 'IF_BODY';
+  
+      if (!droppedInsideProgram) {
+        removeInstruction(activeData.instructionId);
+      }
     }
   };
   
@@ -757,9 +1148,21 @@ export function InstructionPalette() {
   }
 
   const getVisualRect = (id: string) => {
-    const rect = instructionRects.current.get(id);
+    let rect: DOMRect | undefined;
+
+    // 1️⃣ Check top-level program
+    rect = programRects.current.get(id);
+
+    // 2️⃣ Check IF bodies if not found
+    if (!rect) {
+      for (const bodyRects of ifBodyRects.current.values()) {
+        rect = bodyRects.get(id);
+        if (rect) break;
+      }
+    }
+
     if (!rect) return null;
-  
+
     const t = instructionTransforms.current.get(id);
     if (!t) return rect;
   
@@ -804,10 +1207,10 @@ export function InstructionPalette() {
           const toRect = getVisualRect(to.id);          
           if (!fromRect || !toRect) return null;
   
-          const startX = fromRect.right - containerRect.left * 4.5;
+          const startX = Math.max(0, fromRect.right - containerRect.left * 4.5);
           const startY = fromRect.top + fromRect.height / 3 - containerRect.top;
   
-          const endX = toRect.right - containerRect.left * 5;
+          const endX = Math.max(0, toRect.right - containerRect.left * 5);
           const endY = toRect.top + toRect.height / 3 - containerRect.top;
   
           const d = `
@@ -837,14 +1240,58 @@ export function InstructionPalette() {
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={collisionDetection}
+      onDragOver={(event) => {
+        const activeData = event.active.data.current as DragItem | undefined;
+        const overData = event.over?.data.current as
+          | { source: 'PROGRAM'; instructionId: string }
+          | { source: 'IF_BODY'; instructionId: string; parentIfId: string }
+          | undefined;
+
+        const isInsertIntoProgram =
+        activeData?.source === 'PALETTE' ||
+        activeData?.source === 'IF_BODY';
+      
+        if (!isInsertIntoProgram || !overData) {
+          setInsertPreview(null);
+          return;
+        }
+      
+        let rect: DOMRect | undefined;
+
+        if (overData.source === 'PROGRAM') {
+          rect = programRects.current.get(overData.instructionId);
+        } else if (overData.source === 'IF_BODY') {
+          rect =
+            ifBodyRects.current
+              .get(overData.parentIfId)
+              ?.get(overData.instructionId);
+        }
+
+        if (!rect) return;
+
+        const pointerY = getPointerClientY(event);
+      
+        const position =
+          pointerY > rect.top + rect.height / 2 ? 'below' : 'above';
+      
+        setInsertPreview({
+          id: overData.instructionId,
+          position,
+        });
+      }}
+      
+
       onDragStart={(event) => {
         setActiveDragItem(event.active.data.current as DragItem);
       }}
       onDragEnd={(event) => {
         handleDragEnd(event);
+        setInsertPreview(null);
         setActiveDragItem(null);
       }}
       onDragCancel={() => {
+        setInsertPreview(null);
         setActiveDragItem(null);
       }}
     >
@@ -896,6 +1343,7 @@ export function InstructionPalette() {
                       instruction={inst}
                       index={idx}
                       isActive={currentLine === idx}
+                      insertPreview={insertPreview}
                     />
                   ))
                 )}

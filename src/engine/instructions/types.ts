@@ -73,21 +73,22 @@ export interface PutInstruction extends BaseInstruction {
   target: PointerTarget;
 }
 
-export interface IfGreaterInstruction extends BaseInstruction {
-  type: 'IF_GREATER';
-  label: string; // jump if hand > array[pointer]
+export interface IfBaseInstruction extends BaseInstruction {
+  body: Instruction[]; // executed only if condition is true
+}
+
+export interface IfGreaterInstruction extends IfBaseInstruction {
+  type: 'IF_GREATER';// jump if hand > array[pointer]
   target: PointerTarget;
 }
 
-export interface IfLessInstruction extends BaseInstruction {
-  type: 'IF_LESS';
-  label: string; // jump if hand < array[pointer]
+export interface IfLessInstruction extends IfBaseInstruction {
+  type: 'IF_LESS';// jump if hand < array[pointer]
   target: PointerTarget;
 }
 
-export interface IfEqualInstruction extends BaseInstruction {
-  type: 'IF_EQUAL';
-  label: string; // jump if hand === array[pointer]
+export interface IfEqualInstruction extends IfBaseInstruction {
+  type: 'IF_EQUAL'; // jump if hand === array[pointer]
   target: PointerTarget;
 }
 
