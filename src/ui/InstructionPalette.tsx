@@ -219,68 +219,67 @@ export function InstructionPalette() {
   };
   
   const handleAddInstruction = (type: InstructionType, pointer: 'MOCO' | 'CHOCO') => {
-    const lineNumber = playerInstructions.length;
     let instruction: Instruction;
     if (!allowedInstructions.has(type)) return;
     
     // Create instruction with default values (user can edit later)
     switch (type) {
       case InstructionType.MOVE_LEFT:
-        instruction = createMoveLeft(pointer, lineNumber);
+        instruction = createMoveLeft(pointer);
         break;
 
       case InstructionType.MOVE_RIGHT:
-        instruction = createMoveRight(pointer, lineNumber);
+        instruction = createMoveRight(pointer);
         break;
       case InstructionType.MOVE_TO_END:
-        instruction = createMoveToEnd(pointer, lineNumber);
+        instruction = createMoveToEnd(pointer);
         break;
 
       case InstructionType.SET_POINTER:
-        instruction = createSetPointer(pointer,0, lineNumber);
+        instruction = createSetPointer(pointer,0);
         break;
       case InstructionType.PICK:
-        instruction = createPick(pointer, lineNumber);
+        instruction = createPick(pointer);
         break;
       case InstructionType.PUT:
-        instruction = createPut(pointer, lineNumber);
+        instruction = createPut(pointer);
         break;
       case InstructionType.IF_GREATER:
-        instruction = createIfGreater(pointer, lineNumber);
+        instruction = createIfGreater(pointer);
         break;
       case InstructionType.IF_LESS:
-        instruction = createIfLess(pointer, lineNumber);
+        instruction = createIfLess(pointer);
         break;
       case InstructionType.IF_EQUAL:
-        instruction = createIfEqual(pointer, lineNumber);
+        instruction = createIfEqual(pointer);
         break;
       case InstructionType.IF_END:
-        instruction = createIfEnd(pointer, generateUniqueLabelName(), lineNumber);
+        instruction = createIfEnd(pointer, generateUniqueLabelName());
         break;
       case InstructionType.IF_MEET:
-        instruction = createIfMeet(generateUniqueLabelName(), lineNumber);
+        instruction = createIfMeet(generateUniqueLabelName());
         break;
         
       case InstructionType.JUMP:
-        instruction = createJump(generateUniqueLabelName(), lineNumber);
+        instruction = createJump(generateUniqueLabelName());
         break;
       case InstructionType.LABEL:
-        instruction = createLabel(generateUniqueLabelName(), lineNumber);
+        instruction = createLabel(generateUniqueLabelName());
         break;
       case InstructionType.SWAP:
-        instruction = createSwap(lineNumber);
+        instruction = createSwap();
         break;
       case InstructionType.SWAP_WITH_NEXT:
-        instruction = createSwapWithNext(pointer, lineNumber);
+        instruction = createSwapWithNext(pointer);
         break;
       case InstructionType.INCREMENT_VALUE:
-        instruction = createIncrementValue(pointer, lineNumber);
+        instruction = createIncrementValue(pointer);
         break;
       case InstructionType.DECREMENT_VALUE:
-        instruction = createDecrementValue(pointer, lineNumber);
+        instruction = createDecrementValue(pointer);
         break;
       case InstructionType.WAIT:
-        instruction = createWait(lineNumber);
+        instruction = createWait();
         break;
       default:
         return;
@@ -805,10 +804,11 @@ export function InstructionPalette() {
           </div>
           {/* Nested IF box */}
           {isBlockIf && (
+            <div className="flex ml-6">
             <div
               ref={setIfBodyRef}
               className={`
-                ml-4 mt-1 mb-2 p-2
+                ml-1 mt-1 mb-0 p-2
                 border-l-4 border-dashed
                 rounded bg-gray-900
                 min-h-[40px] w-full
@@ -830,7 +830,8 @@ export function InstructionPalette() {
                   />
                 ))}
               </SortableContext>
-            </div>
+              </div>
+              </div>
           )}
 
           {/* GAP BELOW */}
@@ -839,11 +840,28 @@ export function InstructionPalette() {
             )}
 
           {/* Down arrow (separate row, NOT affecting centering) */}
-          {index < playerInstructions.length - 1 && (
-            <div className="text-gray-400 text-sm leading-none mt-0.5 select-none">
-              ↓
-            </div>
-          )}
+          {(() => {
+            let container: Instruction[] = playerInstructions;
+
+            if (parentIfId) {
+              const parentIf = playerInstructions.find(
+                (i) =>
+                  i.id === parentIfId &&
+                  'body' in i &&
+                  Array.isArray(i.body)
+              );
+              if (parentIf && 'body' in parentIf) {
+                container = parentIf.body;
+              }
+            }
+
+            return index < container.length - 1 ? (
+              <div className="text-gray-400 text-sm leading-none mt-0.5 select-none">
+                ↓
+              </div>
+            ) : null;
+          })()}
+
         </div>
       </div>
     );  
@@ -910,7 +928,6 @@ export function InstructionPalette() {
       const newInstruction = createInstruction(
         activeData.instructionType,
         activeData.pointer,
-        insertIndex
       );
   
       const newBody = [...parentIf.body];
@@ -947,7 +964,6 @@ export function InstructionPalette() {
         const instruction = createInstruction(
           activeData.instructionType,
           activeData.pointer,
-          insertIndex
         );
   
         addInstruction(instruction, insertIndex);
@@ -1044,64 +1060,44 @@ export function InstructionPalette() {
         i => i.id === activeData.parentIfId
       );
       if (!parentIf || !('body' in parentIf)) return;
-  
+    
       const from = parentIf.body.findIndex(
         i => i.id === activeData.instructionId
       );
-
-      const rects =
-        ifBodyRects.current.get(activeData.parentIfId) ?? new Map();
-
-  
-      const insertIndex = getInsertIndex(
-        event,
-        overData.instructionId,
-        parentIf.body,
-        rects
+    
+      const to = parentIf.body.findIndex(
+        i => i.id === overData.instructionId
       );
-  
-      if (from === insertIndex) return;
-  
-      const newBody = [...parentIf.body];
-      const [moved] = newBody.splice(from, 1);
-  
-      const finalIndex =
-        insertIndex > from ? insertIndex - 1 : insertIndex;
-  
-      newBody.splice(finalIndex, 0, moved);
-  
-      updateInstruction(parentIf.id, {
-        ...parentIf,
-        body: newBody,
-      });
-  
+    
+      if (from !== to) {
+        const newBody = [...parentIf.body];
+        const [moved] = newBody.splice(from, 1);
+        newBody.splice(to, 0, moved);
+    
+        updateInstruction(parentIf.id, {
+          ...parentIf,
+          body: newBody,
+        });
+      }
+    
       return;
     }
+    
   
     /* ─────────────────────────────────────────────
        PROGRAM → PROGRAM reorder
     ───────────────────────────────────────────── */
+    // Reorder inside program
     if (
-      activeData.source === 'PROGRAM' &&
+      activeData?.source === 'PROGRAM' &&
       overData?.source === 'PROGRAM'
     ) {
-      const from = playerInstructions.findIndex(
-        i => i.id === activeData.instructionId
-      );
-  
-      const to = getInsertIndex(
-        event,
-        overData.instructionId,
-        playerInstructions,
-        programRects.current
-      );
-  
-      if (from !== to) {
-        reorderInstructions(from, to);
-      }
+      const from = playerInstructions.findIndex(i => i.id === activeData.instructionId);
+      const to = playerInstructions.findIndex(i => i.id === overData.instructionId);
+      if (from !== to) reorderInstructions(from, to);
       return;
-    }
-  
+    }  
+    
     /* ─────────────────────────────────────────────
        PROGRAM → outside → delete
     ───────────────────────────────────────────── */

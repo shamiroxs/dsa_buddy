@@ -38,7 +38,6 @@ export type InstructionType = typeof InstructionType[keyof typeof InstructionTyp
 export interface BaseInstruction {
   id: string;
   type: InstructionType;
-  lineNumber: number;
   target?: PointerTarget;
 }
 
