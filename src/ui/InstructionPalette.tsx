@@ -59,19 +59,33 @@ import {
 import type { CollisionDetection } from '@dnd-kit/core';
 
 const collisionDetection: CollisionDetection = (args) => {
-  // 1️⃣ Prefer IF_BODY intersections
-  const ifBodyCollisions = rectIntersection({
+  // 1️⃣ Prefer child instructions inside IF bodies
+  const childHits = rectIntersection({
+    ...args,
+    droppableContainers: args.droppableContainers.filter(
+      c =>
+        !c.id.toString().startsWith('IF_BODY_') &&
+        c.data.current?.source === 'IF_BODY'
+    ),
+  });
+
+  if (childHits.length > 0) {
+    return childHits;
+  }
+
+  // 2️⃣ Then allow IF_BODY container as fallback
+  const ifBodyHits = rectIntersection({
     ...args,
     droppableContainers: args.droppableContainers.filter(
       c => c.id.toString().startsWith('IF_BODY_')
     ),
   });
 
-  if (ifBodyCollisions.length > 0) {
-    return ifBodyCollisions;
+  if (ifBodyHits.length > 0) {
+    return ifBodyHits;
   }
 
-  // 2️⃣ Fallback to sortable behavior
+  // 3️⃣ Final fallback
   return closestCenter(args);
 };
 
@@ -712,7 +726,11 @@ export function InstructionPalette() {
         parentIfId: instruction.id,
       },
     });   
-    
+
+    const isDraggingInsideIf =
+    activeDragItem?.source === 'IF_BODY' &&
+    activeDragItem.parentIfId === instruction.id;
+
 
     const isBlockIf =
     instruction.type === InstructionType.IF_GREATER ||
@@ -807,8 +825,13 @@ export function InstructionPalette() {
             <div className="flex ml-6">
             <div
               ref={setIfBodyRef}
+              style={
+                isDraggingInsideIf
+                  ? { minHeight: instruction.body.length * 44 }
+                  : undefined
+              }
               className={`
-                ml-1 mt-1 mb-0 p-2
+                ml-1 mt-1 mb-1 p-2
                 border-l-4 border-dashed
                 rounded bg-gray-900
                 min-h-[40px] w-full
@@ -1068,7 +1091,7 @@ export function InstructionPalette() {
       const to = parentIf.body.findIndex(
         i => i.id === overData.instructionId
       );
-    
+      
       if (from !== to) {
         const newBody = [...parentIf.body];
         const [moved] = newBody.splice(from, 1);

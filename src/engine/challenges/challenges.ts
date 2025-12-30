@@ -148,7 +148,7 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-5',
     title: 'Move Zeros to End',
-    description: 'Move all zeros to the end of the array while maintaining relative order of non-zero elements.',
+    description: 'Move all zeros to the end of the array while maintaining relative order of non-zero elements. (assume first element always zero',
     difficulty: Difficulty.MEDIUM,
     initialArray: [0, 1, 0, 3, 12, 0],
     targetArray: [1, 3, 12, 0, 0, 0],

@@ -135,6 +135,21 @@ interface GameState {
 
 }
 
+function updateInstructionRecursive(
+  instructions: Instruction[],
+  instructionId: string,
+  updatedInstruction: Instruction
+): Instruction[] {
+  return instructions.map(inst => {
+    if (inst.id === instructionId) return updatedInstruction;
+    if ('body' in inst && Array.isArray(inst.body)) {
+      return { ...inst, body: updateInstructionRecursive(inst.body, instructionId, updatedInstruction) };
+    }
+    return inst;
+  });
+}
+
+
 export const useGameStore = create<GameState>((set, get) => ({
   // Initial state
   currentChallenge: null,
@@ -281,9 +296,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   updateInstruction: (instructionId, instruction) => {
     const { playerInstructions } = get();
-    const newInstructions = playerInstructions.map((inst) =>
-      inst.id === instructionId ? instruction : inst
-    );
+    const newInstructions = updateInstructionRecursive(playerInstructions, instructionId, instruction);
     get().setPlayerInstructions(newInstructions);
   },
   
