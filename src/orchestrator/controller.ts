@@ -52,6 +52,8 @@ export function executeSingleStep(): void {
       errorMessage.includes('Pointer out of bounds') ||
       errorMessage.includes('Cannot move right: pointer already at end') ||
       errorMessage.includes('Cannot move left: pointer already at start') ||
+      errorMessage.includes('Cannot move right') ||
+      errorMessage.includes('Cannot move left') ||
       errorMessage.includes('Cannot swap: pointer at or beyond last element');
     
       if (isPointerOutOfBounds) {
