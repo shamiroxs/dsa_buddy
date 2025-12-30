@@ -86,13 +86,13 @@ function formatInstruction(instruction: Instruction): string {
       return `${pointer} PUT`;
 
     case InstructionType.IF_GREATER:
-      return `${pointer} IF_GREATER ${instruction.label}`;
+      return `${pointer} IF_GREATER`;
 
     case InstructionType.IF_LESS:
-      return `${pointer} IF_LESS ${instruction.label}`;
+      return `${pointer} IF_LESS`;
 
     case InstructionType.IF_EQUAL:
-      return `${pointer} IF_EQUAL ${instruction.label}`;
+      return `${pointer} IF_EQUAL`;
 
     case InstructionType.IF_END:
       return `${pointer} IF_END ${instruction.label}`;
