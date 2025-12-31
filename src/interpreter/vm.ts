@@ -10,7 +10,7 @@ import type { ExecutionState } from './executionModel';
 import { cloneState } from './executionModel';
 
 export type ExecutionErrorContext =
-  | { kind: 'INSTRUCTION'; line: number }
+  | { kind: 'INSTRUCTION'; instructionId: string }
   | { kind: 'POINTER'; target: 'MOCO' | 'CHOCO' }
   | { kind: 'ARRAY_INDEX'; index: number }
   | { kind: 'ARRAY_RANGE'; from: number; to: number };
@@ -38,10 +38,23 @@ function setPointer(
     state.chocoPointer = value;
   }
 }
+//copied form setPointer
+function setValue(
+  state: ExecutionState,
+  target: 'MOCO' | 'CHOCO',
+  value: number
+): void {
+  const ptr = target === 'MOCO'
+    ? state.mocoPointer
+    : state.chocoPointer;
+
+  state.array[ptr] = value;
+}
+
 
 function instructionError(
   state: ExecutionState,
-  line: number,
+  instruction: Instruction,
   message: string
 ): ExecutionResult {
   return {
@@ -50,7 +63,7 @@ function instructionError(
     error: message,
     errorContext: {
       kind: 'INSTRUCTION',
-      line,
+      instructionId: instruction.id,
     },
     completed: false,
   };
@@ -112,13 +125,13 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_LESS: {
         if (newState.hand === null) {
-          return instructionError(newState, frame.line, 'Hand is empty');
+          return instructionError(newState, instruction, 'Hand is empty');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
 
         if (newState.hand < newState.array[ptr]) {
@@ -131,13 +144,13 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_GREATER: {
         if (newState.hand === null) {
-          return instructionError(newState, frame.line, 'Hand is empty');
+          return instructionError(newState, instruction, 'Hand is empty');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
 
         if (newState.hand > newState.array[ptr]) {
@@ -150,16 +163,35 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_EQUAL: {
         if (newState.hand === null) {
-          return instructionError(newState, frame.line, 'Hand is empty');
+          return instructionError(newState, instruction, 'Hand is empty');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
 
         if (newState.hand === newState.array[ptr]) {
+          stack.push({ instructions: instruction.body, line: 0 });
+        } else {
+          frame.line++;
+        }
+        break;
+      }
+
+      case InstructionType.IF_NOT_EQUAL: {
+        if (newState.hand === null) {
+          return instructionError(newState, instruction, 'Hand is empty');
+        }
+
+        const ptr = getPointer(newState, instruction.target);
+
+        if (ptr < 0 || ptr >= newState.array.length) {
+          return instructionError(newState, instruction, 'Pointer out of bounds');
+        }
+
+        if (newState.hand !== newState.array[ptr]) {
           stack.push({ instructions: instruction.body, line: 0 });
         } else {
           frame.line++;
@@ -175,7 +207,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           if (targetLine === undefined) {
             return instructionError(
               newState,
-              frame.line,
+              instruction,
               `Label "${instruction.label}" not found`
             );
           }
@@ -199,7 +231,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           if (targetLine === undefined) {
             return instructionError(
               newState,
-              frame.line,
+              instruction,
               `Label "${instruction.label}" not found`
             );
           }
@@ -224,7 +256,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
         if (target === undefined) {
           return instructionError(
             newState,
-            frame.line,
+            instruction,
             `Label "${instruction.label}" not found`
           );
         }
@@ -248,7 +280,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.MOVE_LEFT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr <= 0) {
-          return instructionError(newState, frame.line, 'Cannot move left');
+          return instructionError(newState, instruction, 'Cannot move left');
         }
         setPointer(newState, instruction.target, ptr - 1);
         frame.line++;
@@ -258,7 +290,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.MOVE_RIGHT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr >= newState.array.length - 1) {
-          return instructionError(newState, frame.line, 'Cannot move right');
+          return instructionError(newState, instruction, 'Cannot move right');
         }
         setPointer(newState, instruction.target, ptr + 1);
         frame.line++;
@@ -275,16 +307,26 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           instruction.index < 0 ||
           instruction.index >= newState.array.length
         ) {
-          return instructionError(newState, frame.line, 'Index out of bounds');
+          return instructionError(newState, instruction, 'Index out of bounds');
         }
         setPointer(newState, instruction.target, instruction.index);
+        frame.line++;
+        break;
+
+      case InstructionType.SET_VALUE:
+        if (
+          instruction.value < 0 
+        ) {
+          return instructionError(newState, instruction, 'Value should be positive');
+        }
+        setValue(newState, instruction.target, instruction.value);
         frame.line++;
         break;
 
       case InstructionType.PICK: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
         newState.hand = newState.array[ptr];
         frame.line++;
@@ -294,10 +336,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.PUT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
         if (newState.hand === null) {
-          return instructionError(newState, frame.line, 'Hand is empty');
+          return instructionError(newState, instruction, 'Hand is empty');
         }
         newState.array[ptr] = newState.hand;
         frame.line++;
@@ -311,7 +353,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           m < 0 || m >= newState.array.length ||
           c < 0 || c >= newState.array.length
         ) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
         const temp = newState.array[m];
         newState.array[m] = newState.array[c];
@@ -323,7 +365,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.SWAP_WITH_NEXT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length - 1) {
-          return instructionError(newState, frame.line, 'Cannot swap');
+          return instructionError(newState, instruction, 'Cannot swap');
         }
         const temp = newState.array[ptr];
         newState.array[ptr] = newState.array[ptr + 1];
@@ -335,7 +377,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.INCREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
         newState.array[ptr]++;
         frame.line++;
@@ -345,7 +387,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.DECREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, frame.line, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer out of bounds');
         }
         newState.array[ptr]--;
         frame.line++;
@@ -357,7 +399,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
         break;
 
       default:
-        return instructionError(newState, frame.line, 'Unknown instruction');
+        return instructionError(newState, instruction, 'Unknown instruction');
     }
 
     newState.stepCount++;

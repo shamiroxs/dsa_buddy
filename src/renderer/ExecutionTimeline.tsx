@@ -79,6 +79,9 @@ function formatInstruction(instruction: Instruction): string {
     case InstructionType.SET_POINTER:
       return `${pointer}Goto ${instruction.index}`;
 
+    case InstructionType.SET_VALUE:
+      return `${pointer}Set ${instruction.value}`;
+
     case InstructionType.PICK:
       return `${pointer}Pick ↑`;
 
@@ -93,6 +96,8 @@ function formatInstruction(instruction: Instruction): string {
 
     case InstructionType.IF_EQUAL:
       return `${pointer}IFEqual`;
+    case InstructionType.IF_NOT_EQUAL:
+      return `${pointer}IFNotEqual`;
 
     case InstructionType.IF_END:
       return `${pointer}IFEnd ${instruction.label}`;

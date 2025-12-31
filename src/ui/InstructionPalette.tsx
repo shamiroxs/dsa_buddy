@@ -20,6 +20,7 @@ import {
   createIfGreater,
   createIfLess,
   createIfEqual,
+  createIfNotEqual,
   createIfEnd,
   createIfMeet,
   createJump,
@@ -29,6 +30,7 @@ import {
   createIncrementValue,
   createDecrementValue,
   createWait,
+  createSetValue,
 } from '../engine/instructions/factory';
 
 import {
@@ -100,13 +102,15 @@ type DragItem =
 const instructionTemplates = [
   { type: InstructionType.MOVE_LEFT, label: '← Left', description: 'Move pointer left (pointer -= 1)' },
   { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
-  { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
-  { type: InstructionType.SET_POINTER, label: 'Goto ↦', description: 'Set pointer to index' },
   { type: InstructionType.PICK, label: 'Pick ↑', description: 'Pick value at pointer into hand' },
   { type: InstructionType.PUT, label: 'Put ↓', description: 'Put hand value at pointer' },
+  { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
+  { type: InstructionType.SET_POINTER, label: 'Goto ↦', description: 'Set pointer to index' },
+  { type: InstructionType.SET_VALUE, label: 'Set ?', description: 'Set pointer to index' },
   { type: InstructionType.IF_GREATER, label: 'IFGreat ?', description: 'If hand > current value' },
   { type: InstructionType.IF_LESS, label: 'IFLess ?', description: 'If hand < current value' },
   { type: InstructionType.IF_EQUAL, label: 'IFEqual ?', description: 'If hand === current value' },
+  { type: InstructionType.IF_NOT_EQUAL, label: 'IFNotEqual ?', description: 'If hand !== current value' },
   { 
     type: InstructionType.IF_END, 
     label: 'IFEnd ?', 
@@ -253,6 +257,9 @@ export function InstructionPalette() {
       case InstructionType.SET_POINTER:
         instruction = createSetPointer(pointer,0);
         break;
+      case InstructionType.SET_VALUE:
+        instruction = createSetValue(pointer,0);
+        break;
       case InstructionType.PICK:
         instruction = createPick(pointer);
         break;
@@ -267,6 +274,9 @@ export function InstructionPalette() {
         break;
       case InstructionType.IF_EQUAL:
         instruction = createIfEqual(pointer);
+        break;
+      case InstructionType.IF_NOT_EQUAL:
+        instruction = createIfNotEqual(pointer);
         break;
       case InstructionType.IF_END:
         instruction = createIfEnd(pointer, generateUniqueLabelName());
@@ -408,6 +418,8 @@ export function InstructionPalette() {
         return 'ToEnd →→';
       case InstructionType.SET_POINTER:
         return `Goto ${inst.index}`;
+      case InstructionType.SET_VALUE:
+        return `Set ${inst.value}`;
       case InstructionType.PICK:
         return 'Pick ↑';
       case InstructionType.PUT:
@@ -418,6 +430,8 @@ export function InstructionPalette() {
         return 'IFLess';
       case InstructionType.IF_EQUAL:
         return 'IFEqual';
+      case InstructionType.IF_NOT_EQUAL:
+        return 'IFNotEqual';
       case InstructionType.IF_END:
         return `IFEnd ${inst.label}`;
       case InstructionType.IF_MEET:
@@ -455,10 +469,12 @@ export function InstructionPalette() {
   
     const hasEditableParameter =
       instruction.type === InstructionType.SET_POINTER ||
+      instruction.type === InstructionType.SET_VALUE ||
       instruction.type === InstructionType.LABEL ||
       instruction.type === InstructionType.IF_GREATER ||
       instruction.type === InstructionType.IF_LESS ||
       instruction.type === InstructionType.IF_EQUAL ||
+      instruction.type === InstructionType.IF_NOT_EQUAL ||
       instruction.type === InstructionType.IF_END ||
       instruction.type === InstructionType.IF_MEET ||
       instruction.type === InstructionType.JUMP;
@@ -622,7 +638,7 @@ export function InstructionPalette() {
 
     const isError =
     errorContext?.kind === 'INSTRUCTION' &&
-    errorContext.line === index;
+    errorContext.instructionId === instruction.id;
 
   
     const [isEditing, setIsEditing] = useState(false);
@@ -630,10 +646,12 @@ export function InstructionPalette() {
   
     const hasEditableParameter =
       instruction.type === InstructionType.SET_POINTER ||
+      instruction.type === InstructionType.SET_VALUE ||
       instruction.type === InstructionType.LABEL ||
       instruction.type === InstructionType.IF_GREATER ||
       instruction.type === InstructionType.IF_LESS ||
       instruction.type === InstructionType.IF_EQUAL ||
+      instruction.type === InstructionType.IF_NOT_EQUAL ||
       instruction.type === InstructionType.IF_END ||
       instruction.type === InstructionType.IF_MEET ||
       instruction.type === InstructionType.JUMP;
@@ -641,6 +659,8 @@ export function InstructionPalette() {
     const handleEdit = () => {
       if (instruction.type === InstructionType.SET_POINTER && 'index' in instruction) {
         setEditValue(instruction.index.toString());
+      } else if (instruction.type === InstructionType.SET_VALUE && 'value' in instruction) {
+        setEditValue(instruction.value.toString());
       } else if (instruction.type === InstructionType.LABEL && 'labelName' in instruction) {
         setEditValue(instruction.labelName);
       } else if ('label' in instruction) {
@@ -671,6 +691,11 @@ export function InstructionPalette() {
         const indexValue = parseInt(editValue, 10);
         if (!isNaN(indexValue) && indexValue >= 0) {
           updatedInstruction = { ...instruction, index: indexValue };
+        }
+      } else if (instruction.type === InstructionType.SET_VALUE && 'value' in instruction) {
+        const numberValue = parseInt(editValue, 10);
+        if (!isNaN(numberValue) && numberValue >= 0) {
+          updatedInstruction = { ...instruction, value: numberValue };
         }
       } else if (instruction.type === InstructionType.LABEL && 'labelName' in instruction) {
         const labelName = editValue.trim();
@@ -736,7 +761,8 @@ export function InstructionPalette() {
     const isBlockIf =
     instruction.type === InstructionType.IF_GREATER ||
     instruction.type === InstructionType.IF_LESS ||
-    instruction.type === InstructionType.IF_EQUAL;
+    instruction.type === InstructionType.IF_EQUAL ||
+    instruction.type === InstructionType.IF_NOT_EQUAL;
 
     return (
       <div
@@ -912,7 +938,16 @@ export function InstructionPalette() {
     return pointerY > midpoint ? hoverIndex + 1 : hoverIndex;
   }
   
+  function isAllowedInIfBody(inst: Instruction | InstructionType): boolean {
+    const type =
+      typeof inst === 'string'
+        ? inst
+        : inst.type;
   
+    return (
+      type !== InstructionType.LABEL 
+    );
+  }  
   
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -937,6 +972,9 @@ export function InstructionPalette() {
         i => i.id === overData.parentIfId
       );
       if (!parentIf || !('body' in parentIf)) return;
+      if (!isAllowedInIfBody(activeData.instructionType)) {
+        return;
+      }
   
       const rects =
         ifBodyRects.current.get(overData.parentIfId) ?? new Map();
@@ -1011,6 +1049,10 @@ export function InstructionPalette() {
         i => i.id === activeData.instructionId
       );
       if (!inst) return;
+
+      if (!isAllowedInIfBody(inst)) {
+        return;
+      }
   
       removeInstruction(inst.id);
   

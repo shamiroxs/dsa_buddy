@@ -12,11 +12,11 @@ export const challenges: Challenge[] = [
     id: 'challenge-0',
     title: 'Start Here',
     description: 'Copy the first value into the second box',
+    hints: [],
     difficulty: Difficulty.EASY,
     initialArray: [7, 0, 0, 0],
     targetArray: [7, 7, 0, 0],
-    
-    maxSteps: 7,
+    maxSteps: 3,
     instructions: [],
     unlocked: true,
     capabilities: {
@@ -38,6 +38,7 @@ export const challenges: Challenge[] = [
     id: 'challenge-1',
     title: 'Larger of First Two',
     description: 'Compare the first two elements and store the larger value at index 0.',
+    hints: [],
     difficulty: Difficulty.EASY,
     initialArray: [4, 9, 6, 2],
     targetArray: [9, 9, 6, 2],
@@ -69,6 +70,7 @@ export const challenges: Challenge[] = [
     id: 'challenge-2',
     title: 'Swap First and Last',
     description: 'Swap the first and last elements of the array.',
+    hints: [],
     difficulty: Difficulty.EASY,
     initialArray: [10, 20, 30, 40, 50],
     targetArray: [50, 20, 30, 40, 10],
@@ -89,6 +91,7 @@ export const challenges: Challenge[] = [
     id: 'challenge-3',
     title: 'Reverse Array',
     description: 'Reverse the array in-place.',
+    hints: [],
     difficulty: Difficulty.EASY,
     initialArray: [1, 2, 3, 4, 5],
     targetArray: [5, 4, 3, 2, 1],
@@ -101,8 +104,9 @@ export const challenges: Challenge[] = [
         InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
         InstructionType.MOVE_TO_END,
-        InstructionType.PICK,
-        InstructionType.PUT,
+
+        InstructionType.SET_POINTER,
+
         InstructionType.IF_MEET,
         InstructionType.SWAP,
         InstructionType.JUMP,
@@ -116,10 +120,13 @@ export const challenges: Challenge[] = [
     id: 'challenge-4',
     title: 'Find Maximum',
     description: 'Find the maximum value in the array and store it at index 0.',
+    hints: ['IFGreater : hand > arrvalue',
+      'IFLess : hand < arrvalue'
+    ],
     difficulty: Difficulty.EASY,
     initialArray: [3, 7, 2, 9, 1, 5],
     targetArray: [9, 7, 2, 9, 1, 5],
-    maxSteps: 36,
+    maxSteps: 46,
     instructions: [],
     unlocked: true,
     capabilities: {
@@ -137,7 +144,6 @@ export const challenges: Challenge[] = [
 
         InstructionType.JUMP,
         InstructionType.LABEL,
-        InstructionType.WAIT,
       ],
       suggestedInstructions: [
         InstructionType.IF_LESS,
@@ -148,7 +154,13 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-5',
     title: 'Move Zeros to End',
-    description: 'Move all zeros to the end of the array while maintaining relative order of non-zero elements. (assume first element always zero',
+    description: `Move all zeros to the end of the array while maintaining relative order of non-zero elements.
+    (Assume first element always zero)`,
+    
+    hints: [
+      'Both MOCO and CHOCO uses same hand',
+    ],
+    
     difficulty: Difficulty.MEDIUM,
     initialArray: [0, 1, 0, 3, 12, 0],
     targetArray: [1, 3, 12, 0, 0, 0],
@@ -160,67 +172,82 @@ export const challenges: Challenge[] = [
       allowedInstructions: [
         InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
-        InstructionType.MOVE_TO_END,
-        InstructionType.SET_POINTER,
         InstructionType.PICK,
         InstructionType.PUT,
 
-        InstructionType.IF_GREATER,
-        InstructionType.IF_LESS,
         InstructionType.IF_EQUAL,
-        InstructionType.IF_END,
+        InstructionType.IF_NOT_EQUAL,
 
+        InstructionType.SWAP,
         InstructionType.JUMP,
         InstructionType.LABEL,
         InstructionType.WAIT,
       ],
       suggestedInstructions: [
-        InstructionType.IF_LESS,
         InstructionType.IF_EQUAL,
       ],
     }
   },
   {
     id: 'challenge-6',
-    title: 'Count Even Numbers',
-    description: 'Count the number of even numbers and store the count at index 0.',
-    difficulty: Difficulty.EASY,
-    initialArray: [2, 5, 8, 3, 6, 1],
-    targetArray: [3, 5, 8, 3, 6, 1],
-    maxSteps: 25,
+    title: 'Is Sorted?',
+    description: 'Check if the array is sorted in increasing order. Store 1 at index 0 if sorted, else 0.',
+    hints: [],
+    difficulty: Difficulty.MEDIUM,
+    initialArray: [1, 3, 5, 7, 6],
+    targetArray: [0, 3, 5, 7, 6],
+    maxSteps: 26,
     instructions: [],
-    unlocked: false,
+    unlocked: true,
     capabilities: {
-      allowedPointers: ['MOCO', 'CHOCO'],
+      allowedPointers: ['MOCO'],
       allowedInstructions: [
         InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
-        InstructionType.MOVE_TO_END,
-        InstructionType.SET_POINTER,
         InstructionType.PICK,
         InstructionType.PUT,
 
+        InstructionType.SET_POINTER,
+        InstructionType.SET_VALUE,
+  
         InstructionType.IF_GREATER,
         InstructionType.IF_LESS,
-        InstructionType.IF_EQUAL,
         InstructionType.IF_END,
-
+  
         InstructionType.JUMP,
         InstructionType.LABEL,
-        InstructionType.WAIT,
       ],
-      suggestedInstructions: [
-        InstructionType.IF_LESS,
-        InstructionType.IF_EQUAL,
-      ],
-    }
-  },
-  
-  
+    },
+  },  
   {
     id: 'challenge-7',
+    title: 'Left Rotate by One',
+    description: 'Rotate the array left by one position.',
+    hints: [],
+    difficulty: Difficulty.MEDIUM,
+    initialArray: [1, 2, 3, 4],
+    targetArray: [2, 3, 4, 1],
+    maxSteps: 25,
+    instructions: [],    
+    unlocked: false,
+    capabilities: {
+      allowedPointers: ['MOCO'],
+      allowedInstructions: [
+        InstructionType.PICK,
+        InstructionType.MOVE_RIGHT,
+        InstructionType.PUT,
+  
+        InstructionType.JUMP,
+        InstructionType.LABEL,
+      ],
+    },
+  },
+
+  {
+    id: 'challenge-8',
     title: 'Find Duplicate',
     description: 'Find the duplicate number in the array and store it at index 0. Array contains numbers 1 to n with one duplicate.',
+    hints: [],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 3, 4, 2, 2],
     targetArray: [2, 3, 4, 2, 2],
@@ -257,6 +284,7 @@ export const challenges: Challenge[] = [
     id: 'challenge-7',
     title: 'Two Sum',
     description: 'Find two numbers that add up to target (10) and store them at indices 0 and 1.',
+    hints: [],
     difficulty: Difficulty.MEDIUM,
     initialArray: [2, 7, 11, 15],
     targetArray: [2, 7, 11, 15], // Target sum is 9, so 2+7=9
@@ -267,7 +295,9 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-8',
     title: 'Sort Array (Bubble Sort)',
+    hints: [],
     description: 'Sort the array in ascending order using bubble sort algorithm.',
+    hints: [],
     difficulty: Difficulty.MEDIUM,
     initialArray: [64, 34, 25, 12, 22, 11, 90],
     targetArray: [11, 12, 22, 25, 34, 64, 90],
@@ -279,6 +309,7 @@ export const challenges: Challenge[] = [
     id: 'challenge-9',
     title: 'Find Missing Number',
     description: 'Array contains numbers 0 to n with one missing. Find and store the missing number at index 0.',
+    hints: [],
     difficulty: Difficulty.HARD,
     initialArray: [3, 0, 1],
     targetArray: [2, 0, 1],
@@ -290,6 +321,7 @@ export const challenges: Challenge[] = [
     id: 'challenge-10',
     title: 'Product Except Self',
     description: 'Replace each element with the product of all other elements.',
+    hints: [],
     difficulty: Difficulty.HARD,
     initialArray: [1, 2, 3, 4],
     targetArray: [24, 12, 8, 6],

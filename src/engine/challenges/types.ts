@@ -32,6 +32,7 @@ export interface Challenge {
   id: string;
   title: string;
   description: string;
+  hints: string[];
   difficulty: Difficulty;
   initialArray: number[];
   targetArray: number[];

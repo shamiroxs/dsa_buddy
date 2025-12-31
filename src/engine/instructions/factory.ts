@@ -19,6 +19,8 @@ export function createInstruction(
       return createMoveToEnd(pointer);
     case InstructionType.SET_POINTER:
       return createSetPointer(pointer, 0);
+    case InstructionType.SET_VALUE:
+      return createSetValue(pointer, 0);
     case InstructionType.PICK:
       return createPick(pointer);
     case InstructionType.PUT:
@@ -29,6 +31,8 @@ export function createInstruction(
       return createIfLess(pointer);
     case InstructionType.IF_EQUAL:
       return createIfEqual(pointer);
+    case InstructionType.IF_NOT_EQUAL:
+      return createIfNotEqual(pointer);
     case InstructionType.IF_END:
       return createIfEnd(pointer, 'label');
     case InstructionType.IF_MEET:
@@ -102,6 +106,20 @@ export function createSetPointer(
   };
 }
 
+export function createSetValue(
+  target: PointerTarget,
+  value: number,
+  
+): Instruction {
+  return {
+    id: `setval-${Date.now()}-${Math.random()}`,
+    type: InstructionType.SET_VALUE,
+    target,
+    value,
+    
+  };
+}
+
 
 export function createPick(
   target: PointerTarget,
@@ -161,6 +179,19 @@ export function createIfEqual(
   return {
     id: `ifequal-${Date.now()}-${Math.random()}`,
     type: InstructionType.IF_EQUAL,
+    target,
+    body: [],
+    
+  };
+}
+
+export function createIfNotEqual(
+  target: PointerTarget,
+  
+): Instruction {
+  return {
+    id: `ifnotequal-${Date.now()}-${Math.random()}`,
+    type: InstructionType.IF_NOT_EQUAL,
     target,
     body: [],
     

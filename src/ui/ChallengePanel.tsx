@@ -23,7 +23,10 @@ export function ChallengePanel() {
     <div className="challenge-panel bg-gray-800 rounded-lg p-4">
       <div className="mb-4">
         <h2 className="text-white text-xl font-bold mb-2">{challenge.title}</h2>
-        <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
+        <p className="text-gray-300 text-sm mb-2 whitespace-pre-line">
+          {challenge.description}
+        </p>
+
         <div className="flex items-center gap-2">
           <span className={`px-2 py-1 rounded text-xs font-semibold ${
             challenge.difficulty === 'EASY' ? 'bg-green-600' :
@@ -45,6 +48,19 @@ export function ChallengePanel() {
         <h3 className="text-gray-400 text-sm mb-2">Initial Array</h3>
         <ArrayView array={challenge.initialArray} />
       </div>
+
+      {/* Hints */}
+      {challenge.hints && challenge.hints.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-gray-400 text-sm mb-2">Hints</h3>
+            <ul className="space-y-1 text-sm text-gray-300">
+              {challenge.hints.map((hint, index) => (
+                <li key={index}>{hint}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
           
       {/* Validation Result */}
       {validationResult && (

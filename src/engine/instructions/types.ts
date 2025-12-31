@@ -10,6 +10,7 @@ export const InstructionType = {
   MOVE_RIGHT: 'MOVE_RIGHT',
   MOVE_TO_END: 'MOVE_TO_END',
 
+  SET_VALUE: 'SET_VALUE',
   SET_POINTER: 'SET_POINTER',
   PICK: 'PICK',
   PUT: 'PUT',
@@ -17,6 +18,7 @@ export const InstructionType = {
   IF_GREATER: 'IF_GREATER',
   IF_LESS: 'IF_LESS',
   IF_EQUAL: 'IF_EQUAL',
+  IF_NOT_EQUAL: 'IF_NOT_EQUAL',
   IF_END: 'IF_END',
   IF_MEET: 'IF_MEET',
 
@@ -62,6 +64,12 @@ export interface SetPointerInstruction extends BaseInstruction {
   target: PointerTarget;
 }
 
+export interface SetValueInstruction extends BaseInstruction {
+  type: 'SET_VALUE';
+  value: number; // arr[pointer] = value
+  target: PointerTarget;
+}
+
 export interface PickInstruction extends BaseInstruction {
   type: 'PICK'; // hand = array[pointer]
   target: PointerTarget;
@@ -88,6 +96,11 @@ export interface IfLessInstruction extends IfBaseInstruction {
 
 export interface IfEqualInstruction extends IfBaseInstruction {
   type: 'IF_EQUAL'; // jump if hand === array[pointer]
+  target: PointerTarget;
+}
+
+export interface IfNotEqualInstruction extends IfBaseInstruction {
+  type: 'IF_NOT_EQUAL'; // jump if hand !== array[pointer]
   target: PointerTarget;
 }
 
@@ -140,11 +153,13 @@ export type Instruction =
   | MoveRightInstruction
   | MoveToEndInstruction
   | SetPointerInstruction
+  | SetValueInstruction
   | PickInstruction
   | PutInstruction
   | IfGreaterInstruction
   | IfLessInstruction
   | IfEqualInstruction
+  | IfNotEqualInstruction
   | IfEndInstruction
   | IfMeetInstruction
   | JumpInstruction
