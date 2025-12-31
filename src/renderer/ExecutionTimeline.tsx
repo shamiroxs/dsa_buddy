@@ -61,64 +61,65 @@ export function ExecutionTimeline({
 function formatInstruction(instruction: Instruction): string {
   const pointer =
     (instruction as any).pointer === 'MOCO'
-      ? '[MOCO]'
+      ? '[MOCO] '
       : (instruction as any).pointer === 'CHOCO'
-      ? '[CHOCO]'
+      ? '[CHOCO] '
       : '';
 
   switch (instruction.type) {
     case InstructionType.MOVE_LEFT:
-      return `${pointer} MOVE_LEFT`;
+      return `${pointer}← Left`;
 
     case InstructionType.MOVE_RIGHT:
-      return `${pointer} MOVE_RIGHT`;
+      return `${pointer}Right →`;
 
     case InstructionType.MOVE_TO_END:
-      return `${pointer} MOVE_TO_END`;
+      return `${pointer}ToEnd →→`;
 
     case InstructionType.SET_POINTER:
-      return `${pointer} SET_POINTER ${instruction.index}`;
+      return `${pointer}Goto ${instruction.index}`;
 
     case InstructionType.PICK:
-      return `${pointer} PICK`;
+      return `${pointer}Pick ↑`;
 
     case InstructionType.PUT:
-      return `${pointer} PUT`;
+      return `${pointer}Put ↓`;
 
     case InstructionType.IF_GREATER:
-      return `${pointer} IF_GREATER`;
+      return `${pointer}IFGreat`;
 
     case InstructionType.IF_LESS:
-      return `${pointer} IF_LESS`;
+      return `${pointer}IFLess`;
 
     case InstructionType.IF_EQUAL:
-      return `${pointer} IF_EQUAL`;
+      return `${pointer}IFEqual`;
 
     case InstructionType.IF_END:
-      return `${pointer} IF_END ${instruction.label}`;
+      return `${pointer}IFEnd ${instruction.label}`;
 
     case InstructionType.IF_MEET:
-      return `IF_MEET ${instruction.label}`;
-
-    case InstructionType.SWAP:
-      return 'SWAP';
-    case InstructionType.SWAP_WITH_NEXT:
-      return 'SWAP_WITH_NEXT';
+      return `${pointer}IFMeet ${instruction.label}`;
 
     case InstructionType.JUMP:
-      return `JUMP ${instruction.label}`;
+      return `${pointer}Jump ${instruction.label}`;
 
     case InstructionType.LABEL:
       return `${instruction.labelName}:`;
 
+    case InstructionType.SWAP:
+      return `${pointer}Swap ⇄`;
+
+    case InstructionType.SWAP_WITH_NEXT:
+      return `${pointer}SwapNext →←`;
+
     case InstructionType.INCREMENT_VALUE:
-      return `${pointer} INCREMENT_VALUE`;
+      return `${pointer}Value +`;
 
     case InstructionType.DECREMENT_VALUE:
-      return `${pointer} DECREMENT_VALUE`;
+      return `${pointer}Value -`;
 
     case InstructionType.WAIT:
-      return 'WAIT';
+      return `${pointer}Wait`;
 
     default:
       return 'UNKNOWN';

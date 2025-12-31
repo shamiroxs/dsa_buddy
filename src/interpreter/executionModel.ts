@@ -29,6 +29,7 @@ export interface ExecutionState {
   // History for rewind
   history: ExecutionState[];
   currentLine: number;
+  currentInstructionId: string | null;
   instructions: any[];
 }
 
@@ -56,6 +57,7 @@ export function createInitialState(
       },
     ],
     currentLine: 0,
+    currentInstructionId: instructions[0]?.id ?? null,
     instructions,
     stepCount: 0,
     labelMap,
@@ -74,6 +76,7 @@ export function cloneState(state: ExecutionState): ExecutionState {
       line: frame.line,
     })),
     currentLine: state.currentLine,
+    currentInstructionId: state.currentInstructionId,
     instructions: state.instructions,
     stepCount: state.stepCount,
     labelMap: { ...state.labelMap },

@@ -67,6 +67,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
   // Program finished
   if (stack.length === 0) {
+    newState.currentInstructionId = null;
     return {
       state: newState,
       success: false,
@@ -82,6 +83,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
     stack.pop();
 
     if (stack.length === 0) {
+      newState.currentInstructionId = null;
       return {
         state: newState,
         success: true,
@@ -101,6 +103,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
   }
 
   const instruction = frame.instructions[frame.line] as Instruction;
+  newState.currentInstructionId = instruction.id;
 
   try {
     switch (instruction.type) {

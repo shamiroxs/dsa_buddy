@@ -39,14 +39,17 @@ export const useValidationResult = () =>
 export const useCurrentInstruction = (): Instruction | null => {
   return useGameStore((state) => {
     const exec = state.executionState;
-    if (!exec) return null;
+    if (!exec || exec.executionStack.length === 0) return null;
 
-    const { currentLine, instructions } = exec;
-    if (currentLine >= instructions.length) return null;
+    const frame =
+      exec.executionStack[exec.executionStack.length - 1];
 
-    return instructions[currentLine] as Instruction;
+    if (frame.line >= frame.instructions.length) return null;
+
+    return frame.instructions[frame.line] as Instruction;
   });
 };
+
 const EMPTY_ARRAY: number[] = [];
 
 export const useArrayState = (): number[] =>

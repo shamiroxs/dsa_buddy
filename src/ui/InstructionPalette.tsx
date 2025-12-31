@@ -212,8 +212,9 @@ export function InstructionPalette() {
     position: 'above' | 'below';
   } | null>(null);
   
-  const currentLine = executionState?.currentLine ?? null;
-  
+  const currentInstructionId =
+    executionState?.currentInstructionId ?? null;
+
   // Generate unique label name
   const generateUniqueLabelName = (): string => {
     const existingLabels = new Set<string>();
@@ -847,7 +848,7 @@ export function InstructionPalette() {
                     key={child.id}
                     instruction={child}
                     index={childIdx}
-                    isActive={false}
+                    isActive={currentInstructionId === child.id}
                     insertPreview={insertPreview}
                     parentIfId={instruction.id}
                   />
@@ -1361,7 +1362,7 @@ export function InstructionPalette() {
                       key={inst.id}
                       instruction={inst}
                       index={idx}
-                      isActive={currentLine === idx}
+                      isActive={currentInstructionId === inst.id}
                       insertPreview={insertPreview}
                     />
                   ))
