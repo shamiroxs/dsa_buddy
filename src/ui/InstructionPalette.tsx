@@ -102,8 +102,8 @@ type DragItem =
 const instructionTemplates = [
   { type: InstructionType.MOVE_LEFT, label: '← Left', description: 'Move pointer left (pointer -= 1)' },
   { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
-  { type: InstructionType.PICK, label: 'Pick ↑', description: 'Pick value at pointer into hand' },
-  { type: InstructionType.PUT, label: 'Put ↓', description: 'Put hand value at pointer' },
+  { type: InstructionType.PICK, label: 'Pick', description: 'Pick value at pointer into hand' },
+  { type: InstructionType.PUT, label: 'Put', description: 'Put hand value at pointer' },
   { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
   { type: InstructionType.SET_POINTER, label: 'Goto ↦', description: 'Set pointer to index' },
   { type: InstructionType.SET_VALUE, label: 'Set ?', description: 'Set pointer to index' },
@@ -421,9 +421,9 @@ export function InstructionPalette() {
       case InstructionType.SET_VALUE:
         return `Set ${inst.value}`;
       case InstructionType.PICK:
-        return 'Pick ↑';
+        return 'Pick';
       case InstructionType.PUT:
-        return 'Put ↓';
+        return 'Put';
       case InstructionType.IF_GREATER:
         return 'IFGreat';
       case InstructionType.IF_LESS:
