@@ -10,9 +10,9 @@ import { InstructionType } from '../instructions/types';
 export const challenges: Challenge[] = [
   {
     id: 'challenge-0',
-    title: 'Start Here',
-    description: 'Copy the first value into the second box',
-    hints: [],
+    title: 'First Assignment',
+    description: `The passenger in Seat 0 wants to reserve Seat 1.`,
+    hints: ['Before departure, Seat 1 must contain the same ticket as Seat 0.'],
     difficulty: Difficulty.EASY,
     initialArray: [7, 0, 0, 0],
     targetArray: [7, 7, 0, 0],
@@ -36,9 +36,9 @@ export const challenges: Challenge[] = [
   },
   {
     id: 'challenge-1',
-    title: 'Larger of First Two',
-    description: 'Compare the first two elements and store the larger value at index 0.',
-    hints: [],
+    title: 'Seat Authority',
+    description: `The passengers in Seat 0 and Seat 1 both claim priority seating.`,
+    hints: ['Before the next station, ensure Seat 0 is occupied by the passenger with the higher ticket number.'],
     difficulty: Difficulty.EASY,
     initialArray: [4, 9, 6, 2],
     targetArray: [9, 9, 6, 2],
@@ -68,9 +68,9 @@ export const challenges: Challenge[] = [
   
   {
     id: 'challenge-2',
-    title: 'Swap First and Last',
-    description: 'Swap the first and last elements of the array.',
-    hints: [],
+    title: 'End Seat Correction',
+    description: 'Two ticket numbers were assigned to the wrong ends of the compartment.',
+    hints: ['Ensure the correct ticket number is assigned to each end seat.'],
     difficulty: Difficulty.EASY,
     initialArray: [10, 20, 30, 40, 50],
     targetArray: [50, 20, 30, 40, 10],
@@ -89,12 +89,12 @@ export const challenges: Challenge[] = [
   },
   {
     id: 'challenge-3',
-    title: 'Reverse Array',
-    description: 'Reverse the array in-place.',
-    hints: [],
+    title: 'Backwards Tickets',
+    description: `The ticket numbers in this compartment were assigned in reverse order.`,
+    hints: ['Restore the assignment by reversing the ticket order.'],
     difficulty: Difficulty.EASY,
-    initialArray: [1, 2, 3, 4, 5],
-    targetArray: [5, 4, 3, 2, 1],
+    initialArray: [5, 4, 3, 2, 1],
+    targetArray: [1, 2, 3, 4, 5],
     maxSteps: 13,
     instructions: [],
     unlocked: true,
@@ -118,13 +118,13 @@ export const challenges: Challenge[] = [
   
   {
     id: 'challenge-4',
-    title: 'Find Maximum',
-    description: 'Find the maximum value in the array and store it at index 0.',
-    hints: ['IFGreater : hand > arrvalue',
-      'IFLess : hand < arrvalue'
+    title: 'VIP Ticket',
+    description: `A VIP ticket number is already assigned to one seat. \nSeat 0 is also reserved by this passanger.`,
+    hints: ['Before boarding begins, the VIP ticket number must be assigned to Seat 0.',
+      '(The VIP ticket number is the highest value in the compartment.)'
     ],
     difficulty: Difficulty.EASY,
-    initialArray: [3, 7, 2, 9, 1, 5],
+    initialArray: [0, 7, 2, 9, 1, 5],
     targetArray: [9, 7, 2, 9, 1, 5],
     maxSteps: 46,
     instructions: [],
@@ -153,12 +153,12 @@ export const challenges: Challenge[] = [
   },
   {
     id: 'challenge-5',
-    title: 'Move Zeros to End',
-    description: `Move all zeros to the end of the array while maintaining relative order of non-zero elements.
-    (Assume first element always zero)`,
+    title: 'Clear the Aisle',
+    description: `Some seats are occupied by passengers without tickets (zeros). 
+    They must move to the right end, without disturbing others.`,
     
     hints: [
-      'Both MOCO and CHOCO uses same hand',
+      'Seat 0 is always unreserved seat',
     ],
     
     difficulty: Difficulty.MEDIUM,
@@ -190,9 +190,11 @@ export const challenges: Challenge[] = [
   },
   {
     id: 'challenge-6',
-    title: 'Is Sorted?',
-    description: 'Check if the array is sorted in increasing order. Store 1 at index 0 if sorted, else 0.',
-    hints: [],
+    title: 'Inspection Check',
+    description: `The inspector is watching. Review the ticket numbers.
+    Seat 0 will indicate the inspection result`,
+    hints: ['If they are in increasing order set 1, else set 0',
+    ],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 3, 5, 7, 6],
     targetArray: [0, 3, 5, 7, 6],
@@ -221,9 +223,9 @@ export const challenges: Challenge[] = [
   },  
   {
     id: 'challenge-7',
-    title: 'Left Rotate by One',
-    description: 'Rotate the array left by one position.',
-    hints: [],
+    title: 'Seat Rotation',
+    description: 'The compartment layout must shift forward smoothly.',
+    hints: ['Move everyone left without losing anyone.'],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 2, 3, 4],
     targetArray: [2, 3, 4, 1],
@@ -245,9 +247,9 @@ export const challenges: Challenge[] = [
 
   {
     id: 'challenge-8',
-    title: 'Find Duplicate',
-    description: 'Find the duplicate number in the array and store it at index 0. Array contains numbers 1 to n with one duplicate.',
-    hints: [],
+    title: 'Ticket Conflict',
+    description: 'Two passengers have the same ticket number. Only one is valid.',
+    hints: ['Identify the conflict and report it in Seat 0.'],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 3, 4, 2, 2],
     targetArray: [2, 3, 4, 2, 2],
@@ -279,55 +281,5 @@ export const challenges: Challenge[] = [
       ],
     }
   },
-  /*
-  {
-    id: 'challenge-7',
-    title: 'Two Sum',
-    description: 'Find two numbers that add up to target (10) and store them at indices 0 and 1.',
-    hints: [],
-    difficulty: Difficulty.MEDIUM,
-    initialArray: [2, 7, 11, 15],
-    targetArray: [2, 7, 11, 15], // Target sum is 9, so 2+7=9
-    maxSteps: 35,
-    instructions: [],
-    unlocked: true,
-  },
-  {
-    id: 'challenge-8',
-    title: 'Sort Array (Bubble Sort)',
-    hints: [],
-    description: 'Sort the array in ascending order using bubble sort algorithm.',
-    hints: [],
-    difficulty: Difficulty.MEDIUM,
-    initialArray: [64, 34, 25, 12, 22, 11, 90],
-    targetArray: [11, 12, 22, 25, 34, 64, 90],
-    maxSteps: 50,
-    instructions: [],
-    unlocked: true,
-  },
-  {
-    id: 'challenge-9',
-    title: 'Find Missing Number',
-    description: 'Array contains numbers 0 to n with one missing. Find and store the missing number at index 0.',
-    hints: [],
-    difficulty: Difficulty.HARD,
-    initialArray: [3, 0, 1],
-    targetArray: [2, 0, 1],
-    maxSteps: 20,
-    instructions: [],
-    unlocked: false, // Locked in MVP
-  },
-  {
-    id: 'challenge-10',
-    title: 'Product Except Self',
-    description: 'Replace each element with the product of all other elements.',
-    hints: [],
-    difficulty: Difficulty.HARD,
-    initialArray: [1, 2, 3, 4],
-    targetArray: [24, 12, 8, 6],
-    maxSteps: 40,
-    instructions: [],
-    unlocked: false, // Locked in MVP
-  },*/
 ];
 

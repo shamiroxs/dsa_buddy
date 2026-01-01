@@ -45,14 +45,14 @@ export function ChallengePanel() {
       
       {/* Initial Array */}
       <div className="mb-4">
-        <h3 className="text-gray-400 text-sm mb-2">Initial Array</h3>
+        <h3 className="text-gray-400 text-sm mb-2">Current Seating</h3>
         <ArrayView array={challenge.initialArray} />
       </div>
 
       {/* Hints */}
       {challenge.hints && challenge.hints.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-gray-400 text-sm mb-2">Hints</h3>
+            <h3 className="text-gray-400 text-sm mb-2">Instructions</h3>
             <ul className="space-y-1 text-sm text-gray-300">
               {challenge.hints.map((hint, index) => (
                 <li key={index}>{hint}</li>
