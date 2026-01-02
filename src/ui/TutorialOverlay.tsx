@@ -1,4 +1,5 @@
 import { useGameStore } from '../orchestrator/store';
+import { useEffect } from 'react';
 
 const STEPS = [
   {
@@ -32,6 +33,20 @@ export function TutorialOverlay() {
     endTutorial,
   } = useGameStore();
 
+  useEffect(() => {
+    if (tutorialStep !== 0) return;
+
+    const handleScroll = () => {
+      nextTutorialStep();
+    };
+
+    window.addEventListener('scroll', handleScroll, { once: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [tutorialStep, nextTutorialStep]);
+
   if (!isTutorialActive) return null;
 
   const step = STEPS[Math.min(tutorialStep, STEPS.length - 1)];
@@ -61,10 +76,10 @@ export function TutorialOverlay() {
       onPointerUp={handleClickAnywhere}
     >
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/5" />
+      <div className="absolute inset-0 bg-black/15" />
 
       {/* Coach box */}
-      <div className="absolute top-4 right-4 bg-gray-800 text-white rounded-lg p-4 max-w-sm shadow-xl pointer-events-auto">
+      <div className="absolute top-4 right-4 animate-pulse duration-[10s] ring-2 ring-yellow-400 bg-purple-800 text-white rounded-lg p-4 max-w-sm shadow-xl pointer-events-auto">
         <h4 className="font-semibold mb-1">{step.title}</h4>
         <p className="text-sm text-gray-300">{step.text}</p>
 
@@ -75,6 +90,7 @@ export function TutorialOverlay() {
           Skip tutorial
         </button>
       </div>
+      
     </div>
   );
 }
