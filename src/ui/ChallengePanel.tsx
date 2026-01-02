@@ -45,7 +45,7 @@ export function ChallengePanel() {
       
       {/* Initial Array */}
       <div className="mb-4">
-        <h3 className="text-gray-400 text-sm mb-2">Current Seating</h3>
+        <h3 className="text-gray-400 text-sm mb-2">Initial Seating</h3>
         <ArrayView array={challenge.initialArray} />
       </div>
 

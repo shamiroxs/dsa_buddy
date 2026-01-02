@@ -20,7 +20,7 @@ export function executeSingleStep(): void {
   const store = useGameStore.getState();
   const state = store.executionState;
 
-  if (store.isTutorialActive) {
+  if (store.isTutorialActive && store.tutorialStep == 4) {
     store.endTutorial();
   }
 
@@ -92,10 +92,13 @@ export function executeSingleStep(): void {
 /**
  * Run execution continuously
  */
-export function runExecution(speed: number = 500): void {
+export function runExecution(
+  speed: number = 500,
+
+): void {
   const store = useGameStore.getState();
 
-  if (store.isTutorialActive) {
+  if (store.isTutorialActive && store.tutorialStep == 4) {
     store.endTutorial();
   }
 
@@ -188,7 +191,7 @@ export function validateChallenge(): void {
 
   if (result?.success) {
 
-    if (store.isTutorialActive) {
+    if (store.isTutorialActive && store.tutorialStep ==4) {
       store.endTutorial();
     }
     
