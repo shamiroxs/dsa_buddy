@@ -81,7 +81,7 @@ export function TutorialOverlay() {
       {/* Coach box */}
       
       <div
-        className={`absolute top-4 right-4 ring-2 ring-yellow-400 bg-gray-900 text-white rounded-lg p-4 max-w-sm shadow-xl pointer-events-auto
+        className={`absolute bottom-64 right-4 ring-2 ring-yellow-400 bg-gray-900 text-white rounded-lg p-4 max-w-sm shadow-xl pointer-events-auto
           ${tutorialStep === 0 ? 'animate-pulse duration-[4s]' : ''}`}
       >
         <h4 className="font-semibold mb-1">{step.title}</h4>
