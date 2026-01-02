@@ -10,9 +10,9 @@ import { InstructionType } from '../instructions/types';
 export const challenges: Challenge[] = [
   {
     id: 'challenge-0',
-    title: 'First Assignment',
-    description: `The passenger in Seat 0 wants to reserve Seat 1.`,
-    hints: ['Before departure, Seat 1 must contain the same ticket as Seat 0.'],
+    title: 'Start Here',
+    description: `The passenger in Seat 0 wants a reservation in the next seat.`,
+    hints: ['Copy the ticket value from Seat 0 into Seat 1.'],
     difficulty: Difficulty.EASY,
     initialArray: [7, 0, 0, 0],
     targetArray: [7, 7, 0, 0],
@@ -36,9 +36,9 @@ export const challenges: Challenge[] = [
   },
   {
     id: 'challenge-1',
-    title: 'Seat Authority',
-    description: `The passengers in Seat 0 and Seat 1 both claim priority seating.`,
-    hints: ['Before the next station, ensure Seat 0 is occupied by the passenger with the higher ticket number.'],
+    title: 'Priority Seating',
+    description: `Two passengers claim priority. Only the higher ticket number keeps Seat 0.`,
+    hints: ['Seat 0 must contain the higher ticket value between Seat 0 and Seat 1.'],
     difficulty: Difficulty.EASY,
     initialArray: [4, 9, 6, 2],
     targetArray: [9, 9, 6, 2],
@@ -68,9 +68,9 @@ export const challenges: Challenge[] = [
   
   {
     id: 'challenge-2',
-    title: 'End Seat Correction',
-    description: 'Two ticket numbers were assigned to the wrong ends of the compartment.',
-    hints: ['Ensure the correct ticket number is assigned to each end seat.'],
+    title: 'End-Seat Correction',
+    description: 'Tickets were assigned to the wrong ends of the compartment.',
+    hints: ['Swap the values in the first and last seats.'],
     difficulty: Difficulty.EASY,
     initialArray: [10, 20, 30, 40, 50],
     targetArray: [50, 20, 30, 40, 10],
@@ -90,8 +90,8 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-3',
     title: 'Backwards Tickets',
-    description: `The ticket numbers in this compartment were assigned in reverse order.`,
-    hints: ['Restore the assignment by reversing the ticket order.'],
+    description: `The compartment was filled from the wrong direction.`,
+    hints: ['Reverse the order of all ticket values.'],
     difficulty: Difficulty.EASY,
     initialArray: [5, 4, 3, 2, 1],
     targetArray: [1, 2, 3, 4, 5],
@@ -118,10 +118,9 @@ export const challenges: Challenge[] = [
   
   {
     id: 'challenge-4',
-    title: 'VIP Ticket',
-    description: `A VIP ticket number is already assigned to one seat. \nSeat 0 is also reserved by this passanger.`,
-    hints: ['Before boarding begins, the VIP ticket number must be assigned to Seat 0.',
-      '(The VIP ticket number is the highest value in the compartment.)'
+    title: 'VIP Seat',
+    description: `A VIP is already seated somewhere. Seat 0 is reserved for them.`,
+    hints: ['Copy the highest ticket value into Seat 0.'
     ],
     difficulty: Difficulty.EASY,
     initialArray: [0, 7, 2, 9, 1, 5],
@@ -154,11 +153,9 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-5',
     title: 'Clear the Aisle',
-    description: `Some seats are occupied by passengers without tickets (zeros). 
-    They must move to the right end, without disturbing others.`,
-    
+    description: `Passengers without tickets must step aside without disturbing valid ones.`,
     hints: [
-      'Seat 0 is always unreserved seat',
+      'Move all zero values to the right end, preserving order of others.',
     ],
     
     difficulty: Difficulty.MEDIUM,
@@ -191,9 +188,9 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-6',
     title: 'Inspection Check',
-    description: `The inspector is watching. Review the ticket numbers.
-    Seat 0 will indicate the inspection result`,
-    hints: ['If they are in increasing order set 1, else set 0',
+    description: `An inspector checks ticket order before departure.`,
+    hints: ['Set Seat 0 to 1 if the remaining seats are increasing order',
+      'Otherwise, set Seat 0 to 0',
     ],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 3, 5, 7, 6],
@@ -224,8 +221,8 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-7',
     title: 'Seat Rotation',
-    description: 'The compartment layout must shift forward smoothly.',
-    hints: ['Move everyone left without losing anyone.'],
+    description: 'The compartment advances forward by one seat.',
+    hints: ['Shift all values left by one position. Move Seat 0 to the end.'],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 2, 3, 4],
     targetArray: [2, 3, 4, 1],
@@ -247,9 +244,9 @@ export const challenges: Challenge[] = [
 
   {
     id: 'challenge-8',
-    title: 'Ticket Conflict',
-    description: 'Two passengers have the same ticket number. Only one is valid.',
-    hints: ['Identify the conflict and report it in Seat 0.'],
+    title: 'Duplicate Ticket',
+    description: 'Only one ticket per passenger is allowed.',
+    hints: ['If any duplicate ticket exists, copy that value into Seat 0.'],
     difficulty: Difficulty.MEDIUM,
     initialArray: [1, 3, 4, 2, 2],
     targetArray: [2, 3, 4, 2, 2],
