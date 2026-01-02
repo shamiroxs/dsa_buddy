@@ -49,12 +49,12 @@ export function executeSingleStep(): void {
     // Check if error is pointer out of bounds - if so, validate challenge instead
     const errorMessage = result.error || '';
     const isPointerOutOfBounds = 
-      errorMessage.includes('Pointer out of bounds') ||
+      errorMessage.includes('Pointer is not on a valid seat.') ||
       errorMessage.includes('Cannot move right: pointer already at end') ||
       errorMessage.includes('Cannot move left: pointer already at start') ||
-      errorMessage.includes('Cannot move right') ||
-      errorMessage.includes('Cannot move left') ||
-      errorMessage.includes('Cannot swap: pointer at or beyond last element');
+      errorMessage.includes('Cannot move right. This is the last seat.') ||
+      errorMessage.includes('Cannot move left. This is the first seat.') ||
+      errorMessage.includes('Cannot swap seats here. There is no adjacent seat.');
     
       if (isPointerOutOfBounds) {
         // Temporarily update state to perform validation

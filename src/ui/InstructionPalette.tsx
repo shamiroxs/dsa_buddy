@@ -637,8 +637,8 @@ export function InstructionPalette() {
     };
 
     const isError =
-    errorContext?.kind === 'INSTRUCTION' &&
-    errorContext.instructionId === instruction.id;
+    (errorContext?.kind === 'INSTRUCTION' || errorContext?.kind === 'POINTER') &&
+    currentInstructionId === instruction.id;
 
   
     const [isEditing, setIsEditing] = useState(false);

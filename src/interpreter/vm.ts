@@ -69,6 +69,24 @@ function instructionError(
   };
 }
 
+function pointerError(
+  state: ExecutionState,
+  target: 'MOCO' | 'CHOCO',
+  message: string
+): ExecutionResult {
+  return {
+    state,
+    success: false,
+    error: message,
+    errorContext: {
+      kind: 'POINTER',
+      target,
+    },
+    completed: false,
+  };
+}
+
+
 /**
  * Execute a single instruction
  */
@@ -125,13 +143,13 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_LESS: {
         if (newState.hand === null) {
-          return instructionError(newState, instruction, 'Hand is empty');
+          return instructionError(newState, instruction, 'Cannot compare tickets. No ticket in hand.');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
 
         if (newState.hand < newState.array[ptr]) {
@@ -144,13 +162,13 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_GREATER: {
         if (newState.hand === null) {
-          return instructionError(newState, instruction, 'Hand is empty');
+          return instructionError(newState, instruction, 'Cannot compare tickets. No ticket in hand.');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
 
         if (newState.hand > newState.array[ptr]) {
@@ -163,13 +181,13 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_EQUAL: {
         if (newState.hand === null) {
-          return instructionError(newState, instruction, 'Hand is empty');
+          return instructionError(newState, instruction, 'Cannot compare tickets. No ticket in hand.');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
 
         if (newState.hand === newState.array[ptr]) {
@@ -182,13 +200,13 @@ export function executeStep(state: ExecutionState): ExecutionResult {
 
       case InstructionType.IF_NOT_EQUAL: {
         if (newState.hand === null) {
-          return instructionError(newState, instruction, 'Hand is empty');
+          return instructionError(newState, instruction, 'Cannot compare tickets. No ticket in hand.');
         }
 
         const ptr = getPointer(newState, instruction.target);
 
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
 
         if (newState.hand !== newState.array[ptr]) {
@@ -208,7 +226,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             return instructionError(
               newState,
               instruction,
-              `Label "${instruction.label}" not found`
+              `Jump failed. The target label "${instruction.label}" does not exist.`
             );
           }
       
@@ -232,7 +250,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
             return instructionError(
               newState,
               instruction,
-              `Label "${instruction.label}" not found`
+              `Jump failed. The target label "${instruction.label}" does not exist.`
             );
           }
       
@@ -257,7 +275,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           return instructionError(
             newState,
             instruction,
-            `Label "${instruction.label}" not found`
+            `Jump failed. The target label "${instruction.label}" does not exist.`
           );
         }
 
@@ -280,7 +298,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.MOVE_LEFT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr <= 0) {
-          return instructionError(newState, instruction, 'Cannot move left');
+          return pointerError(newState, instruction.target, 'Cannot move left. This is the first seat.');
         }
         setPointer(newState, instruction.target, ptr - 1);
         frame.line++;
@@ -290,7 +308,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.MOVE_RIGHT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr >= newState.array.length - 1) {
-          return instructionError(newState, instruction, 'Cannot move right');
+          return pointerError(newState, instruction.target, 'Cannot move right. This is the last seat.');
         }
         setPointer(newState, instruction.target, ptr + 1);
         frame.line++;
@@ -307,7 +325,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           instruction.index < 0 ||
           instruction.index >= newState.array.length
         ) {
-          return instructionError(newState, instruction, 'Index out of bounds');
+          return instructionError(newState, instruction, 'That seat does not exist in this compartment.');
         }
         setPointer(newState, instruction.target, instruction.index);
         frame.line++;
@@ -317,7 +335,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
         if (
           instruction.value < 0 
         ) {
-          return instructionError(newState, instruction, 'Value should be positive');
+          return instructionError(newState, instruction, 'Invalid ticket value. Ticket numbers must be zero or greater.');
         }
         setValue(newState, instruction.target, instruction.value);
         frame.line++;
@@ -326,7 +344,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.PICK: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
         newState.hand = newState.array[ptr];
         frame.line++;
@@ -336,10 +354,10 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.PUT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
         if (newState.hand === null) {
-          return instructionError(newState, instruction, 'Hand is empty');
+          return instructionError(newState, instruction, 'No ticket in hand. Pick up a ticket before using this instruction.');
         }
         newState.array[ptr] = newState.hand;
         frame.line++;
@@ -353,7 +371,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
           m < 0 || m >= newState.array.length ||
           c < 0 || c >= newState.array.length
         ) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return instructionError(newState, instruction, 'Pointer is not on a valid seat.');
         }
         const temp = newState.array[m];
         newState.array[m] = newState.array[c];
@@ -365,7 +383,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.SWAP_WITH_NEXT: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length - 1) {
-          return instructionError(newState, instruction, 'Cannot swap');
+          return pointerError(newState, instruction.target, 'Cannot swap seats here. There is no adjacent seat.');
         }
         const temp = newState.array[ptr];
         newState.array[ptr] = newState.array[ptr + 1];
@@ -377,7 +395,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.INCREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
         newState.array[ptr]++;
         frame.line++;
@@ -387,7 +405,7 @@ export function executeStep(state: ExecutionState): ExecutionResult {
       case InstructionType.DECREMENT_VALUE: {
         const ptr = getPointer(newState, instruction.target);
         if (ptr < 0 || ptr >= newState.array.length) {
-          return instructionError(newState, instruction, 'Pointer out of bounds');
+          return pointerError(newState, instruction.target, 'Pointer is not on a valid seat.');
         }
         newState.array[ptr]--;
         frame.line++;
