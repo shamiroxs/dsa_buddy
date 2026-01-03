@@ -37,6 +37,11 @@ export function ChallengePathView() {
         return 'bg-red-500';
     }
   };
+
+  const nextChallengeIndex = challenges.findIndex(
+    c => c.unlocked && !isChallengeCompleted(c.id)
+  );
+  
   const completedIndexes = challenges
   .map((c, i) => (isChallengeCompleted(c.id) ? i : -1))
   .filter(i => i !== -1);
@@ -77,6 +82,7 @@ export function ChallengePathView() {
 
           {challenges.map((challenge, index) => {
             const completed = isChallengeCompleted(challenge.id);
+            const isNext = index === nextChallengeIndex;
 
             return (
               <motion.div
@@ -87,19 +93,35 @@ export function ChallengePathView() {
                 className="relative z-10 flex flex-col items-center mb-10 sm:mb-16 overflow-visible"
               >
                 {/* Node */}
-                <button
+                <motion.button
                   disabled={!challenge.unlocked}
                   onClick={() =>
                     challenge.unlocked && selectChallenge(challenge.id)
                   }
+                  animate={
+                    isNext
+                      ? {
+                          scale: [1, 1.15, 1],
+                          boxShadow: [
+                            '0 0 0px rgba(99,102,241,0)',
+                            '0 0 16px rgba(99,102,241,0.9)',
+                            '0 0 0px rgba(99,102,241,0)',
+                          ],
+                        }
+                      : {}
+                  }
+                  transition={
+                    isNext
+                      ? {
+                          repeat: Infinity,
+                          duration: 1.4,
+                          ease: 'easeInOut',
+                        }
+                      : {}
+                  }
                   className={clsx(
-                    // Mobile first
-                    'w-12 h-12 text-sm',
-                    // Desktop
-                    'sm:w-16 sm:h-16 sm:text-lg',
-                    'rounded-full flex items-center justify-center',
-                    'text-white font-bold text-lg shadow-lg',
-                    'transition-transform active:scale-95',
+                    'w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center',
+                    'text-white font-bold shadow-lg',
                     challenge.unlocked && 'hover:scale-105',
                     getNodeColor(
                       challenge.difficulty,
@@ -110,7 +132,8 @@ export function ChallengePathView() {
                   )}
                 >
                   {index}
-                </button>
+                </motion.button>
+
 
                 {/* Title */}
                 <div className="absolute left-14 sm:left-20 top-1/2 -translate-y-1/2 w-64 text-left whitespace-normal">
