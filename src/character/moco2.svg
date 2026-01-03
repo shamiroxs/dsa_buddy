@@ -1,0 +1,76 @@
+<svg
+  width="40"
+  height="60"
+  viewBox="0 0 40 60"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Antenna -->
+  <line
+    x1="20"
+    y1="2"
+    x2="20"
+    y2="8"
+    stroke="#2563eb"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <circle cx="20" cy="2" r="2" fill="#60a5fa" />
+
+  <!-- Head -->
+  <rect
+    x="8"
+    y="8"
+    width="24"
+    height="18"
+    rx="4"
+    fill="#3b82f6"
+  />
+
+  <!-- Eyes -->
+  <circle cx="15" cy="17" r="2" fill="#e0f2fe" />
+  <circle cx="25" cy="17" r="2" fill="#e0f2fe" />
+
+  <!-- Mouth -->
+  <rect
+    x="16"
+    y="21"
+    width="8"
+    height="2"
+    rx="1"
+    fill="#bfdbfe"
+  />
+
+  <!-- Body -->
+  <rect
+    x="10"
+    y="26"
+    width="20"
+    height="14"
+    rx="3"
+    fill="#2563eb"
+  />
+
+  <!-- Body panel -->
+  <rect
+    x="14"
+    y="30"
+    width="12"
+    height="6"
+    rx="2"
+    fill="#60a5fa"
+  />
+
+  <!-- Arm (pointer) -->
+  <line
+    x1="20"
+    y1="40"
+    x2="20"
+    y2="52"
+    stroke="#1d4ed8"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+
+  <!-- Pointer hand -->
+  <circle cx="20" cy="54" r="3" fill="#1d4ed8" />
+</svg>

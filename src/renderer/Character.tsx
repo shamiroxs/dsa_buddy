@@ -1,59 +1,130 @@
 import { motion } from 'framer-motion';
 
+export type CharacterType = 'MOCO' | 'CHOCO';
+
 interface CharacterProps {
-  color: 'blue' | 'red';
-  action?: 'idle' | 'walk' | 'pick' | 'put';
+  type: CharacterType;
+  x: number;
+  y: number;
+  size?: number;
+  isError?: boolean;
 }
 
-export function Character({ color, action = 'idle' }: CharacterProps) {
-  const coatColor = color === 'blue' ? '#3b82f6' : '#dc2626';
-  const antennaColor = color === 'blue' ? '#38bdf8' : '#dc2626';
+const CHARACTER_COLORS = {
+  MOCO: {
+    primary: '#3b82f6',
+    dark: '#2563eb',
+    darker: '#1d4ed8',
+    light: '#60a5fa',
+    eye: '#e0f2fe',
+  },
+  CHOCO: {
+    primary: '#dc2626',
+    dark: '#b91c1c',
+    darker: '#7f1d1d',
+    light: '#f87171',
+    eye: '#fee2e2',
+  },
+};
 
-  const headRotate =
-    action === 'pick' ? -15 :
-    action === 'put' ? 15 :
-    0;
+export function Character({
+  type,
+  x,
+  y,
+  isError = false,
+}: CharacterProps) {
+  const colors = CHARACTER_COLORS[type];
 
   return (
-    <svg width="24" height="36" viewBox="0 0 48 72">
-      {/* HEAD */}
+    <motion.g
+      style={{ transformBox: 'fill-box' }}
+      animate={{ x, y }}
+      transition={{
+        x: { type: 'tween', duration: 0.15, ease: 'linear' },
+        y: { type: 'tween', duration: 0.15, ease: 'linear' },
+      }}
+    >
+      {/* Shake layer (relative motion only) */}
       <motion.g
-        animate={{ rotate: headRotate }}
-        style={{ transformOrigin: '24px 14px' }}
-        transition={{ type: 'spring', stiffness: 200 }}
-      >
-        <ellipse cx="24" cy="14" rx="10" ry="8" fill="#7dd3fc" />
-        <circle cx="20" cy="13" r="2" fill="#0f172a" />
-        <circle cx="28" cy="13" r="2" fill="#0f172a" />
-        <circle cx="24" cy="-2" r="2" fill={antennaColor} />
-      </motion.g>
-
-      {/* BODY / COAT */}
-      <g>
-        <path
-          d="M12 26 Q24 20 36 26 V46 Q24 54 12 46 Z"
-          fill={coatColor}
-        />
-        <circle cx="24" cy="32" r="1.5" fill="#fff" />
-        <circle cx="24" cy="38" r="1.5" fill="#fff" />
-      </g>
-
-      {/* LEGS */}
-      <motion.g
-        animate={
-          action === 'walk'
-            ? { rotate: [-10, 10, -10] }
-            : { rotate: 0 }
-        }
-        style={{ transformOrigin: '24px 14px' }}
-        transition={{
-          repeat: action === 'walk' ? Infinity : 0,
-          duration: 0.4,
+        animate={{
+          x: isError ? [-2, 2, -2, 0] : 0,
         }}
+        transition={{ duration: 0.25 }}
       >
-        <rect x="18" y="50" width="4" height="12" rx="2" fill="#0f172a" />
-        <rect x="26" y="50" width="4" height="12" rx="2" fill="#0f172a" />
+        {/* Antenna */}
+        <line
+          x1="0"
+          y1="2"
+          x2="0"
+          y2="8"
+          stroke={isError ? '#ef4444' : colors.dark}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle
+          cx="0"
+          cy="2"
+          r="2"
+          fill={isError ? '#ef4444' : colors.light}
+        />
+
+        {/* Head */}
+        <rect
+          x="-12"
+          y="8"
+          width="24"
+          height="18"
+          rx="4"
+          fill={colors.primary}
+        />
+
+        {/* Eyes */}
+        <circle cx="-5" cy="17" r="2" fill={colors.eye} />
+        <circle cx="5" cy="17" r="2" fill={colors.eye} />
+
+        {/* Mouth */}
+        <rect
+          x="-4"
+          y="21"
+          width="8"
+          height="2"
+          rx="1"
+          fill={colors.light}
+        />
+
+        {/* Body */}
+        <rect
+          x="-10"
+          y="26"
+          width="20"
+          height="14"
+          rx="3"
+          fill={colors.dark}
+        />
+
+        {/* Body panel */}
+        <rect
+          x="-6"
+          y="30"
+          width="12"
+          height="6"
+          rx="2"
+          fill={colors.light}
+        />
+
+        {/* Arm / Pointer */}
+        <line
+          x1="0"
+          y1="40"
+          x2="0"
+          y2="52"
+          stroke={colors.darker}
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        {/* Pointer hand */} 
+        <circle cx="0" cy="54" r="3" fill={colors.darker} />
       </motion.g>
-    </svg>
+    </motion.g>
   );
 }
