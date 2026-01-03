@@ -31,6 +31,8 @@ import { ArrayView } from '../renderer/ArrayView';
 import { PointerView } from '../renderer/PointerView';
 import { ExecutionTimeline } from '../renderer/ExecutionTimeline';
 
+import { InstructionType } from '../engine/instructions/types';
+
 export function GameView() {
   const challenge = useCurrentChallenge();
   if (!challenge) return;
@@ -57,6 +59,24 @@ export function GameView() {
   const currentLine = useCurrentLine();
   const stepCount = useStepCount();
   const currentInstruction = useCurrentInstruction();
+
+  const isHandActive =
+  currentInstruction?.type === InstructionType.PICK ||
+  currentInstruction?.type === InstructionType.PUT;
+
+  const handAction: 'PICK' | 'PUT' | null =
+  currentInstruction?.type === InstructionType.PICK
+    ? 'PICK'
+    : currentInstruction?.type === InstructionType.PUT
+    ? 'PUT'
+    : null;
+
+    const isIfInstruction =
+    currentInstruction?.type === InstructionType.IF_LESS ||
+    currentInstruction?.type === InstructionType.IF_GREATER ||
+    currentInstruction?.type === InstructionType.IF_EQUAL ||
+    currentInstruction?.type === InstructionType.IF_NOT_EQUAL;
+  
 
   if (!challenge) return null;
 
@@ -115,6 +135,9 @@ export function GameView() {
                     mocoPointer={mocoPointer}
                     chocoPointer={chocoPointer}
                     errorContext={executionErrorContext ?? undefined}
+                    isHandActive={isHandActive}
+                    handAction={handAction}
+                    isIfActive={isIfInstruction}
                   />
                 </div>
               )}

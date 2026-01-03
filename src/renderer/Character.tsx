@@ -8,6 +8,11 @@ interface CharacterProps {
   y: number;
   size?: number;
   isError?: boolean;
+  isHandActive?: boolean;
+  handAction?: 'PICK' | 'PUT' | null;
+
+  isIfActive?: boolean;
+
 }
 
 const CHARACTER_COLORS = {
@@ -33,8 +38,26 @@ export function Character({
   y,
   size,
   isError = false,
+  isHandActive,
+  handAction,
+  isIfActive
 }: CharacterProps) {
   const colors = CHARACTER_COLORS[type];
+
+  const handColor = isHandActive
+  ? '#22c55e' // green
+  : isIfActive
+  ? '#facc15' // yellow
+  : colors.darker;
+
+
+  const eyeOffsetY =
+  handAction === 'PICK'
+    ? -2
+    : handAction === 'PUT' || isIfActive
+    ? 2
+    : 0;
+
 
   return (
     <motion.g
@@ -83,8 +106,22 @@ export function Character({
         />
 
         {/* Eyes */}
-        <circle cx="-5" cy="17" r="2" fill={colors.eye} />
-        <circle cx="5" cy="17" r="2" fill={colors.eye} />
+        <motion.circle
+          cx="-5"
+          cy={17}
+          r="2"
+          fill={colors.eye}
+          animate={{ y: eyeOffsetY }}
+          transition={{ duration: 0.15 }}
+        />
+        <motion.circle
+          cx="5"
+          cy={17}
+          r="2"
+          fill={colors.eye}
+          animate={{ y: eyeOffsetY }}
+          transition={{ duration: 0.15 }}
+        />
 
         {/* Mouth */}
         <rect
@@ -127,7 +164,18 @@ export function Character({
           strokeLinecap="round"
         />
         {/* Pointer hand */} 
-        <circle cx="0" cy="54" r="3" fill={colors.darker} />
+        <motion.circle cx="0" cy="54" r="3" 
+        fill={
+          handColor
+        }
+        animate={
+          handAction === 'PICK'
+            ? { scale: [1, 1.3, 1] }
+            : handAction === 'PUT'
+            ? { scale: [1, 0.7, 1] }
+            : undefined
+        }
+        />
       </motion.g>
     </motion.g>
   );

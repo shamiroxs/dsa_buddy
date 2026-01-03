@@ -16,6 +16,12 @@ interface PointerViewProps {
   cellWidth?: number;
   spacing?: number;
   errorContext?: ExecutionErrorContext;
+
+  isHandActive?: boolean;
+  handAction?: 'PICK' | 'PUT' | null;
+
+  isIfActive?: boolean;
+
 }
 
 export function PointerView({
@@ -24,7 +30,10 @@ export function PointerView({
   chocoPointer,
   cellWidth = 60,
   spacing = 10,
-  errorContext
+  errorContext,
+  isHandActive,
+  handAction,
+  isIfActive
 }: PointerViewProps) {
   const width = arrayLength * (cellWidth + spacing) - spacing ;
 
@@ -32,7 +41,8 @@ export function PointerView({
     index: number,
     type: 'MOCO' | 'CHOCO',
     yOffset: number,
-    isError?: boolean
+    isError?: boolean,
+    isHandActive?: boolean
   ) {
     if (index < 0 || index >= arrayLength) return null;
   
@@ -45,6 +55,9 @@ export function PointerView({
         y={yOffset}
         size={1.4}
         isError={isError}
+        isHandActive={isHandActive}
+        handAction={handAction}
+        isIfActive={isIfActive}
       />
     );
   }
@@ -64,7 +77,7 @@ export function PointerView({
 
   return (
     <svg
-      viewBox={`0 -2 ${width} ${82}`}
+      viewBox={`0 -5 ${width} ${84}`}
       preserveAspectRatio="xMidYMid meet"
       className="pointer-view w-full max-w-[360px] h-auto block mx-auto"
     >
@@ -74,7 +87,8 @@ export function PointerView({
           mocoPointer,
           'MOCO',
           sameIndex ? 0 : 10,
-          mocoError
+          mocoError,
+          isHandActive
         )}
 
       {/* CHOCO */}
@@ -83,7 +97,8 @@ export function PointerView({
           chocoPointer,
           'CHOCO',
           sameIndex ? 26 : 10,
-          chocoError
+          chocoError,
+          isHandActive
         )}
 
     </svg>
