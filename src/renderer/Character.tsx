@@ -31,6 +31,7 @@ export function Character({
   type,
   x,
   y,
+  size,
   isError = false,
 }: CharacterProps) {
   const colors = CHARACTER_COLORS[type];
@@ -38,7 +39,7 @@ export function Character({
   return (
     <motion.g
       style={{ transformBox: 'fill-box' }}
-      animate={{ x, y }}
+      animate={{ x, y, scale: size }}
       transition={{
         x: { type: 'tween', duration: 0.15, ease: 'linear' },
         y: { type: 'tween', duration: 0.15, ease: 'linear' },
@@ -57,16 +58,19 @@ export function Character({
           y1="2"
           x2="0"
           y2="8"
-          stroke={isError ? '#ef4444' : colors.dark}
+          stroke={colors.dark}
           strokeWidth="2"
           strokeLinecap="round"
         />
-        <circle
-          cx="0"
-          cy="2"
-          r="2"
+        <motion.circle
+          cx={0}
+          cy={2}
+          r={2}
           fill={isError ? '#ef4444' : colors.light}
+          animate={isError ? { opacity: [0.4, 1, 0.4] } : undefined}
+          transition={{ duration: 1.2, repeat: Infinity }}
         />
+
 
         {/* Head */}
         <rect

@@ -43,7 +43,7 @@ export function PointerView({
         type={type}
         x={x}
         y={yOffset}
-        size={40}
+        size={1.4}
         isError={isError}
       />
     );
@@ -64,7 +64,7 @@ export function PointerView({
 
   return (
     <svg
-      viewBox={`0 0 ${width} ${68}`}
+      viewBox={`0 -2 ${width} ${82}`}
       preserveAspectRatio="xMidYMid meet"
       className="pointer-view w-full max-w-[360px] h-auto block mx-auto"
     >
