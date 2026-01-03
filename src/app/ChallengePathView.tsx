@@ -101,7 +101,7 @@ export function ChallengePathView() {
                   animate={
                     isNext
                       ? {
-                          scale: [1, 1.15, 1],
+                          scale: [1, 1.1, 1],
                           boxShadow: [
                             '0 0 0px rgba(99,102,241,0)',
                             '0 0 16px rgba(99,102,241,0.9)',
