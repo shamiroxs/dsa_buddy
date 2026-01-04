@@ -1315,7 +1315,9 @@ export function InstructionPalette() {
         activeData?.source === 'IF_BODY';
       
         if (!isInsertIntoProgram || !overData) {
-          setInsertPreview(null);
+          if (insertPreview !== null) {
+            setInsertPreview(null);
+          }
           return;
         }
       
@@ -1336,6 +1338,13 @@ export function InstructionPalette() {
       
         const position =
           pointerY > rect.top + rect.height / 2 ? 'below' : 'above';
+      
+        if (
+          insertPreview?.id === overData.instructionId &&
+          insertPreview?.position === position
+        ) {
+          return;
+        }
       
         setInsertPreview({
           id: overData.instructionId,
