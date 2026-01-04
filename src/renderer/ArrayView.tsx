@@ -29,7 +29,7 @@ export function ArrayView({
 
 }: ArrayViewProps) {
   const spacing = 10;
-  const totalWidth = array.length * (cellWidth + spacing) - spacing;
+  const totalWidth = array.length * (cellWidth + spacing);
 
   return (
     <svg
