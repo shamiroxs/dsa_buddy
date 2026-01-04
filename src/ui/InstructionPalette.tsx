@@ -322,7 +322,7 @@ export function InstructionPalette() {
     return (
       <div
         ref={setNodeRef}
-        className={`space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent ${
+        className={`flex flex-col space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent ${
           isOver ? 'ring-2 ring-green-400' : ''
         }`}
       >
@@ -1404,9 +1404,11 @@ export function InstructionPalette() {
               
 
                 {playerInstructions.length === 0 ? (
-                  <div className="text-gray-500 text-sm italic">
-                    No instructions yet
+                  <div className="flex flex-1 items-center justify-center">
+                  <div className="text-gray-500 text-mm italic select-none pointer-events-none">
+                    Drag & drop ↓ 
                   </div>
+                </div>
                 ) : (
                   playerInstructions.map((inst, idx) => (
                     <SortableInstructionLine
