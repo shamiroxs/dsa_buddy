@@ -33,7 +33,34 @@ import { ExecutionTimeline } from '../renderer/ExecutionTimeline';
 
 import { InstructionType } from '../engine/instructions/types';
 
+import { useEffect, useRef } from 'react';
+
 export function GameView() {
+  const isExecuting = useGameStore((s) => s.isExecuting);
+  const visualizationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isExecuting && visualizationRef.current) {
+      visualizationRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [isExecuting]);
+
+  const challengeRef = useRef<HTMLDivElement | null>(null);
+
+  const validationResult = useGameStore((s) => s.validationResult);
+
+  useEffect(() => {
+    if (validationResult && challengeRef.current) {
+      challengeRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [validationResult?.success]);
+
   const challenge = useCurrentChallenge();
   if (!challenge) return;
   const allowedPointers = challenge.capabilities.allowedPointers;
@@ -118,13 +145,13 @@ export function GameView() {
         <div className="grid grid-cols-1 gap-4">
 
           {/* ================= LEFT ================= */}
-          <div className="lg:col-span-1">
+          <div ref={challengeRef} className="lg:col-span-1">
             <ChallengePanel />
           </div>
 
           {/* ================= CENTER ================= */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-lg p-6">
+            <div ref={visualizationRef} className="bg-gray-800 rounded-lg p-6">
               <h3 className="text-white font-semibold mb-4">
                 Visualization
               </h3>

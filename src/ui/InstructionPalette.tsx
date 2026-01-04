@@ -323,7 +323,7 @@ export function InstructionPalette() {
       <div
         ref={setNodeRef}
         className={`flex flex-col space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent ${
-          isOver ? 'ring-2 ring-green-400' : ''
+          isOver ? 'ring-2 ring-green-400' : 'ring-2 ring-gray-700'
         }`}
       >
         {children}
