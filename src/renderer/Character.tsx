@@ -10,8 +10,9 @@ interface CharacterProps {
   isError?: boolean;
   isHandActive?: boolean;
   handAction?: 'PICK' | 'PUT' | null;
-
+  moveAction?: 'LEFT' | 'RIGHT' | null;
   isIfActive?: boolean;
+  isMoveActive?: boolean;
 
 }
 
@@ -40,7 +41,9 @@ export function Character({
   isError = false,
   isHandActive,
   handAction,
-  isIfActive
+  moveAction,
+  isIfActive,
+  isMoveActive
 }: CharacterProps) {
   const colors = CHARACTER_COLORS[type];
 
@@ -58,6 +61,12 @@ export function Character({
     ? 2
     : 0;
 
+  const eyeOffsetX =
+  isMoveActive && moveAction === 'RIGHT'
+    ? 2
+    : isMoveActive && moveAction === 'LEFT'
+    ? -2
+    : 0;
 
   return (
     <motion.g
@@ -111,7 +120,7 @@ export function Character({
           cy={17}
           r="2"
           fill={colors.eye}
-          animate={{ y: eyeOffsetY }}
+          animate={{ x: eyeOffsetX, y: eyeOffsetY }}
           transition={{ duration: 0.15 }}
         />
         <motion.circle
@@ -119,7 +128,7 @@ export function Character({
           cy={17}
           r="2"
           fill={colors.eye}
-          animate={{ y: eyeOffsetY }}
+          animate={{ x: eyeOffsetX, y: eyeOffsetY }}
           transition={{ duration: 0.15 }}
         />
 

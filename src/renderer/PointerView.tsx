@@ -20,8 +20,12 @@ interface PointerViewProps {
   isHandActive?: boolean;
   handAction?: 'PICK' | 'PUT' | null;
 
-  isIfActive?: boolean;
+  moveAction?: 'LEFT' | 'RIGHT' | null;
 
+  isIfActive?: boolean;
+  isMoveActive?: boolean;
+
+  activePointer?: 'MOCO' | 'CHOCO' | null;
 }
 
 export function PointerView({
@@ -33,7 +37,10 @@ export function PointerView({
   errorContext,
   isHandActive,
   handAction,
-  isIfActive
+  moveAction,
+  isIfActive,
+  isMoveActive,
+  activePointer
 }: PointerViewProps) {
   const width = arrayLength * (cellWidth + spacing) - spacing ;
 
@@ -47,6 +54,7 @@ export function PointerView({
     if (index < 0 || index >= arrayLength) return null;
   
     const x = index * (cellWidth + spacing-0.4) + cellWidth / 2;
+    const isActive = activePointer === type;
   
     return (
       <Character
@@ -55,9 +63,11 @@ export function PointerView({
         y={yOffset}
         size={1.4}
         isError={isError}
-        isHandActive={isHandActive}
-        handAction={handAction}
-        isIfActive={isIfActive}
+        isHandActive={isActive && isHandActive}
+        handAction={isActive ? handAction : null}
+        moveAction={isActive ? moveAction : null}
+        isIfActive={isActive && isIfActive}
+        isMoveActive={isActive && isMoveActive}
       />
     );
   }

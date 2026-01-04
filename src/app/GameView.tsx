@@ -71,12 +71,26 @@ export function GameView() {
     ? 'PUT'
     : null;
 
+    const activePointer =
+    currentInstruction?.target ?? null;
+
     const isIfInstruction =
     currentInstruction?.type === InstructionType.IF_LESS ||
     currentInstruction?.type === InstructionType.IF_GREATER ||
     currentInstruction?.type === InstructionType.IF_EQUAL ||
     currentInstruction?.type === InstructionType.IF_NOT_EQUAL;
-  
+
+    const isMove =
+    currentInstruction?.type === InstructionType.MOVE_LEFT ||
+    currentInstruction?.type === InstructionType.MOVE_RIGHT;  
+
+    const moveAction: 'LEFT' | 'RIGHT' | null =
+    currentInstruction?.type === InstructionType.MOVE_LEFT
+      ? 'LEFT'
+      : currentInstruction?.type === InstructionType.MOVE_RIGHT
+      ? 'RIGHT'
+      : null;
+
 
   if (!challenge) return null;
 
@@ -137,7 +151,10 @@ export function GameView() {
                     errorContext={executionErrorContext ?? undefined}
                     isHandActive={isHandActive}
                     handAction={handAction}
+                    moveAction={moveAction}
                     isIfActive={isIfInstruction}
+                    isMoveActive={isMove}
+                    activePointer={activePointer}
                   />
                 </div>
               )}
