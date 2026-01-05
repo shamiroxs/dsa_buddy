@@ -132,6 +132,9 @@ interface GameState {
     bestStepCount?: number
   ) => void;
   
+  successHintDismissed: boolean;
+  dismissSuccessHint: () => void;
+  resetSuccessHint: () => void;
 
 }
 
@@ -162,6 +165,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerInstructions: [],
   validationResult: null,
   engine: new GameEngine(),
+  successHintDismissed: false,
 
     // Tutorial
   isTutorialActive: false,
@@ -211,7 +215,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   },
   
-
+  dismissSuccessHint: () =>
+    set({ successHintDismissed: true }),
+  
+  resetSuccessHint: () =>
+    set({ successHintDismissed: false }),
+  
   reorderInstructions: (fromIndex, toIndex) => {
     const { playerInstructions } = get();
     const updated = [...playerInstructions];
@@ -242,6 +251,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       playerInstructions: [],
       isTutorialActive: isTutorial,
       tutorialStep: 0,
+      successHintDismissed: false,
     });
   },
   
@@ -346,6 +356,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         executionErrorContext: null,
         isExecuting: false,
         isPaused: false,
+        successHintDismissed: false,
       });
     }
   },

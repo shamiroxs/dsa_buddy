@@ -35,7 +35,7 @@ export function validateChallenge(
     if (state.array[i] !== challenge.targetArray[i]) {
       return {
         success: false,
-        message: `Mismatch at index ${i}: expected ${challenge.targetArray[i]}, got ${state.array[i]}`,
+        message: `Mismatch at seat ${i}: expected ${challenge.targetArray[i]}, got ${state.array[i]}`,
         stepCount: state.stepCount,
         optimized: false,
       };

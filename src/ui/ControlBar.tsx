@@ -18,10 +18,22 @@ export function ControlBar() {
   const isPaused = useIsPaused();
   const { isTutorialActive, tutorialStep, endTutorial } = useGameStore();
 
+  const validationResult = useGameStore((s) => s.validationResult);
+  const successHintDismissed = useGameStore((s) => s.successHintDismissed);
+
+  const highlightRewind =
+    validationResult?.success && !successHintDismissed;
+
   const highlightRun =
     isTutorialActive && tutorialStep === 4;
-
   
+  const dismissSuccessHint = useGameStore((s) => s.dismissSuccessHint);
+
+  const onAnyControlClick = () => {
+    if (validationResult?.success) {
+      dismissSuccessHint();
+    }
+  };
   return (
     <div className="control-bar bg-gray-800 rounded-lg p-3 flex flex-wrap items-center justify-center gap-3">
       <button
@@ -29,6 +41,7 @@ export function ControlBar() {
           if (isTutorialActive && tutorialStep === 4) {
             endTutorial();
           }
+          onAnyControlClick();
           executeSingleStep();
         }}
         disabled={isExecuting && !isPaused}
@@ -49,6 +62,7 @@ export function ControlBar() {
           if (isTutorialActive && tutorialStep === 4) {
             endTutorial();
           }
+          onAnyControlClick();
           runExecution(500);
         }}
         className={`
@@ -62,7 +76,10 @@ export function ControlBar() {
       
       ) : (
         <button
-          onClick={pauseExecution}
+          onClick={() => {
+            onAnyControlClick();
+            pauseExecution();
+          }}
           className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
         >
           ⏸ Pause
@@ -70,15 +87,28 @@ export function ControlBar() {
       )}
       
       <button
-        onClick={rewindSingleStep}
+        onClick={() => {
+          onAnyControlClick();
+          rewindSingleStep();
+        }}
         disabled={isExecuting && !isPaused}
-        className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
+        className={`
+          bg-purple-600 hover:bg-purple-700
+          disabled:bg-gray-600 disabled:cursor-not-allowed
+          text-white px-4 py-2 rounded font-semibold
+          text-sm sm:text-base
+          ${highlightRewind ? 'ring-2 ring-green-400 animate-pulse' : ''}
+        `}
       >
         ⏪ Rewind
       </button>
+
       
       <button
-        onClick={resetExecution}
+        onClick={() => {
+          onAnyControlClick();
+          resetExecution();
+        }}
         className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
       >
         ↺ Reset

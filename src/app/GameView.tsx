@@ -65,7 +65,7 @@ export function GameView() {
         behavior: 'smooth',
         block: 'center',
       });
-    }, 1200);
+    }, 3000);
   
     return () => clearTimeout(timeoutId);
   }, [validationResult?.success, isTutorialActive]);

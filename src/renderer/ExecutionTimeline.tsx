@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion';
 import type { Instruction } from '../engine/instructions/types';
 import { InstructionType } from '../engine/instructions/types';
+import { useGameStore } from '../orchestrator/store';
 
 interface ExecutionTimelineProps {
   currentLine: number;
@@ -20,7 +21,12 @@ export function ExecutionTimeline({
   stepCount,
   currentInstruction,
 }: ExecutionTimelineProps) {
-  return (
+  const validationResult = useGameStore((s) => s.validationResult);
+  const successHintDismissed = useGameStore((s) => s.successHintDismissed);
+
+  const showSuccessHint =
+  validationResult?.success && !successHintDismissed;
+  return (   
     <div className="execution-timeline bg-gray-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm text-gray-400">
@@ -48,6 +54,19 @@ export function ExecutionTimeline({
           </div>
           <div className="text-white font-mono text-sm">
             {formatInstruction(currentInstruction)}
+          </div>
+        </motion.div>
+      )}
+
+      {showSuccessHint && (
+        <motion.div
+          className="mt-3 bg-green-900/30 border border-green-500 rounded p-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="text-sm text-green-300">
+            You can replay the last few steps to see how you cleared.
           </div>
         </motion.div>
       )}
