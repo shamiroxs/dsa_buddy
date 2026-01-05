@@ -36,9 +36,9 @@ export const challenges: Challenge[] = [
   },
   {
     id: 'challenge-1',
-    title: 'Priority Seating',
-    description: `Two passengers claim priority. Only the higher ticket number keeps Seat 0.`,
-    hints: ['Seat 0 must contain the higher ticket value between Seat 0 and Seat 1.'],
+    title: 'Seat Dispute',
+    description: `Two passengers argue over Seat 0. The one with the higher ticket wins.`,
+    hints: ['Compare the tickets in Seat 0 and Seat 1. Keep the higher value in Seat 0.'],
     difficulty: Difficulty.EASY,
     initialArray: [4, 9, 6, 2],
     targetArray: [9, 9, 6, 2],
