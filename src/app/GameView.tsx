@@ -39,8 +39,10 @@ export function GameView() {
   const isExecuting = useGameStore((s) => s.isExecuting);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
 
+  const { isTutorialActive } = useGameStore();
+
   useEffect(() => {
-    if (isExecuting && visualizationRef.current) {
+    if (isExecuting && visualizationRef.current && !isTutorialActive) {
       visualizationRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
@@ -53,14 +55,21 @@ export function GameView() {
   const validationResult = useGameStore((s) => s.validationResult);
 
   useEffect(() => {
-    if (validationResult && challengeRef.current) {
-      challengeRef.current.scrollIntoView({
+    if (!validationResult || isTutorialActive) return;
+  
+    const element = challengeRef.current;
+    if (!element) return;
+  
+    const timeoutId = setTimeout(() => {
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
       });
-    }
-  }, [validationResult?.success]);
-
+    }, 1200);
+  
+    return () => clearTimeout(timeoutId);
+  }, [validationResult?.success, isTutorialActive]);
+  
   const challenge = useCurrentChallenge();
   if (!challenge) return;
   const allowedPointers = challenge.capabilities.allowedPointers;
