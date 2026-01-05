@@ -35,6 +35,8 @@ import { InstructionType } from '../engine/instructions/types';
 
 import { useEffect, useRef } from 'react';
 
+import { HandView } from '../renderer/HandView';
+
 export function GameView() {
   const isExecuting = useGameStore((s) => s.isExecuting);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
@@ -166,16 +168,19 @@ export function GameView() {
               </h3>
 
               {/* Hand */}
-              {hand !== null && (
-                <div className="mb-4 bg-blue-900/30 border border-blue-500 rounded p-3">
-                  <div className="text-xs text-blue-300 mb-1">
-                    Hand
-                  </div>
-                  <div className="text-white font-mono text-lg font-bold">
-                    {hand}
-                  </div>
+              <div className="mb-4 rounded p-3">
+                <div className="text-xs text-gray-400 mb-2">
+                  Hand
                 </div>
-              )}
+                <div className="flex justify-center">
+                  <HandView
+                    value={hand}
+                    isActive={isHandActive}
+                    arrayLength={array.length}
+                  />
+                </div>
+              </div>
+
 
               {/* Pointers */}
               {array.length > 0 && (

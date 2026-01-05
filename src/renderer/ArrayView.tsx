@@ -5,6 +5,7 @@
 
 import { motion } from 'framer-motion';
 import type { ExecutionErrorContext } from '../interpreter/vm';
+import { getArrayLayout } from './layout';
 
 interface ArrayViewProps {
   array: number[];
@@ -29,11 +30,12 @@ export function ArrayView({
 
 }: ArrayViewProps) {
   const spacing = 10;
-  const totalWidth = array.length * (cellWidth + spacing);
+
+  const { viewBoxWidth } = getArrayLayout(array.length, cellWidth);
 
   return (
     <svg
-      viewBox={`0 0 ${totalWidth + 4} ${cellHeight + 70}`}
+      viewBox={`0 0 ${viewBoxWidth} ${cellHeight + 70}`}
       preserveAspectRatio="xMidYMid meet"
       className="w-full max-w-[360px] h-auto block mx-auto"
     >
