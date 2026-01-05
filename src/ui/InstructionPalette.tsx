@@ -100,13 +100,13 @@ type DragItem =
   | { source: 'IF_BODY'; instructionId: string; parentIfId: string };
 
 const instructionTemplates = [
-  { type: InstructionType.MOVE_LEFT, label: '← Left', description: 'Move pointer left (pointer -= 1)' },
-  { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
-  { type: InstructionType.PICK, label: 'Pick', description: 'Pick value at pointer into hand' },
-  { type: InstructionType.PUT, label: 'Put', description: 'Put hand value at pointer' },
-  { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
-  { type: InstructionType.SET_POINTER, label: 'Goto ↦', description: 'Set pointer to index' },
-  { type: InstructionType.SET_VALUE, label: 'Set ?', description: 'Set pointer to index' },
+  { type: InstructionType.MOVE_LEFT, label: '← MoveLeft', description: 'Move pointer left (pointer -= 1)' },
+  { type: InstructionType.MOVE_RIGHT, label: 'MoveRight →', description: 'Move pointer right (pointer += 1)' },
+  { type: InstructionType.PICK, label: 'PickValue', description: 'Pick value at pointer into hand' },
+  { type: InstructionType.PUT, label: 'PutValue', description: 'Put hand value at pointer' },
+  { type: InstructionType.MOVE_TO_END, label: 'MoveToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
+  { type: InstructionType.SET_POINTER, label: 'GotoSeat ↦', description: 'Set pointer to index' },
+  { type: InstructionType.SET_VALUE, label: 'SetValue ?', description: 'Set pointer to index' },
   { type: InstructionType.IF_GREATER, label: 'IFGreat ?', description: 'If hand > current value' },
   { type: InstructionType.IF_LESS, label: 'IFLess ?', description: 'If hand < current value' },
   { type: InstructionType.IF_EQUAL, label: 'IFEqual ?', description: 'If hand === current value' },
