@@ -44,7 +44,7 @@ export function GameView() {
   const { isTutorialActive } = useGameStore();
 
   useEffect(() => {
-    if (isExecuting && visualizationRef.current && !isTutorialActive) {
+    if (isExecuting && visualizationRef.current) {
       visualizationRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'center',

@@ -1,5 +1,5 @@
 import { useGameStore } from '../orchestrator/store';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { runExecution } from '../orchestrator/controller';
 
 const STEPS = [
@@ -63,6 +63,27 @@ export function TutorialOverlay() {
     prevStepRef.current = tutorialStep;
   }, [tutorialStep, isTutorialActive]);
 
+  const [isBottom, setIsBottom] = useState(true);
+
+useEffect(() => {
+  const handleScroll = () => {
+    const scrollY = window.scrollY;
+    const viewportMiddle = window.innerHeight / 2;
+
+    // No scroll OR above middle → bottom
+    if (scrollY === 0 || scrollY <= viewportMiddle) {
+      setIsBottom(true);
+    } else {
+      setIsBottom(false);
+    }
+  };
+
+  handleScroll(); // run once on mount (handles "no scroll")
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
   if (!isTutorialActive) return null;
 
   const step = STEPS[Math.min(tutorialStep, STEPS.length - 1)];
@@ -79,21 +100,45 @@ export function TutorialOverlay() {
       <div className="absolute inset-0 bg-black/15" />
 
       {/* Coach box */}
-      
       <div
-        className={`absolute bottom-64 right-4 ring-2 ring-yellow-400 bg-gray-900 text-white rounded-lg p-4 max-w-sm shadow-xl pointer-events-auto
-          ${tutorialStep === 0 ? 'animate-pulse duration-[4s]' : ''}`}
+        className={`
+          absolute left-1/2 -translate-x-1/2 right-0
+          pointer-events-auto
+          bg-gray-900/90 backdrop-blur-md
+          ring-1 ring-yellow-400/40
+          px-6 py-4
+          flex items-center justify-between
+          rounded-xl
+          shadow-2xl
+          animate-in fade-in slide-in-from-bottom-4 duration-300
+          ${isBottom ? 'bottom-6 border-t' : 'top-6 border-b'}
+          ${tutorialStep === 0 ? 'animate-pulse duration-[6s]' : ''}
+        `}
       >
-        <h4 className="font-semibold mb-1">{step.title}</h4>
-          <p className="text-sm text-gray-300">{step.text}</p>
-
-          <button
-            onClick={endTutorial}
-            className="mt-3 text-xs text-gray-400 hover:text-white"
-          >
-            Skip tutorial
-          </button>
+        {/* Speaker */}
+        <div className="absolute -top-3 left-6 bg-yellow-400 text-black text-xs font-semibold px-2 py-0.5 rounded">
+          Coach
         </div>
+
+        {/* Text */}
+        <div className="mx-auto text-center max-w-3xl w-[92%]">
+          <h4 className="font-semibold text-white leading-tight">
+            {step.title}
+          </h4>
+          <p className="text-sm text-gray-300 mt-1">
+            {step.text}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <button
+          onClick={endTutorial}
+          className="text-xs text-gray-400 hover:text-white ml-6 shrink-0"
+        >
+          Skip
+        </button>
+      </div>
+
       
     </div>
   );
