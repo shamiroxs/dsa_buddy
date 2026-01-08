@@ -11,6 +11,13 @@ import type { Instruction } from '../engine/instructions/types';
 import type { ValidationResult } from '../engine/validator/validator';
 import { GameEngine } from '../engine/engine';
 
+import type {
+  TutorialStepId,
+  TutorialTrigger,
+} from '../tutorial/types';
+import { TUTORIAL_STEP_ORDER } from '../tutorial/steps';
+import { TUTORIAL_STEP_BEHAVIOR } from '../tutorial/behavior';
+
 const PROGRESS_KEY = 'dsa-buddy-progress';
 
 type StoredProgress = Record<
@@ -74,6 +81,14 @@ function upsertProgressEntry(
   }
 }
 
+function getNextTutorialStep(
+  current: TutorialStepId
+): TutorialStepId {
+  const idx = TUTORIAL_STEP_ORDER.indexOf(current);
+  return (
+    TUTORIAL_STEP_ORDER[idx + 1] ?? current
+  );
+}
 
 interface GameState {
   // Challenge state
@@ -97,12 +112,16 @@ interface GameState {
   engine: GameEngine;
 
   // Tutorial (First-run coach)
-  isTutorialActive: boolean;
-  tutorialStep: number;
+  tutorial: {
+    isActive: boolean;
+    currentStep: TutorialStepId;
+  };
 
   startTutorial: () => void;
   nextTutorialStep: () => void;
   endTutorial: () => void;
+  maybeCompleteTutorial: (trigger: TutorialTrigger) => void;
+
 
   reorderInstructions: (fromIndex: number, toIndex: number) => void;
 
@@ -168,25 +187,74 @@ export const useGameStore = create<GameState>((set, get) => ({
   successHintDismissed: false,
 
     // Tutorial
-  isTutorialActive: false,
-  tutorialStep: 0,
+  // Tutorial
+  tutorial: {
+    isActive: false,
+    currentStep: TUTORIAL_STEP_ORDER[0],
+  },
 
   startTutorial: () =>
     set({
-      isTutorialActive: true,
-      tutorialStep: 0,
+      tutorial: {
+        isActive: true,
+        currentStep: TUTORIAL_STEP_ORDER[0],
+      },
     }),
   
   nextTutorialStep: () =>
-    set((state) => ({
-      tutorialStep: state.tutorialStep + 1,
-    })),
+    set((state) => {
+      if (!state.tutorial.isActive) return state;
+  
+      return {
+        tutorial: {
+          ...state.tutorial,
+          currentStep: getNextTutorialStep(
+            state.tutorial.currentStep
+          ),
+        },
+      };
+    }),
+  
   
   endTutorial: () =>
     set({
-      isTutorialActive: false,
-      tutorialStep: 0,
+      tutorial: {
+        isActive: false,
+        currentStep: TUTORIAL_STEP_ORDER[0],
+      },
     }),
+  
+  maybeCompleteTutorial: (trigger) =>
+    set((state) => {
+      if (!state.tutorial.isActive) return state;
+  
+      const step = state.tutorial.currentStep;
+      const behavior = TUTORIAL_STEP_BEHAVIOR[step];
+  
+      if (behavior?.completesOn !== trigger) {
+        return state;
+      }
+  
+      const nextStep = getNextTutorialStep(step);
+  
+      // If no more steps, end tutorial
+      if (nextStep === step) {
+        return {
+          tutorial: {
+            isActive: false,
+            currentStep: step,
+          },
+        };
+      }
+  
+      return {
+        tutorial: {
+          ...state.tutorial,
+          currentStep: nextStep,
+        },
+      };
+    }),
+  
 
   // Completion state
   completedChallengeIds: loadCompletedFromProgress(),
@@ -249,8 +317,11 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       currentChallenge: challenge,
       playerInstructions: [],
-      isTutorialActive: isTutorial,
-      tutorialStep: 0,
+      tutorial: {
+        isActive: isTutorial,
+        currentStep: TUTORIAL_STEP_ORDER[0],
+      },
+      
       successHintDismissed: false,
     });
   },
@@ -271,9 +342,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   addInstruction: (instruction, index) => {
     const {
       playerInstructions,
-      isTutorialActive,
-      tutorialStep,
-      nextTutorialStep,
+      tutorial,
+      maybeCompleteTutorial,
     } = get();
   
     const newInstructions = [...playerInstructions];
@@ -291,9 +361,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   
     get().setPlayerInstructions(newInstructions);
   
-    if (isTutorialActive && tutorialStep < 4) {
-      nextTutorialStep();
+    if (tutorial.isActive) {
+      maybeCompleteTutorial('AUTO');
     }
+    
   },
   
   

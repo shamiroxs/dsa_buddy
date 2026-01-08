@@ -12,38 +12,77 @@ import {
 } from '../orchestrator/controller';
 import { useGameStore } from '../orchestrator/store';
 import { useIsExecuting, useIsPaused } from '../orchestrator/selectors';
+import {
+  useTutorialHighlight,
+  useTutorialCompletesOn,
+  useIsTutorialActive,
+} from '../tutorial/selectors';
 
 export function ControlBar() {
   const isExecuting = useIsExecuting();
   const isPaused = useIsPaused();
-  const { isTutorialActive, tutorialStep, endTutorial } = useGameStore();
+  const { endTutorial } = useGameStore();
+  const {
+    maybeCompleteTutorial,
+    dismissSuccessHint,
+  } = useGameStore();
 
+  const isActive = useIsTutorialActive();
   const validationResult = useGameStore((s) => s.validationResult);
   const successHintDismissed = useGameStore((s) => s.successHintDismissed);
 
   const highlightRewind =
     validationResult?.success && !successHintDismissed;
 
-  const highlightRun =
-    isTutorialActive && tutorialStep === 4;
-  
-  const dismissSuccessHint = useGameStore((s) => s.dismissSuccessHint);
+  const highlightRun = useTutorialHighlight(
+    'CONTROL_BAR',
+    'RUN'
+  ) && isActive;
+  console.log(isActive)
+  const completesOnRun =
+    useTutorialCompletesOn('RUN_CLICK');
 
   const onAnyControlClick = () => {
     if (validationResult?.success) {
       dismissSuccessHint();
     }
   };
+
+  const onStep = () => {
+    onAnyControlClick();
+    executeSingleStep();
+    endTutorial
+  };
+
+  const onRun = () => {
+    onAnyControlClick();
+    runExecution(500);
+
+    if (completesOnRun) {
+      maybeCompleteTutorial('RUN_CLICK');
+      endTutorial
+    }
+  };
+
+  const onPause = () => {
+    onAnyControlClick();
+    pauseExecution();
+  };
+
+  const onRewind = () => {
+    onAnyControlClick();
+    rewindSingleStep();
+  };
+
+  const onReset = () => {
+    onAnyControlClick();
+    resetExecution();
+  };
+
   return (
     <div className="control-bar bg-gray-800 rounded-lg p-3 flex flex-wrap items-center justify-center gap-3">
       <button
-        onClick={() => {
-          if (isTutorialActive && tutorialStep === 4) {
-            endTutorial();
-          }
-          onAnyControlClick();
-          executeSingleStep();
-        }}
+        onClick={onStep}
         disabled={isExecuting && !isPaused}
         className={`
           bg-blue-600 hover:bg-blue-700
@@ -58,13 +97,7 @@ export function ControlBar() {
       
       {!isExecuting || isPaused ? (
         <button
-        onClick={() => {
-          if (isTutorialActive && tutorialStep === 4) {
-            endTutorial();
-          }
-          onAnyControlClick();
-          runExecution(500);
-        }}
+        onClick={onRun}
         className={`
           bg-green-600 hover:bg-green-700
           text-white px-4 py-2 rounded font-semibold
@@ -76,10 +109,7 @@ export function ControlBar() {
       
       ) : (
         <button
-          onClick={() => {
-            onAnyControlClick();
-            pauseExecution();
-          }}
+          onClick={onPause}
           className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
         >
           ⏸ Pause
@@ -87,10 +117,7 @@ export function ControlBar() {
       )}
       
       <button
-        onClick={() => {
-          onAnyControlClick();
-          rewindSingleStep();
-        }}
+        onClick={onRewind}
         disabled={isExecuting && !isPaused}
         className={`
           bg-purple-600 hover:bg-purple-700
@@ -105,10 +132,7 @@ export function ControlBar() {
 
       
       <button
-        onClick={() => {
-          onAnyControlClick();
-          resetExecution();
-        }}
+        onClick={onReset}
         className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold text-sm sm:text-base"
       >
         ↺ Reset

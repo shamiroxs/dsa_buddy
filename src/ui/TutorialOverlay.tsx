@@ -2,6 +2,12 @@ import { useGameStore } from '../orchestrator/store';
 import { useEffect, useRef, useState } from 'react';
 import { runExecution } from '../orchestrator/controller';
 
+import {
+  useIsTutorialActive,
+  useTutorialStepContent,
+  useTutorialBlocksUI,
+} from '../tutorial/selectors';
+
 const STEPS = [
   {
     title: `Welcome aboard 👋`,
@@ -27,29 +33,31 @@ const STEPS = [
 ];
 
 export function TutorialOverlay() {
+  
+  const isTutorialActive = useIsTutorialActive();
+  const step = useTutorialStepContent();
+  const blocksUI = useTutorialBlocksUI();
   const {
-    isTutorialActive,
-    tutorialStep,
-    nextTutorialStep,
+    maybeCompleteTutorial, 
     endTutorial,
   } = useGameStore();
 
-  const prevStepRef = useRef<number | null>(null);
+  const [isBottom, setIsBottom] = useState(true);
+  const scrollHandledRef = useRef(false);
 
   useEffect(() => {
-    if (tutorialStep !== 0) return;
+    if (!isTutorialActive || !blocksUI) return;
 
     const handleScroll = () => {
-      nextTutorialStep();
+      if (scrollHandledRef.current) return;
+      scrollHandledRef.current = true;
+      maybeCompleteTutorial('SCROLL');
     };
 
     window.addEventListener('scroll', handleScroll, { once: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [tutorialStep, nextTutorialStep]);
-
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isTutorialActive, blocksUI, maybeCompleteTutorial]);
+  /*
   useEffect(() => {
   
     if (
@@ -62,38 +70,33 @@ export function TutorialOverlay() {
   
     prevStepRef.current = tutorialStep;
   }, [tutorialStep, isTutorialActive]);
+  */
 
-  const [isBottom, setIsBottom] = useState(true);
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const viewportMiddle = window.innerHeight / 2;
 
-useEffect(() => {
-  const handleScroll = () => {
-    const scrollY = window.scrollY;
-    const viewportMiddle = window.innerHeight / 2;
+      // No scroll OR above middle → bottom
+      if (scrollY === 0 || scrollY <= viewportMiddle) {
+        setIsBottom(true);
+      } else {
+        setIsBottom(false);
+      }
+    };
 
-    // No scroll OR above middle → bottom
-    if (scrollY === 0 || scrollY <= viewportMiddle) {
-      setIsBottom(true);
-    } else {
-      setIsBottom(false);
-    }
-  };
+    handleScroll(); // run once on mount (handles "no scroll")
 
-  handleScroll(); // run once on mount (handles "no scroll")
-
-  window.addEventListener('scroll', handleScroll);
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (!isTutorialActive) return null;
-
-  const step = STEPS[Math.min(tutorialStep, STEPS.length - 1)];
-
-  const isBlocking = tutorialStep === 0;
 
   return (
     <div
       className={`fixed inset-0 z-50 ${
-        isBlocking ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'
+        blocksUI ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'
       }`}
     >
       {/* Dark overlay */}
@@ -112,7 +115,7 @@ useEffect(() => {
           shadow-2xl
           animate-in fade-in slide-in-from-bottom-4 duration-300
           ${isBottom ? 'bottom-6 border-t' : 'top-6 border-b'}
-          ${tutorialStep === 0 ? 'animate-pulse duration-[6s]' : ''}
+          ${blocksUI ? 'animate-pulse duration-[6s]' : ''}
         `}
       >
         {/* Speaker */}
@@ -123,10 +126,10 @@ useEffect(() => {
         {/* Text */}
         <div className="mx-auto text-center max-w-3xl w-[92%]">
           <h4 className="font-semibold text-white leading-tight">
-            {step.title}
+            {step?.title}
           </h4>
           <p className="text-sm text-gray-300 mt-1">
-            {step.text}
+            {step?.text}
           </p>
         </div>
 
