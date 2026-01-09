@@ -59,6 +59,7 @@ import {
   rectIntersection,
 } from '@dnd-kit/core';
 import type { CollisionDetection } from '@dnd-kit/core';
+import { useTutorialHighlight } from '../tutorial/selectors';
 
 const collisionDetection: CollisionDetection = (args) => {
   // 1️⃣ Prefer child instructions inside IF bodies
@@ -358,16 +359,11 @@ export function InstructionPalette() {
     pointer: 'MOCO' | 'CHOCO';
     isGlobal?: boolean;
   }) {
-    const { isTutorialActive, tutorialStep } = useGameStore();
 
-    const shouldPulse =
-      isTutorialActive &&
-      (
-        (tutorialStep === 1 && template.type === InstructionType.PICK) ||
-        (tutorialStep === 2 && template.type === InstructionType.MOVE_RIGHT) ||
-        (tutorialStep === 3 && template.type === InstructionType.PUT)
-      );
-
+    const shouldPulse = useTutorialHighlight(
+      'INSTRUCTION_PALETTE',
+      { instructionType: template.type }
+    );
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({
         id: `palette-${pointer}-${template.type}`,

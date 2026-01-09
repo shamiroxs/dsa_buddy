@@ -7,6 +7,7 @@ import type {
   TutorialScope,
   TutorialTrigger,
 } from './types';
+import { InstructionType } from '../engine/instructions/types';
 
 /** Current tutorial step ID */
 export const useTutorialStepId = () =>
@@ -35,17 +36,25 @@ export const useTutorialBlocksUI = () =>
 /** Highlight helper for renderers / controls */
 export const useTutorialHighlight = (
   scope: TutorialScope,
-  control?: string
+  opts?: {
+    control?: string;
+    instructionType?: InstructionType;
+  }
 ) => {
   const behavior = useTutorialBehavior();
   if (!behavior?.highlight) return false;
 
   if (behavior.highlight.scope !== scope) return false;
 
-  if (control && behavior.highlight.control !== control) {
+  if (opts?.control && behavior.highlight.control !== opts.control) {
     return false;
   }
-
+  if (
+    opts?.instructionType &&
+    behavior.highlight.instructionType !== opts.instructionType
+  ) {
+    return false;
+  }
   return true;
 };
 

@@ -36,9 +36,9 @@ export function ControlBar() {
 
   const highlightRun = useTutorialHighlight(
     'CONTROL_BAR',
-    'RUN'
+    { control: 'RUN' }
   ) && isActive;
-  console.log(isActive)
+  
   const completesOnRun =
     useTutorialCompletesOn('RUN_CLICK');
 

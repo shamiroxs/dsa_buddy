@@ -20,9 +20,9 @@ export function executeSingleStep(): void {
   const store = useGameStore.getState();
   const state = store.executionState;
 
-  if (store.isTutorialActive && store.tutorialStep == 4) {
-    store.endTutorial();
-  }
+  store.maybeCompleteTutorial('RUN_CLICK');
+  store.maybeCompleteTutorial('ANY_CONTROL');
+
 
   if (!state) {
     // Nothing to execute yet
@@ -98,9 +98,9 @@ export function runExecution(
 ): void {
   const store = useGameStore.getState();
 
-  if (store.isTutorialActive && store.tutorialStep == 4) {
-    store.endTutorial();
-  }
+  store.maybeCompleteTutorial('RUN_CLICK');
+  store.maybeCompleteTutorial('ANY_CONTROL');
+
 
   if (store.isExecuting && !store.isPaused) {
     return; // Already running
@@ -191,9 +191,9 @@ export function validateChallenge(): void {
 
   if (result?.success) {
 
-    if (store.isTutorialActive && store.tutorialStep ==4) {
-      store.endTutorial();
-    }
+    store.maybeCompleteTutorial('RUN_CLICK');
+    store.maybeCompleteTutorial('ANY_CONTROL');
+
     
     // Mark challenge as completed in store
     store.markChallengeCompleted(

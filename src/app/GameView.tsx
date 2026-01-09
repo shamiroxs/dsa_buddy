@@ -36,13 +36,15 @@ import { InstructionType } from '../engine/instructions/types';
 import { useEffect, useRef } from 'react';
 
 import { HandView } from '../renderer/HandView';
+import { useIsTutorialActive, useTutorialBehavior } from '../tutorial/selectors';
 
 export function GameView() {
   const isExecuting = useGameStore((s) => s.isExecuting);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
 
-  const { isTutorialActive } = useGameStore();
-
+  const isTutorialActive = useIsTutorialActive();
+  
+  //scorll to visualizer
   useEffect(() => {
     if (isExecuting && visualizationRef.current) {
       visualizationRef.current.scrollIntoView({
@@ -53,11 +55,28 @@ export function GameView() {
   }, [isExecuting]);
 
   const challengeRef = useRef<HTMLDivElement | null>(null);
-
+  const instructionPaletteRef = useRef<HTMLDivElement>(null);
+  const behavior = useTutorialBehavior();
   const validationResult = useGameStore((s) => s.validationResult);
-
+  
+  //scroll back to instruction pallete on tutorial
+  useEffect(() => {
+    if (!isTutorialActive || !behavior?.highlight) return;
+    if (behavior.highlight.scope !== 'INSTRUCTION_PALETTE') return;
+  
+    const el = instructionPaletteRef.current;
+    if (!el) return;
+  
+    // Delay to next tick
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 4000);
+  }, [behavior?.highlight, isTutorialActive]);
+  
+  //to challenge pannel
   useEffect(() => {
     if (!validationResult || isTutorialActive) return;
+    console.log(validationResult)
   
     const element = challengeRef.current;
     if (!element) return;
@@ -244,7 +263,7 @@ export function GameView() {
           
           {/* ================= RIGHT ================= */}
           <div className="lg:col-span-1">
-            <div className="space-y-4">
+            <div className="space-y-4" ref={instructionPaletteRef}>
               <TutorialOverlay />
               <InstructionPalette />
             </div>

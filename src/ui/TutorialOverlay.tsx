@@ -1,42 +1,28 @@
 import { useGameStore } from '../orchestrator/store';
 import { useEffect, useRef, useState } from 'react';
 import { runExecution } from '../orchestrator/controller';
+import { usePlayerInstructions } from '../orchestrator/selectors';
 
 import {
   useIsTutorialActive,
   useTutorialStepContent,
   useTutorialBlocksUI,
+  useTutorialBehavior,
 } from '../tutorial/selectors';
-
-const STEPS = [
-  {
-    title: `Welcome aboard 👋`,
-    text: 'Scroll ↓ to begin.',
-  },
-  
-  {
-    title: 'Decide what MOCO carries',
-    text: 'Pick takes the number from the seat.',
-  },
-  {
-    title: 'Where MOCO stands matters',
-    text: 'Move MOCO between seats',
-  },
-  {
-    title: 'Make the change',
-    text: 'Put places the value into the current seat.',
-  },
-  {
-    title: 'Watch what you created',
-    text: 'Run or step through your orders.',
-  },
-];
 
 export function TutorialOverlay() {
   
   const isTutorialActive = useIsTutorialActive();
+  const isExecuting = useGameStore((s) => s.isExecuting);
+
   const step = useTutorialStepContent();
   const blocksUI = useTutorialBlocksUI();
+
+  const behavior = useTutorialBehavior();
+  const instructions = usePlayerInstructions();
+
+  const prevInstructionsRef = useRef(instructions);
+  
   const {
     maybeCompleteTutorial, 
     endTutorial,
@@ -57,20 +43,18 @@ export function TutorialOverlay() {
     window.addEventListener('scroll', handleScroll, { once: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isTutorialActive, blocksUI, maybeCompleteTutorial]);
-  /*
+  
   useEffect(() => {
-  
-    if (
-      isTutorialActive &&
-      tutorialStep >= 2 &&
-      tutorialStep <= 3
-    ) {
-      runExecution(500); // 🚀 auto-run
+    if (!isTutorialActive) return;
+    if (!behavior?.autoRun) return;
+
+    // Run execution only if instructions changed
+    if (prevInstructionsRef.current !== instructions) {
+      runExecution(500);
     }
-  
-    prevStepRef.current = tutorialStep;
-  }, [tutorialStep, isTutorialActive]);
-  */
+
+    prevInstructionsRef.current = instructions;
+  }, [instructions, behavior?.autoRun, isTutorialActive]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -91,7 +75,7 @@ export function TutorialOverlay() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (!isTutorialActive) return null;
+  if (!isTutorialActive || isExecuting) return null;
 
   return (
     <div

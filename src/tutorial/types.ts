@@ -1,5 +1,7 @@
 // src/tutorial/types.ts
 
+import { InstructionType } from '../engine/instructions/types';
+
 /** All possible tutorial step IDs */
 export const TutorialStepId = {
     WELCOME: 'WELCOME',
@@ -14,11 +16,9 @@ export const TutorialStepId = {
   
   /** Where the tutorial is visually focused */
   export type TutorialScope =
-    | 'GLOBAL'
+    | 'WELCOME'
     | 'CONTROL_BAR'
-    | 'ARRAY'
-    | 'POINTER'
-    | 'HAND'
+    | 'INSTRUCTION_PALETTE'
     | 'TIMELINE';
   
   /** What user action can complete a tutorial step */
@@ -27,12 +27,14 @@ export const TutorialStepId = {
     | 'RUN_CLICK'
     | 'STEP_CLICK'
     | 'ANY_CONTROL'
+    | 'INSTRUCTION_CLICK'
     | 'AUTO';
   
   /** Visual emphasis hints (non-behavioral) */
   export interface TutorialHighlight {
     scope: TutorialScope;
     control?: 'RUN' | 'STEP' | 'REWIND' | 'RESET';
+    instructionType?: InstructionType;
     targetIndex?: number; // for array-level tutorials later
   }
   
