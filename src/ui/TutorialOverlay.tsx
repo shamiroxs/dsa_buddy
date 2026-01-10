@@ -82,7 +82,10 @@ export function TutorialOverlay() {
 
   const showNextButton =
     stepId === TutorialStepId.CHALLENGE_EXPLAINED ||
-    stepId === TutorialStepId.VISUALIZATION_EXPLAINED;
+    stepId === TutorialStepId.VISUALIZATION_EXPLAINED ||
+    stepId === TutorialStepId.PALETTE_EXPLAINED ||
+    stepId === TutorialStepId.PALETTE_HELP_EXPLAINED ||
+    stepId === TutorialStepId.PROGRAM_AREA_EXPLAINED;
     
   const handleNext = () => {
     maybeCompleteTutorial('ANY_CONTROL');

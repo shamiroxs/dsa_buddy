@@ -61,6 +61,7 @@ export function GameView() {
   
   //scroll back to instruction pallete on tutorial
   useEffect(() => {
+    if (isExecuting) return;
     if (!isTutorialActive || !behavior?.highlight) return;
   
     let el: HTMLElement | null = null;
@@ -84,10 +85,10 @@ export function GameView() {
         behavior: 'smooth',
         block: 'center',
       });
-    }, 800);
+    }, 200);
   
     return () => clearTimeout(timeoutId);
-  }, [behavior?.highlight, isTutorialActive]);
+  }, [behavior?.highlight, isTutorialActive, isExecuting]);
   
   //to challenge pannel
   useEffect(() => {

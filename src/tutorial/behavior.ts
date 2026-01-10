@@ -27,6 +27,28 @@ import { InstructionType } from '../engine/instructions/types';
     },
     completesOn: 'ANY_CONTROL',
   },
+  [TutorialStepId.PALETTE_EXPLAINED]: {
+    highlight: {
+      scope: 'INSTRUCTION_PALETTE',
+    },
+    completesOn: 'ANY_CONTROL',
+  },
+  
+  [TutorialStepId.PALETTE_HELP_EXPLAINED]: {
+    highlight: {
+      scope: 'INSTRUCTION_PALETTE',
+      control: 'HELP',
+    },
+    completesOn: 'ANY_CONTROL',
+  },
+  
+  [TutorialStepId.PROGRAM_AREA_EXPLAINED]: {
+    highlight: {
+      scope: 'INSTRUCTION_PALETTE',
+      control: 'PROGRAM',
+    },
+    completesOn: 'ANY_CONTROL',
+  },
   
   [TutorialStepId.PICK_EXPLAINED]: {
     autoRun: true,

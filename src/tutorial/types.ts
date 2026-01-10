@@ -7,6 +7,11 @@ export const TutorialStepId = {
     WELCOME: 'WELCOME',
     CHALLENGE_EXPLAINED: 'CHALLENGE_EXPLAINED',
     VISUALIZATION_EXPLAINED: 'VISUALIZATION_EXPLAINED',
+
+    PALETTE_EXPLAINED: 'PALETTE_EXPLAINED',
+    PALETTE_HELP_EXPLAINED: 'PALETTE_HELP_EXPLAINED',
+    PROGRAM_AREA_EXPLAINED: 'PROGRAM_AREA_EXPLAINED',
+  
     PICK_EXPLAINED: 'PICK_EXPLAINED',
     MOVE_EXPLAINED: 'MOVE_EXPLAINED',
     PUT_EXPLAINED: 'PUT_EXPLAINED',
@@ -35,7 +40,7 @@ export const TutorialStepId = {
   /** Visual emphasis hints (non-behavioral) */
   export interface TutorialHighlight {
     scope: TutorialScope;
-    control?: 'RUN' | 'STEP' | 'REWIND' | 'RESET';
+    control?: 'RUN' | 'STEP' | 'REWIND' | 'RESET' | 'HELP' | 'PROGRAM';
     instructionType?: InstructionType;
     targetIndex?: number; // for array-level tutorials later
   }

@@ -59,7 +59,7 @@ import {
   rectIntersection,
 } from '@dnd-kit/core';
 import type { CollisionDetection } from '@dnd-kit/core';
-import { useTutorialHighlight } from '../tutorial/selectors';
+import { useTutorialBehavior, useTutorialHighlight } from '../tutorial/selectors';
 
 const collisionDetection: CollisionDetection = (args) => {
   // 1️⃣ Prefer child instructions inside IF bodies
@@ -182,7 +182,9 @@ export function InstructionPalette() {
       },
     })
   );
-  
+  const behavior = useTutorialBehavior();
+  const highlight = behavior?.highlight;
+
   const [showHelp, setShowHelp] = useState(false);
 
   const { reorderInstructions, removeInstruction, updateInstruction } = useGameStore();
@@ -1404,6 +1406,24 @@ export function InstructionPalette() {
     );
   }
   
+  const paletteHighlight = highlight?.scope === 'INSTRUCTION_PALETTE' &&
+    !highlight.instructionType &&
+    !highlight.control;
+  const highlightHelp =  useTutorialHighlight(
+    'INSTRUCTION_PALETTE',
+    { control: 'HELP' }
+  );
+
+  const highlightProgram = useTutorialHighlight(
+    'INSTRUCTION_PALETTE',
+    { control: 'PROGRAM' }
+  );
+  const highlightPalette =
+    paletteHighlight &&
+    !highlightHelp &&
+    !highlightProgram;
+
+  
   return (
     <DndContext
       sensors={sensors}
@@ -1478,14 +1498,14 @@ export function InstructionPalette() {
       <button
         onClick={() => setShowHelp(true)}
         title="Instruction help"
-        className="
+        className={`
           ml-auto
           text-gray-300
-          hover:text-yellow-400
           transition
           text-lg
           px-2
-        "
+          ${highlightHelp ? 'ring-2 ring-yellow-400 rounded' : 'hover:text-yellow-400'}
+        `}
       >
         ⓘ
       </button>
@@ -1495,7 +1515,7 @@ export function InstructionPalette() {
           {/* Current program */}
           <div
             ref={programContainerRef}
-            className="w-full lg:w-1/2 mt-4 flex flex-col min-h-0 max-h-[126vh] relative"
+            className={`w-full lg:w-1/2 mt-4 flex flex-col min-h-0 max-h-[126vh] relative`}
           >
 
             <div className="flex items-center mb-2">
@@ -1519,16 +1539,20 @@ export function InstructionPalette() {
               <h4 className="text-gray-400 text-sm mx-auto">Your Program</h4>
             </div>
             <ProgramArrowsOverlay />
+            
             <ProgramDropzone>
             <SortableContext
               items={playerInstructions.map((i) => i.id)}
               strategy={verticalListSortingStrategy}
             >
-              
-
                 {playerInstructions.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center">
-                  <div className="text-gray-500 text-mm italic select-none pointer-events-none">
+                  <div className={`flex flex-1 items-center justify-center
+                    ${highlightProgram ? 'ring-2 ring-yellow-400 rounded' : ''}
+                    `}
+                  >
+                  <div 
+                    className={`text-mm text-gray-500 italic select-none pointer-events-none`}
+                    >
                     Drag & drop ↓ 
                   </div>
                 </div>
@@ -1547,6 +1571,7 @@ export function InstructionPalette() {
 
             </SortableContext>
             </ProgramDropzone>
+            
           </div>
           <div className="w-full lg:w-1/2 flex flex-col gap-4">
             {/* Global Instructions */}
@@ -1582,7 +1607,10 @@ export function InstructionPalette() {
             {/* MOCO */}
             {allowedPointers.includes('MOCO') && (
             <div className="flex justify-center">
-            <div className="bg-gray-700/60 rounded-lg p-3 w-full max-w-md">
+            <div className={`
+              bg-gray-700/60 rounded-lg p-3 w-full max-w-md
+              ${highlightPalette ? 'ring-2 ring-yellow-400' : ''}
+            `}>
               <h4 className="text-blue-300 font-semibold mb-2 text-center">
                 MOCO
               </h4>
