@@ -5,7 +5,7 @@
 
 import { motion } from 'framer-motion';
 import type { ExecutionErrorContext } from '../interpreter/vm';
-import { getArrayLayout } from './layout';
+import { getArrayLayout, getCellX } from './layout';
 
 interface ArrayViewProps {
   array: number[];
@@ -30,6 +30,7 @@ export function ArrayView({
 
 }: ArrayViewProps) {
   const spacing = 10;
+  const offset = 2;
 
   const { viewBoxWidth } = getArrayLayout(array.length, cellWidth);
 
@@ -40,7 +41,8 @@ export function ArrayView({
       className="w-full max-w-[360px] h-auto block mx-auto"
     >
       {array.map((value, index) => {
-        const x = 2 + index * (cellWidth + spacing);
+        const x = getCellX(index, cellWidth,spacing, offset);
+        //const x = 2 + index * (cellWidth + spacing);
 
         const hasMoco = mocoPointer === index;
         const hasChoco = chocoPointer === index;

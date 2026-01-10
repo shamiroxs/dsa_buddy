@@ -6,6 +6,7 @@
 
 import type { ExecutionErrorContext } from '../interpreter/vm';
 import { Character } from './Character';
+import { getArrayLayout, getCellCenterX } from './layout';
 
 interface PointerViewProps {
   arrayLength: number;
@@ -42,7 +43,8 @@ export function PointerView({
   isMoveActive,
   activePointer
 }: PointerViewProps) {
-  const width = arrayLength * (cellWidth + spacing) - spacing ;
+  const { viewBoxWidth: width } = getArrayLayout(arrayLength, cellWidth);
+  //const width = arrayLength * (cellWidth + spacing) - spacing ;
 
   function renderCharacter(
     index: number,
@@ -53,7 +55,8 @@ export function PointerView({
   ) {
     if (index < 0 || index >= arrayLength) return null;
   
-    const x = index * (cellWidth + spacing-0.4) + cellWidth / 2;
+    const x = getCellCenterX(index, cellWidth, spacing);
+    //const x = index * (cellWidth + spacing-0.4) + cellWidth / 2;
     const isActive = activePointer === type;
   
     return (
