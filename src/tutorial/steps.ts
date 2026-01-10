@@ -9,6 +9,16 @@ export const TUTORIAL_STEPS: TutorialStepContent[] = [
     text: 'Scroll ↓ to begin.',
   },
   {
+    id: TutorialStepId.CHALLENGE_EXPLAINED,
+    title: 'Your mission',
+    text: 'This panel describes the problem you must solve.',
+  },
+  {
+    id: TutorialStepId.VISUALIZATION_EXPLAINED,
+    title: 'Watch the world',
+    text: 'This area shows MOCO, CHOCO, and the seats in action.',
+  },
+  {
     id: TutorialStepId.PICK_EXPLAINED,
     title: 'Decide what MOCO carries',
     text: 'Pick takes the number from the seat.',

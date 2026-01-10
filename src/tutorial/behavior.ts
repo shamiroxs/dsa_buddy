@@ -14,7 +14,20 @@ import { InstructionType } from '../engine/instructions/types';
     blocksUI: true,
     completesOn: 'SCROLL',
   },
-
+  [TutorialStepId.CHALLENGE_EXPLAINED]: {
+    highlight: {
+      scope: 'WELCOME', // or new scope if you prefer
+    },
+    completesOn: 'ANY_CONTROL',
+  },
+  
+  [TutorialStepId.VISUALIZATION_EXPLAINED]: {
+    highlight: {
+      scope: 'TIMELINE',
+    },
+    completesOn: 'ANY_CONTROL',
+  },
+  
   [TutorialStepId.PICK_EXPLAINED]: {
     autoRun: true,
     highlight: {

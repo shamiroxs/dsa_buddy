@@ -36,7 +36,7 @@ import { InstructionType } from '../engine/instructions/types';
 import { useEffect, useRef } from 'react';
 
 import { HandView } from '../renderer/HandView';
-import { useIsTutorialActive, useTutorialBehavior } from '../tutorial/selectors';
+import { useIsTutorialActive, useTutorialBehavior, useTutorialHighlight } from '../tutorial/selectors';
 
 export function GameView() {
   const isExecuting = useGameStore((s) => s.isExecuting);
@@ -62,15 +62,31 @@ export function GameView() {
   //scroll back to instruction pallete on tutorial
   useEffect(() => {
     if (!isTutorialActive || !behavior?.highlight) return;
-    if (behavior.highlight.scope !== 'INSTRUCTION_PALETTE') return;
   
-    const el = instructionPaletteRef.current;
+    let el: HTMLElement | null = null;
+  
+    switch (behavior.highlight.scope) {
+      case 'INSTRUCTION_PALETTE':
+        el = instructionPaletteRef.current;
+        break;
+      case 'WELCOME':
+        el = challengeRef.current;
+        break;
+      case 'TIMELINE':
+        el = visualizationRef.current;
+        break;
+    }
+  
     if (!el) return;
   
-    // Delay to next tick
-    setTimeout(() => {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 4000);
+    const timeoutId = setTimeout(() => {
+      el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 800);
+  
+    return () => clearTimeout(timeoutId);
   }, [behavior?.highlight, isTutorialActive]);
   
   //to challenge pannel
@@ -171,17 +187,29 @@ export function GameView() {
             </h1>
           </div>
         </div>
-
         <div className="grid grid-cols-1 gap-4">
-
           {/* ================= LEFT ================= */}
           <div ref={challengeRef} className="lg:col-span-1">
+          <div
+            className={
+              useTutorialHighlight('WELCOME')
+                ? 'ring-2 ring-yellow-400 rounded-lg'
+                : ''
+            }
+          >
             <ChallengePanel />
+          </div>
+
           </div>
 
           {/* ================= CENTER ================= */}
           <div className="lg:col-span-1">
-            <div ref={visualizationRef} className="bg-gray-800 rounded-lg p-6">
+            <div ref={visualizationRef} 
+              className={`
+                bg-gray-800 rounded-lg p-6
+                ${useTutorialHighlight('TIMELINE') ? 'ring-2 ring-yellow-400' : ''}
+              `}
+              >
               <h3 className="text-white font-semibold mb-4">
                 Visualization
               </h3>

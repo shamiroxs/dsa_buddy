@@ -9,6 +9,7 @@ import {
   useTutorialBlocksUI,
   useTutorialBehavior,
 } from '../tutorial/selectors';
+import { TutorialStepId } from '../tutorial/types';
 
 export function TutorialOverlay() {
   
@@ -77,6 +78,16 @@ export function TutorialOverlay() {
 
   if (!isTutorialActive || isExecuting) return null;
 
+  const stepId = step?.id;
+
+  const showNextButton =
+    stepId === TutorialStepId.CHALLENGE_EXPLAINED ||
+    stepId === TutorialStepId.VISUALIZATION_EXPLAINED;
+    
+  const handleNext = () => {
+    maybeCompleteTutorial('ANY_CONTROL');
+  };
+    
   return (
     <div
       className={`fixed inset-0 z-50 ${
@@ -90,6 +101,8 @@ export function TutorialOverlay() {
       <div
         className={`
           absolute left-1/2 -translate-x-1/2 right-0
+          w-[75%]
+          max-w-none sm:max-w-3xl
           pointer-events-auto
           bg-gray-900/90 backdrop-blur-md
           ring-1 ring-yellow-400/40
@@ -118,12 +131,33 @@ export function TutorialOverlay() {
         </div>
 
         {/* Actions */}
+        <div className="flex flex-col gap-2 ml-6 shrink-0">
+        {showNextButton && (
+          <button
+            onClick={handleNext}
+            className="
+              text-xs
+              px-3 py-1
+              rounded-md
+              bg-yellow-500/90
+              text-black
+              font-semibold
+              hover:bg-yellow-400
+              transition
+            "
+          >
+            Next →
+          </button>
+        )}
+
         <button
           onClick={endTutorial}
-          className="text-xs text-gray-400 hover:text-white ml-6 shrink-0"
+          className="text-xs text-gray-400 hover:text-white"
         >
           Skip
         </button>
+      </div>
+
       </div>
 
       

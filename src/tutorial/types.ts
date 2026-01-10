@@ -5,6 +5,8 @@ import { InstructionType } from '../engine/instructions/types';
 /** All possible tutorial step IDs */
 export const TutorialStepId = {
     WELCOME: 'WELCOME',
+    CHALLENGE_EXPLAINED: 'CHALLENGE_EXPLAINED',
+    VISUALIZATION_EXPLAINED: 'VISUALIZATION_EXPLAINED',
     PICK_EXPLAINED: 'PICK_EXPLAINED',
     MOVE_EXPLAINED: 'MOVE_EXPLAINED',
     PUT_EXPLAINED: 'PUT_EXPLAINED',
