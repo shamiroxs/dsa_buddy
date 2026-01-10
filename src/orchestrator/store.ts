@@ -11,9 +11,9 @@ import type { Instruction } from '../engine/instructions/types';
 import type { ValidationResult } from '../engine/validator/validator';
 import { GameEngine } from '../engine/engine';
 
-import type {
+import {
   TutorialStepId,
-  TutorialTrigger,
+  type TutorialTrigger,
 } from '../tutorial/types';
 import { TUTORIAL_STEP_ORDER } from '../tutorial/steps';
 import { TUTORIAL_STEP_BEHAVIOR } from '../tutorial/behavior';
@@ -247,12 +247,19 @@ export const useGameStore = create<GameState>((set, get) => ({
         };
       }
   
-      return {
+      const updates: Partial<GameState> = {
         tutorial: {
           ...state.tutorial,
           currentStep: nextStep,
         },
       };
+  
+      // 🔥 CLEAR PROGRAM WHEN ENTERING PICK_EXPLAINED
+      if (nextStep === TutorialStepId.PICK_EXPLAINED) {
+        updates.playerInstructions = [];
+      }
+  
+      return updates as GameState;
     }),
   
 

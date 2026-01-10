@@ -51,7 +51,6 @@ import { InstructionType } from '../engine/instructions/types';
   },
   
   [TutorialStepId.PICK_EXPLAINED]: {
-    autoRun: true,
     highlight: {
       scope: 'INSTRUCTION_PALETTE',
       instructionType: InstructionType.PICK,

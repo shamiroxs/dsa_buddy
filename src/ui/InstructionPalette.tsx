@@ -318,7 +318,13 @@ export function InstructionPalette() {
   };
   const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
 
-  function ProgramDropzone({ children }: { children: React.ReactNode }) {
+  function ProgramDropzone({
+    children,
+    highlight,
+  }: {
+    children: React.ReactNode;
+    highlight?: boolean;
+  }) {
     const { setNodeRef, isOver } = useDroppable({
       id: 'PROGRAM_DROPZONE',
     });
@@ -326,9 +332,15 @@ export function InstructionPalette() {
     return (
       <div
         ref={setNodeRef}
-        className={`flex flex-col space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent ${
-          isOver ? 'ring-2 ring-green-400' : 'ring-2 ring-gray-700'
-        }`}
+        className={`flex flex-col min-h-0 space-y-1 flex-1 overflow-y-auto rounded p-1 scrollbar-transparent
+          ${
+            highlight
+              ? 'ring-2 ring-yellow-400'
+              : isOver
+              ? 'ring-2 ring-green-400'
+              : 'ring-2 ring-gray-700'
+          }
+        `}
       >
         {children}
       </div>
@@ -1540,22 +1552,22 @@ export function InstructionPalette() {
             </div>
             <ProgramArrowsOverlay />
             
-            <ProgramDropzone>
+            <ProgramDropzone highlight ={highlightProgram}>
+            
             <SortableContext
               items={playerInstructions.map((i) => i.id)}
               strategy={verticalListSortingStrategy}
             >
+              
                 {playerInstructions.length === 0 ? (
-                  <div className={`flex flex-1 items-center justify-center
-                    ${highlightProgram ? 'ring-2 ring-yellow-400 rounded' : ''}
-                    `}
-                  >
+                  <div className="flex flex-1 items-center justify-center h-full">
                   <div 
                     className={`text-mm text-gray-500 italic select-none pointer-events-none`}
                     >
                     Drag & drop ↓ 
                   </div>
-                </div>
+                  </div>
+                
                 ) : (
                   playerInstructions.map((inst, idx) => (
                     <SortableInstructionLine
@@ -1568,10 +1580,9 @@ export function InstructionPalette() {
                   ))
                 )}
               
-
             </SortableContext>
             </ProgramDropzone>
-            
+           
           </div>
           <div className="w-full lg:w-1/2 flex flex-col gap-4">
             {/* Global Instructions */}

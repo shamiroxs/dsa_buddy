@@ -11,7 +11,7 @@ export const TUTORIAL_STEPS: TutorialStepContent[] = [
   {
     id: TutorialStepId.CHALLENGE_EXPLAINED,
     title: 'Your mission',
-    text: 'This panel describes the problem you must solve.',
+    text: 'This panel describes the problem you have to solve.',
   },
   {
     id: TutorialStepId.VISUALIZATION_EXPLAINED,

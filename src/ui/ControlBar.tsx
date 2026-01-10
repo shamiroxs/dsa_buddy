@@ -51,7 +51,7 @@ export function ControlBar() {
   const onStep = () => {
     onAnyControlClick();
     executeSingleStep();
-    endTutorial
+    endTutorial();
   };
 
   const onRun = () => {
@@ -60,7 +60,7 @@ export function ControlBar() {
 
     if (completesOnRun) {
       maybeCompleteTutorial('RUN_CLICK');
-      endTutorial
+      endTutorial();
     }
   };
 
