@@ -101,7 +101,7 @@ type DragItem =
   | { source: 'IF_BODY'; instructionId: string; parentIfId: string };
 
 const instructionTemplates = [
-  { type: InstructionType.MOVE_LEFT, label: '← Move', description: 'Move pointer left (pointer -= 1)' },
+  { type: InstructionType.MOVE_LEFT, label: '← Left', description: 'Move pointer left (pointer -= 1)' },
   { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
   { type: InstructionType.PICK, label: 'Pick', description: 'Pick value at pointer into hand' },
   { type: InstructionType.PUT, label: 'Put', description: 'Put hand value at pointer' },
@@ -1302,8 +1302,10 @@ export function InstructionPalette() {
   }
   
   function InstructionHelpModal({
+    allowedInstructions,
     onClose,
   }: {
+    allowedInstructions: Set<InstructionType>;
     onClose: () => void;
   }) {
     const modalRef = useRef<HTMLDivElement | null>(null);
@@ -1360,7 +1362,10 @@ export function InstructionPalette() {
   
           {/* Content */}
           <div className="overflow-y-auto p-4 space-y-3">
-            {instructionTemplates.map((inst) => {
+          {instructionTemplates
+            .filter((inst) => allowedInstructions.has(inst.type))
+            .map((inst) => {
+
               const isGlobal = globalInstructionTypes.includes(inst.type);
   
               return (
@@ -1652,6 +1657,7 @@ export function InstructionPalette() {
       </DragOverlay>
       {showHelp && (
         <InstructionHelpModal
+          allowedInstructions={allowedInstructions}
           onClose={() => setShowHelp(false)}
         />
       )}
