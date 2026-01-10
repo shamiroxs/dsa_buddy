@@ -5,7 +5,7 @@
 
 
 import { useState } from 'react';
-import { useRef, useLayoutEffect, useMemo } from 'react';
+import { useRef, useLayoutEffect, useMemo, useEffect } from 'react';
 import { useGameStore } from '../orchestrator/store';
 import { InstructionType } from '../engine/instructions/types';
 import type { Instruction } from '../engine/instructions/types';
@@ -101,11 +101,11 @@ type DragItem =
   | { source: 'IF_BODY'; instructionId: string; parentIfId: string };
 
 const instructionTemplates = [
-  { type: InstructionType.MOVE_LEFT, label: '← MoveLeft', description: 'Move pointer left (pointer -= 1)' },
-  { type: InstructionType.MOVE_RIGHT, label: 'MoveRight →', description: 'Move pointer right (pointer += 1)' },
-  { type: InstructionType.PICK, label: 'PickValue', description: 'Pick value at pointer into hand' },
-  { type: InstructionType.PUT, label: 'PutValue', description: 'Put hand value at pointer' },
-  { type: InstructionType.MOVE_TO_END, label: 'MoveToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
+  { type: InstructionType.MOVE_LEFT, label: '← Move', description: 'Move pointer left (pointer -= 1)' },
+  { type: InstructionType.MOVE_RIGHT, label: 'Right →', description: 'Move pointer right (pointer += 1)' },
+  { type: InstructionType.PICK, label: 'Pick', description: 'Pick value at pointer into hand' },
+  { type: InstructionType.PUT, label: 'Put', description: 'Put hand value at pointer' },
+  { type: InstructionType.MOVE_TO_END, label: 'ToEnd →→', description: 'Move pointer to end (pointer = length - 1)' },
   { type: InstructionType.SET_POINTER, label: 'GotoSeat ↦', description: 'Set pointer to index' },
   { type: InstructionType.SET_VALUE, label: 'SetValue ?', description: 'Set pointer to index' },
   { type: InstructionType.IF_GREATER, label: 'IFGreat ?', description: 'If hand > current value' },
@@ -183,7 +183,8 @@ export function InstructionPalette() {
     })
   );
   
-  
+  const [showHelp, setShowHelp] = useState(false);
+
   const { reorderInstructions, removeInstruction, updateInstruction } = useGameStore();
   const { currentChallenge } = useGameStore();
 
@@ -509,6 +510,12 @@ export function InstructionPalette() {
         >
           {formatInstruction(instruction)}
         </div>
+        <button
+        onClick={() => removeInstruction(instruction.id)}
+        className="absolute right-2 text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        ×
+      </button>
       </div>
     );
   }
@@ -1294,6 +1301,103 @@ export function InstructionPalette() {
     );
   }
   
+  function InstructionHelpModal({
+    onClose,
+  }: {
+    onClose: () => void;
+  }) {
+    const modalRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+      const isOutside = (target: EventTarget | null) =>
+        modalRef.current &&
+        target instanceof Node &&
+        !modalRef.current.contains(target);
+
+      const handlePointerDown = (e: PointerEvent) => {
+        if (isOutside(e.target)) onClose();
+      };
+
+      const handleWheel = (e: WheelEvent) => {
+        if (isOutside(e.target)) onClose();
+      };
+
+      const handleTouchMove = (e: TouchEvent) => {
+        if (isOutside(e.target)) onClose();
+      };
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      document.addEventListener('wheel', handleWheel, { passive: true });
+      document.addEventListener('touchmove', handleTouchMove, { passive: true });
+      document.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.removeEventListener('pointerdown', handlePointerDown);
+        document.removeEventListener('wheel', handleWheel);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [onClose]);
+
+    return (
+      <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+        <div ref={modalRef} className="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+          
+          {/* Header */}
+          <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
+            <h3 className="text-white font-semibold">Instruction Guide</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-red-400 text-lg"
+            >
+              ✕
+            </button>
+          </div>
+  
+          {/* Content */}
+          <div className="overflow-y-auto p-4 space-y-3">
+            {instructionTemplates.map((inst) => {
+              const isGlobal = globalInstructionTypes.includes(inst.type);
+  
+              return (
+                <div
+                  key={inst.type}
+                  className="bg-gray-700/60 rounded p-3"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-white text-sm">
+                      {inst.label}
+                    </span>
+  
+                    <span
+                      className={`
+                        text-xs px-2 py-0.5 rounded
+                        ${
+                          isGlobal
+                            ? 'bg-purple-700 text-white'
+                            : 'bg-gray-600 text-gray-200'
+                        }
+                      `}
+                    >
+                      {isGlobal ? 'BOTH' : 'POINTER'}
+                    </span>
+                  </div>
+  
+                  <p className="text-gray-300 text-sm">
+                    {inst.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <DndContext
@@ -1363,7 +1467,25 @@ export function InstructionPalette() {
       }}
     >
       <div className="instruction-palette bg-gray-800 rounded-lg p-4">
-        <h3 className="text-white font-semibold mb-3">Instructions</h3>
+      <div className="relative flex items-center mb-3">
+      <h3 className="absolute left-1/2 -translate-x-1/2 text-white font-semibold">Instructions</h3>
+
+      <button
+        onClick={() => setShowHelp(true)}
+        title="Instruction help"
+        className="
+          ml-auto
+          text-gray-300
+          hover:text-yellow-400
+          transition
+          text-lg
+          px-2
+        "
+      >
+        ⓘ
+      </button>
+      </div>
+
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Current program */}
           <div
@@ -1528,6 +1650,11 @@ export function InstructionPalette() {
           </div>
         ) : null}
       </DragOverlay>
+      {showHelp && (
+        <InstructionHelpModal
+          onClose={() => setShowHelp(false)}
+        />
+      )}
 
     </DndContext>
   );
