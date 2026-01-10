@@ -125,10 +125,10 @@ export function TutorialOverlay() {
 
         {/* Text */}
         <div className="mx-auto text-center max-w-3xl w-[92%]">
-          <h4 className="font-semibold text-white leading-tight">
+          <h4 className="font-semibold text-white leading-tight text-sm sm:text-base">
             {step?.title}
           </h4>
-          <p className="text-sm text-gray-300 mt-1">
+          <p className="text-xs sm:text-sm text-gray-300 mt-1">
             {step?.text}
           </p>
         </div>
@@ -139,8 +139,8 @@ export function TutorialOverlay() {
           <button
             onClick={handleNext}
             className="
-              text-xs
-              px-3 py-1
+              text-[11px] sm:text-xs
+              px-2.5 py-1 sm:px-3
               rounded-md
               bg-yellow-500/90
               text-black
