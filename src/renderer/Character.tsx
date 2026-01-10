@@ -13,6 +13,7 @@ interface CharacterProps {
   moveAction?: 'LEFT' | 'RIGHT' | null;
   isIfActive?: boolean;
   isMoveActive?: boolean;
+  isSwapActive?: boolean;
 
 }
 
@@ -43,7 +44,8 @@ export function Character({
   handAction,
   moveAction,
   isIfActive,
-  isMoveActive
+  isMoveActive,
+  isSwapActive,
 }: CharacterProps) {
   const colors = CHARACTER_COLORS[type];
 
@@ -53,7 +55,12 @@ export function Character({
   ? '#facc15' // yellow
   : colors.darker;
 
-
+  const antennaColor = isError
+  ? '#ef4444' // red on error
+  : isSwapActive
+  ? '#22c55e' // green on swap
+  : colors.light;
+  
   const eyeOffsetY =
   handAction === 'PICK'
     ? -2
@@ -98,7 +105,7 @@ export function Character({
           cx={0}
           cy={2}
           r={2}
-          fill={isError ? '#ef4444' : colors.light}
+          fill={antennaColor}
           animate={isError ? { opacity: [0.4, 1, 0.4] } : undefined}
           transition={{ duration: 1.2, repeat: Infinity }}
         />

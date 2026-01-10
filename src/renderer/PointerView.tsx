@@ -25,6 +25,7 @@ interface PointerViewProps {
 
   isIfActive?: boolean;
   isMoveActive?: boolean;
+  isSwapActive?: boolean;
 
   activePointer?: 'MOCO' | 'CHOCO' | null;
 }
@@ -41,6 +42,7 @@ export function PointerView({
   moveAction,
   isIfActive,
   isMoveActive,
+  isSwapActive,
   activePointer
 }: PointerViewProps) {
   const { viewBoxWidth: width } = getArrayLayout(arrayLength, cellWidth);
@@ -71,6 +73,7 @@ export function PointerView({
         moveAction={isActive ? moveAction : null}
         isIfActive={isActive && isIfActive}
         isMoveActive={isActive && isMoveActive}
+        isSwapActive={isSwapActive}
       />
     );
   }

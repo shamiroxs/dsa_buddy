@@ -78,7 +78,6 @@ export const challenges: Challenge[] = [
     capabilities: {
       allowedPointers: ['MOCO', 'CHOCO'],
       allowedInstructions: [
-        InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
         InstructionType.MOVE_TO_END,
         InstructionType.SWAP,
@@ -94,21 +93,35 @@ export const challenges: Challenge[] = [
     initialArray: [5, 4, 3, 2, 1],
     targetArray: [1, 2, 3, 4, 5],
     maxSteps: 13,
-    instructions: [],
+    initialPointers: {
+      MOCO: 0,
+      CHOCO: 4, // last index
+    },
+    instructions: [
+      {
+        id: 'loop-start',
+        type: InstructionType.LABEL,
+        labelName: 'loop',
+      },
+  
+      {
+        id: 'jump-loop',
+        type: InstructionType.JUMP,
+        label: 'loop',
+      },  
+    ],
+    
     unlocked: true,
     capabilities: {
       allowedPointers: ['MOCO', 'CHOCO'],
       allowedInstructions: [
         InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
-        InstructionType.MOVE_TO_END,
-
-        InstructionType.SET_POINTER,
 
         InstructionType.IF_MEET,
-        InstructionType.SWAP,
-        InstructionType.JUMP,
         InstructionType.LABEL,
+        InstructionType.JUMP,
+        InstructionType.SWAP,
       ],
     }
     

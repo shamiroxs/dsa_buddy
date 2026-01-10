@@ -19,7 +19,7 @@ export class GameEngine {
    */
   initializeChallenge(challenge: Challenge, instructions: Instruction[]): ExecutionState {
     this.currentChallenge = challenge;
-    this.currentState = createInitialState(challenge.initialArray, instructions);
+    this.currentState = createInitialState(challenge.initialArray, instructions, challenge);
     return this.currentState;
   }
   

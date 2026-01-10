@@ -204,7 +204,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   nextTutorialStep: () =>
     set((state) => {
       if (!state.tutorial.isActive) return state;
-  
+   
       return {
         tutorial: {
           ...state.tutorial,
@@ -321,9 +321,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       challenge.id === 'challenge-0' &&
       !completedChallengeIds.has('challenge-0');
   
+    const initialInstructions = challenge.instructions ?? [];
+
     set({
       currentChallenge: challenge,
-      playerInstructions: [],
+      playerInstructions: initialInstructions,
       tutorial: {
         isActive: isTutorial,
         currentStep: TUTORIAL_STEP_ORDER[0],

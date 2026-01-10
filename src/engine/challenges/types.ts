@@ -37,6 +37,10 @@ export interface Challenge {
   initialArray: number[];
   targetArray: number[];
   maxSteps?: number; // Optional optimization goal
+  initialPointers?: {
+    MOCO?: number;
+    CHOCO?: number;
+  };
   instructions: Instruction[]; // Starting instructions (can be empty)
   unlocked: boolean;
   capabilities: InstructionCapabilities;

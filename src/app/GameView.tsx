@@ -154,6 +154,9 @@ export function GameView() {
     currentInstruction?.type === InstructionType.IF_EQUAL ||
     currentInstruction?.type === InstructionType.IF_NOT_EQUAL;
 
+    const isSwap =
+    currentInstruction?.type === InstructionType.SWAP;
+    
     const isMove =
     currentInstruction?.type === InstructionType.MOVE_LEFT ||
     currentInstruction?.type === InstructionType.MOVE_RIGHT;  
@@ -243,6 +246,7 @@ export function GameView() {
                     moveAction={moveAction}
                     isIfActive={isIfInstruction}
                     isMoveActive={isMove}
+                    isSwapActive={isSwap}
                     activePointer={activePointer}
                   />
                 </div>
