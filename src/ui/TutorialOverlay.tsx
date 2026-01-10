@@ -104,7 +104,7 @@ export function TutorialOverlay() {
       <div
         className={`
           absolute left-1/2 -translate-x-1/2 right-0
-          w-[85%] sm:w-[60%]
+          w-[92%] sm:w-[60%]
           max-w-none sm:max-w-3xl
           pointer-events-auto
           bg-gray-900/90 backdrop-blur-md
