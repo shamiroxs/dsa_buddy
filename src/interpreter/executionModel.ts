@@ -36,7 +36,10 @@ export interface ExecutionState {
 export function createInitialState(
   initialArray: number[],
   instructions: any[],
-  challenge?: { initialPointers?: { MOCO?: number; CHOCO?: number } }
+  challenge?: { 
+    initialPointers?: { MOCO?: number; CHOCO?: number } 
+    initialHand?: number | null;
+  }
 ): ExecutionState {
   // Build label map from LABEL instructions
   const labelMap: Record<string, number> = {};
@@ -51,7 +54,7 @@ export function createInitialState(
     mocoPointer: challenge?.initialPointers?.MOCO ?? 0,
     chocoPointer:
       challenge?.initialPointers?.CHOCO ?? 0,
-    hand: null,
+    hand: challenge?.initialHand ?? null,
     executionStack: [
       {
         instructions,

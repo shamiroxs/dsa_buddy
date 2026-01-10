@@ -130,14 +130,37 @@ export const challenges: Challenge[] = [
   {
     id: 'challenge-4',
     title: 'VIP Seat',
-    description: `A VIP is already seated somewhere. Seat 0 is reserved for them.`,
+    description: `A VIP is already seated somewhere. Seat 0 is also reserved by them.`,
     hints: ['Copy the highest ticket value into Seat 0.'
     ],
     difficulty: Difficulty.EASY,
-    initialArray: [0, 7, 2, 9, 1, 5],
-    targetArray: [9, 7, 2, 9, 1, 5],
+    initialArray: [0, 7, 2, 9, 1],
+    targetArray: [9, 7, 2, 9, 1],
     maxSteps: 46,
-    instructions: [],
+    instructions: [
+      {
+        id: 'pick',
+        type: InstructionType.PICK,
+        target: 'MOCO',
+      },
+      {
+        id: 'loop-start',
+        type: InstructionType.LABEL,
+        labelName: 'loop',
+      },
+      {
+        id: 'if-less',
+        type: InstructionType.IF_LESS,
+        target: "MOCO",
+        body: [],
+      },  
+  
+      {
+        id: 'jump-loop',
+        type: InstructionType.JUMP,
+        label: 'loop',
+      },  
+    ],
     unlocked: true,
     capabilities: {
       allowedPointers: ['MOCO'],
@@ -148,16 +171,15 @@ export const challenges: Challenge[] = [
         InstructionType.PICK,
         InstructionType.PUT,
 
-        InstructionType.IF_GREATER,
-        InstructionType.IF_LESS,
         InstructionType.IF_END,
 
         InstructionType.JUMP,
         InstructionType.LABEL,
       ],
       suggestedInstructions: [
-        InstructionType.IF_LESS,
-        InstructionType.IF_EQUAL,
+        InstructionType.SET_POINTER,
+        InstructionType.PICK,
+        InstructionType.PUT,
       ],
     },
   },
@@ -167,24 +189,45 @@ export const challenges: Challenge[] = [
     description: `Passengers without tickets must step aside without disturbing valid ones.`,
     hints: [
       'Move all zero values to the right end, preserving order of others.',
+      'You begin with a zero in hand.'
     ],
     
     difficulty: Difficulty.MEDIUM,
     initialArray: [0, 1, 0, 3, 12, 0],
     targetArray: [1, 3, 12, 0, 0, 0],
-    maxSteps: 30,
-    instructions: [],
+    maxSteps: 28,
+    initialHand: 0,
+    instructions: [
+      {
+        id: 'move-right',
+        type: InstructionType.MOVE_RIGHT,
+        target: 'CHOCO',
+      },
+      {
+        id: 'loop-start',
+        type: InstructionType.LABEL,
+        labelName: 'loop',
+      },
+      {
+        id: 'if-equal',
+        type: InstructionType.IF_EQUAL,
+        target: "CHOCO",
+        body: [],
+      },  
+  
+      {
+        id: 'jump-loop',
+        type: InstructionType.JUMP,
+        label: 'loop',
+      },  
+    ],
     unlocked: true,
     capabilities: {
       allowedPointers: ['MOCO', 'CHOCO'],
       allowedInstructions: [
-        InstructionType.MOVE_LEFT,
         InstructionType.MOVE_RIGHT,
-        InstructionType.PICK,
-        InstructionType.PUT,
 
-        InstructionType.IF_EQUAL,
-        InstructionType.IF_NOT_EQUAL,
+        InstructionType.IF_END,
 
         InstructionType.SWAP,
         InstructionType.JUMP,

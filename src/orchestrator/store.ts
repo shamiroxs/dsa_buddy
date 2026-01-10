@@ -104,6 +104,7 @@ interface GameState {
   
   // Player instructions
   playerInstructions: Instruction[];
+  initialInstructions: Instruction[];
   
   // Validation
   validationResult: ValidationResult | null;
@@ -182,6 +183,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   executionError: null,
   executionErrorContext: null,
   playerInstructions: [],
+  initialInstructions: [],
   validationResult: null,
   engine: new GameEngine(),
   successHintDismissed: false,
@@ -305,7 +307,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },  
 
   clearPlayerInstructions: () => {
-    get().setPlayerInstructions([]);
+    const { initialInstructions } = get();
+    get().setPlayerInstructions(initialInstructions);
   },
   
   // Actions
@@ -326,6 +329,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       currentChallenge: challenge,
       playerInstructions: initialInstructions,
+      initialInstructions,
       tutorial: {
         isActive: isTutorial,
         currentStep: TUTORIAL_STEP_ORDER[0],
