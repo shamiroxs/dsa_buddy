@@ -470,9 +470,11 @@ export function InstructionPalette() {
   function FlowchartBlock({
     instruction,
     onEdit,
+    parentIfId,
   }: {
     instruction: Instruction;
     lineNumber: number;
+    parentIfId?: string;
     onEdit?: () => void; // optional click handler for editing
   }) {
     //const { removeInstruction } = useGameStore();
@@ -525,7 +527,22 @@ export function InstructionPalette() {
           {formatInstruction(instruction)}
         </div>
         <button
-        onClick={() => removeInstruction(instruction.id)}
+        onClick={() => {
+          if (!parentIfId) {
+            // top-level
+            removeInstruction(instruction.id);
+            return;
+          }
+      
+          // nested IF body
+          const parentIf = playerInstructions.find(i => i.id === parentIfId);
+          if (!parentIf || !('body' in parentIf)) return;
+      
+          updateInstruction(parentIf.id, {
+            ...parentIf,
+            body: parentIf.body.filter(child => child.id !== instruction.id),
+          });
+        }}
         className="absolute right-2 text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         ×
@@ -858,6 +875,7 @@ export function InstructionPalette() {
               <FlowchartBlock
                 instruction={instruction}
                 lineNumber={index}
+                parentIfId={parentIfId}
                 onEdit={hasEditableParameter ? handleEdit : undefined}
               />
               </div>
