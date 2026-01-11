@@ -24,8 +24,13 @@ export function ExecutionTimeline({
   const validationResult = useGameStore((s) => s.validationResult);
   const successHintDismissed = useGameStore((s) => s.successHintDismissed);
 
+  const rewindHintShown = useGameStore((s) => s.rewindHintShown);
+  
   const showSuccessHint =
-  validationResult?.success && !successHintDismissed;
+    validationResult?.success &&
+    !rewindHintShown &&
+    !successHintDismissed;
+  
   return (   
     <div className="execution-timeline bg-gray-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">

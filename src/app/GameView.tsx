@@ -33,17 +33,69 @@ import { ExecutionTimeline } from '../renderer/ExecutionTimeline';
 
 import { InstructionType } from '../engine/instructions/types';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { HandView } from '../renderer/HandView';
 import { useIsTutorialActive, useTutorialBehavior, useTutorialHighlight } from '../tutorial/selectors';
+import { SuccessOverlay } from '../ui/SuccessOverlay';
 
 export function GameView() {
   const isExecuting = useGameStore((s) => s.isExecuting);
   const visualizationRef = useRef<HTMLDivElement | null>(null);
-
-  const isTutorialActive = useIsTutorialActive();
+  const successHintDismissed = useGameStore((s) => s.successHintDismissed);
+  const resetSuccessHint = useGameStore((s) => s.resetSuccessHint);
   
+  const isTutorialActive = useIsTutorialActive();
+
+  const challengeRef = useRef<HTMLDivElement | null>(null);
+  const instructionPaletteRef = useRef<HTMLDivElement>(null);
+  const behavior = useTutorialBehavior();
+  const validationResult = useGameStore((s) => s.validationResult);
+  const [isAboveMiddle, setIsAboveMiddle] = useState(true);
+
+  const scrollToChallengeOnSuccess = useGameStore(
+    (s) => s.scrollToChallengeOnSuccess
+  );
+
+  //show sucess again
+  useEffect(() => {
+    if (isExecuting && validationResult?.success) {
+      resetSuccessHint();
+    }
+  }, [isExecuting, validationResult?.success, resetSuccessHint]);
+    
+  // hide successoverlay if not scroll to top
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+  
+      // If no scroll possible, allow overlay
+      if (docHeight <= viewportHeight) {
+        setIsAboveMiddle(true);
+        return;
+      }
+  
+      const middle = (docHeight - viewportHeight) / 2;
+  
+      setIsAboveMiddle(scrollY < middle);
+    };
+  
+    onScroll(); // run once on mount
+    window.addEventListener('scroll', onScroll, { passive: true });
+  
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  
+  //show success again
+
+  useEffect(() => {
+    if (validationResult?.success) {
+      resetSuccessHint();
+    }
+  }, [validationResult?.success, resetSuccessHint]);
+
   //scorll to visualizer
   useEffect(() => {
     if (isExecuting && visualizationRef.current) {
@@ -53,11 +105,6 @@ export function GameView() {
       });
     }
   }, [isExecuting]);
-
-  const challengeRef = useRef<HTMLDivElement | null>(null);
-  const instructionPaletteRef = useRef<HTMLDivElement>(null);
-  const behavior = useTutorialBehavior();
-  const validationResult = useGameStore((s) => s.validationResult);
   
   //scroll back to instruction pallete on tutorial
   useEffect(() => {
@@ -92,8 +139,7 @@ export function GameView() {
   
   //to challenge pannel
   useEffect(() => {
-    if (!validationResult || isTutorialActive) return;
-    console.log(validationResult)
+    if (!validationResult || isTutorialActive || !scrollToChallengeOnSuccess) return;
   
     const element = challengeRef.current;
     if (!element) return;
@@ -106,7 +152,7 @@ export function GameView() {
     }, 3000);
   
     return () => clearTimeout(timeoutId);
-  }, [validationResult?.success, isTutorialActive]);
+  }, [validationResult?.success, isTutorialActive, scrollToChallengeOnSuccess,]);
   
   const challenge = useCurrentChallenge();
   if (!challenge) return;
@@ -175,6 +221,13 @@ export function GameView() {
 
   return (
     <div className="min-h-screen bg-gray-900 p-4">
+      {validationResult?.success && 
+        !successHintDismissed && 
+        !isTutorialActive &&
+        isAboveMiddle && (
+        <SuccessOverlay />
+      )}
+
       <div className="max-w-7xl mx-auto">
 
         {/* ================= HEADER ================= */}

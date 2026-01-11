@@ -30,9 +30,17 @@ export function ControlBar() {
   const isActive = useIsTutorialActive();
   const validationResult = useGameStore((s) => s.validationResult);
   const successHintDismissed = useGameStore((s) => s.successHintDismissed);
-
+  const { setScrollToChallengeOnSuccess } = useGameStore();
+  const rewindHintShown = useGameStore((s) => s.rewindHintShown);
+  const markRewindHintShown = useGameStore(
+    (s) => s.markRewindHintShown
+  );
+  
   const highlightRewind =
-    validationResult?.success && !successHintDismissed;
+    validationResult?.success &&
+    !rewindHintShown &&
+    !successHintDismissed;
+  
 
   const highlightRun = useTutorialHighlight(
     'CONTROL_BAR',
@@ -50,12 +58,14 @@ export function ControlBar() {
 
   const onStep = () => {
     onAnyControlClick();
+    setScrollToChallengeOnSuccess(true);
     executeSingleStep();
     endTutorial();
   };
 
   const onRun = () => {
     onAnyControlClick();
+    setScrollToChallengeOnSuccess(true);
     runExecution(500);
 
     if (completesOnRun) {
@@ -71,11 +81,14 @@ export function ControlBar() {
 
   const onRewind = () => {
     onAnyControlClick();
+    markRewindHintShown();
+    setScrollToChallengeOnSuccess(false);
     rewindSingleStep();
   };
 
   const onReset = () => {
     onAnyControlClick();
+    setScrollToChallengeOnSuccess(true);
     resetExecution();
   };
 

@@ -118,6 +118,12 @@ interface GameState {
     currentStep: TutorialStepId;
   };
 
+  scrollToChallengeOnSuccess: boolean;
+  setScrollToChallengeOnSuccess: (v: boolean) => void;
+
+  rewindHintShown: boolean;
+  markRewindHintShown: () => void;
+  
   startTutorial: () => void;
   nextTutorialStep: () => void;
   endTutorial: () => void;
@@ -188,13 +194,21 @@ export const useGameStore = create<GameState>((set, get) => ({
   engine: new GameEngine(),
   successHintDismissed: false,
 
-    // Tutorial
   // Tutorial
   tutorial: {
     isActive: false,
     currentStep: TUTORIAL_STEP_ORDER[0],
   },
 
+  scrollToChallengeOnSuccess: true,
+  rewindHintShown: false,
+
+  setScrollToChallengeOnSuccess: (v) =>
+  set({ scrollToChallengeOnSuccess: v }),
+
+  markRewindHintShown: () =>
+    set({ rewindHintShown: true }),
+  
   startTutorial: () =>
     set({
       tutorial: {
@@ -336,6 +350,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       },
       
       successHintDismissed: false,
+      rewindHintShown: false,
     });
   },
   
@@ -441,6 +456,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         isExecuting: false,
         isPaused: false,
         successHintDismissed: false,
+        rewindHintShown: false,
       });
     }
   },

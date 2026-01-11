@@ -3,13 +3,10 @@
  * Shows challenge description, initial/target arrays, and validation results
  */
 
-import { useCurrentChallenge, useValidationResult } from '../orchestrator/selectors';
+import { useCurrentChallenge } from '../orchestrator/selectors';
 import { ArrayView } from '../renderer/ArrayView';
-import { motion } from 'framer-motion';
-
 export function ChallengePanel() {
   const challenge = useCurrentChallenge();
-  const validationResult = useValidationResult();
  
   if (!challenge) {
     return (
@@ -65,36 +62,7 @@ export function ChallengePanel() {
               ))}
             </ul>
           </div>
-        )}
-
-          
-      {/* Validation Result */}
-      {validationResult && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`mt-4 p-3 rounded ${
-            validationResult.success
-              ? 'bg-green-900/30 border border-green-500'
-              : 'bg-red-900/30 border border-red-500'
-          }`}
-        >
-          <div className={`font-semibold ${
-            validationResult.success ? 'text-green-300' : 'text-red-300'
-          }`}>
-            {validationResult.success ? '✓ Success!' : '✗ Failed'}
-          </div>
-          <div className="text-sm text-gray-300 mt-1">{validationResult.message}</div>
-          <div className="text-xs text-gray-400 mt-1">
-            Steps: {validationResult.stepCount}
-            {challenge.maxSteps && (
-              <span className={validationResult.optimized ? 'text-green-400' : 'text-yellow-400'}>
-                {' '}({validationResult.optimized ? 'Optimized' : 'Not optimized'})
-              </span>
-            )}
-          </div>
-        </motion.div>
-      )}
+        )} 
     </div>
   );
 }
