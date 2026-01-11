@@ -40,11 +40,11 @@ export function SuccessOverlay() {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold text-green-400 mb-2">
-          🎉 Challenge Completed!
+            <strong>{challenge.title}</strong> ✔
         </h2>
 
         <p className="text-gray-300 mb-6">
-          You’ve successfully solved <strong>{challenge.title}</strong>.
+            Your presence is requested in the next compartment.
         </p>
 
         {/* Footer buttons */}
